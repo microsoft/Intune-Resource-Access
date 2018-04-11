@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.microsoft.intune.scep</groupId>
+  <artifactId>csr-validation</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <build>
+	<plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<version>3.7.0</version>
+			<configuration>
+				<!-- or whatever version you use -->
+				<source>1.8</source>
+				<target>1.8</target>
+			</configuration>
+		</plugin>
+	</plugins>
+  </build>
+  <dependencies>
+	<!-- https://mvnrepository.com/artifact/com.microsoft.azure/adal4j -->
+	<dependency>
+	    <groupId>com.microsoft.azure</groupId>
+	    <artifactId>adal4j</artifactId>
+	    <version>1.4.0</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+	<dependency>
+	    <groupId>org.apache.httpcomponents</groupId>
+	    <artifactId>httpclient</artifactId>
+	    <version>4.5.5</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.json/json -->
+	<dependency>
+	    <groupId>org.json</groupId>
+	    <artifactId>json</artifactId>
+	    <version>20180130</version>
+	</dependency>
+	<dependency>
+       <groupId>org.slf4j</groupId>
+       <artifactId>slf4j-api</artifactId>
+       <version>1.7.5</version>
+   </dependency>
+  </dependencies>  
+</project>

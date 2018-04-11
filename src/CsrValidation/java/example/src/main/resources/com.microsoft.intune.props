@@ -1,0 +1,6 @@
+ScepRequestValidationFEServiceVersion=5018-02-20
+GRAPH_RESOURCE_URL=https://graph.ppe.windows.net/
+GRAPH_API_VERSION=1.6
+INTUNE_RESOURCE_URL=https://api.manage-dogfood.microsoft.com/
+INTUNE_APP_ID=0000000a-0000-0000-c000-000000000000
+AUTH_AUTHORITY=https://login.windows-ppe.net/
