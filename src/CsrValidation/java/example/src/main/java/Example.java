@@ -27,10 +27,6 @@ import java.util.Properties;
 
 public class Example 
 {
-    private final static String AAD_APP_ID = "";
-    private final static String AAD_APP_KEY = "";
-    private final static String TENANT = "";
-
     public static void main(String args[]) throws Exception 
     {        
     	InputStream in = Example.class.getResourceAsStream("com.microsoft.intune.props");
@@ -38,7 +34,7 @@ public class Example
 		props.load(in);
 		in.close();
         
-    	IntuneScepServiceClient client = new IntuneScepServiceClient(AAD_APP_ID, AAD_APP_KEY, TENANT, props);
+    	IntuneScepServiceClient client = new IntuneScepServiceClient(props);
     	client.ValidateCsr("testing");
     }
 }

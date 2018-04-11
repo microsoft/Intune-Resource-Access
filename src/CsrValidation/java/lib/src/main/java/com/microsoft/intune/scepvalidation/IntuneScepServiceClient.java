@@ -26,7 +26,6 @@ package com.microsoft.intune.scepvalidation;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,21 +42,30 @@ public class IntuneScepServiceClient extends IntuneClient
 	
 	final Logger log = LoggerFactory.getLogger(IntuneScepServiceClient.class);
 	
-	public IntuneScepServiceClient(String azureAppId, String azureAppKey, String intuneTenant, Properties props) throws IllegalArgumentException, IOException {
-		super(azureAppId, azureAppKey, intuneTenant, props);
-		
-		if(props != null)
+	/**
+	 * IntuneSceptService Client constructor
+     * @param configProperties Properties object containing client configuration information.
+	 * @throws IllegalArgumentException
+	 * @throws IOException
+	 */
+	public IntuneScepServiceClient(Properties configProperties) throws IllegalArgumentException, IOException {
+		super(configProperties);
+
+		if(configProperties == null)
 		{
-			this.serviceVersion = props.getProperty(SERVICE_VERSION_PROP_NAME,this.serviceVersion);
+			throw new IllegalArgumentException("The argument 'configProperties' is missing"); 
 		}
+		
+		configProperties.getProperty(SERVICE_VERSION_PROP_NAME,this.serviceVersion);
 	}
 		
 	/**
 	 * Validates whether the given CSR is a valid certificate request from Microsoft Intune.
+	 * If the CSR is not valid an exception will be thrown.
 	 * @param csr Base 64 encoded PKCS10 packet
-	 * @return 
+	 * @throws Exception 
 	 */
-    public boolean ValidateCsr(String csr)
+    public void ValidateCsr(String csr) throws Exception
     {
     	if(csr == null || csr.isEmpty())
     	{
@@ -73,32 +81,13 @@ public class IntuneScepServiceClient extends IntuneClient
 					 serviceVersion, 
 					 requestBody);
     		
-    		// TODO: Parse result and look for error
+    		// TODO: Parse result and look for error and throw
     		log.info(result.toString());
-
-    	}
-    	catch(IntuneClientHttpErrorException e)
-    	{
-    		int statusCode = e.getStatusCode();
-    		switch(statusCode)
-    		{
-    		case HttpStatus.SC_BAD_REQUEST:
-    			// TODO: parse for enum and return it
-    			// TODO: if no JSON contained treat as internal server error
-    			this.log.error(e.getMessage(), e);
-    			break;
-    		default:
-    			// TODO: treat as internal server error
-    			this.log.error(e.getMessage(), e);
-    			break;
-    		}
     	}
     	catch(Exception e)
     	{ 
-    		// TODO: Potentially separate out? throw?
     		this.log.error(e.getMessage(), e);
+    		throw e; // TODO: Should we throw a IntuneClientException?
     	}
-    	
-    	return true;
     }
 }

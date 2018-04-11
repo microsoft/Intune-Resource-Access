@@ -75,42 +75,45 @@ class IntuneClient
     
     /**
      * Constructs an IntuneClient object which can be used to make requests to Intune services.
-     * @param azureAppId Azure Active Directory Application Id
-     * @param azureAppKey Azure Active Directory Secret Key
-     * @param intuneTenant Intune tenant
+     * @param configProperties Properties object containing client configuration information.
      * @throws IllegalArgumentException
      * @throws IOException 
      */
-    public IntuneClient(String azureAppId, String azureAppKey, String intuneTenant, Properties props) throws IllegalArgumentException, IOException
+    public IntuneClient(Properties configProperties) throws IllegalArgumentException, IOException
     {
+    	if(configProperties == null)
+		{
+			throw new IllegalArgumentException("The argument 'configProperties' is missing"); 
+		}
+    	
+    	// Read required properties
+    	String azureAppId = configProperties.getProperty("AAD_APP_ID");
     	if(azureAppId == null || azureAppId.isEmpty())
     	{
     		throw new IllegalArgumentException("The argument 'azureAppId' is missing");
     	}
     	
+    	String azureAppKey = configProperties.getProperty("AAD_APP_KEY");
     	if(azureAppKey == null || azureAppKey.isEmpty())
     	{
     		throw new IllegalArgumentException("The argument 'azureAppKey' is missing");
     	}
     	
-    	if(intuneTenant == null || intuneTenant.isEmpty())
+    	this.intuneTenant = configProperties.getProperty("TENANT");
+    	if(this.intuneTenant == null || this.intuneTenant.isEmpty())
     	{
     		throw new IllegalArgumentException("The argument 'intuneTenant' is missing");
     	}
     	
-    	this.intuneTenant = intuneTenant;
-    	
+    	// Read optional properties
+    	this.intuneAppId = configProperties.getProperty("INTUNE_APP_ID", this.intuneAppId);
+        this.intuneResourceUrl = configProperties.getProperty("INTUNE_RESOURCE_URL", this.intuneResourceUrl);
+        this.graphApiVersion = configProperties.getProperty("GRAPH_API_VERSION", this.graphApiVersion);
+        this.graphResourceUrl = configProperties.getProperty("GRAPH_RESOURCE_URL", this.graphResourceUrl);
+        
+        // Instantiate ADAL Client
     	this.aadCredential = new ClientCredential(azureAppId, azureAppKey);
-    	
-    	this.authClient = new ADALClientWrapper(this.intuneTenant, this.aadCredential, props);
-    	
-    	if(props != null)
-    	{
-	    	this.intuneAppId = props.getProperty("INTUNE_APP_ID", this.intuneAppId);
-	        this.intuneResourceUrl = props.getProperty("INTUNE_RESOURCE_URL", this.intuneResourceUrl);
-	        this.graphApiVersion = props.getProperty("GRAPH_API_VERSION", this.graphApiVersion);
-	        this.graphResourceUrl = props.getProperty("GRAPH_RESOURCE_URL", this.graphResourceUrl);
-    	}
+    	this.authClient = new ADALClientWrapper(this.intuneTenant, this.aadCredential, configProperties);
     }
     
     /**
