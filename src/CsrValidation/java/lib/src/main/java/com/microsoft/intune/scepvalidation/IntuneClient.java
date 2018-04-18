@@ -169,7 +169,7 @@ class IntuneClient
     	CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost(intuneRequestUrl);
         httpPost.addHeader("Authorization", "Bearer " + authResult.getAccessToken());
-        httpPost.addHeader("content-type", "application/x-www-form-urlencoded");
+        httpPost.addHeader("content-type", "application/json");
         httpPost.addHeader("client-request-id", activityId.toString());
         httpPost.setEntity(new StringEntity(json.toString()));
         

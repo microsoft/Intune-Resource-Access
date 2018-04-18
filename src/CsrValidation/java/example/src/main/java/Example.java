@@ -24,6 +24,7 @@
 import com.microsoft.intune.scepvalidation.*;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.UUID;
 
 public class Example 
 {
@@ -34,7 +35,10 @@ public class Example
 		props.load(in);
 		in.close();
         
+		UUID transactionId = UUID.randomUUID();
+		String csr = "";
+		
     	IntuneScepServiceClient client = new IntuneScepServiceClient(props);
-    	client.ValidateCsr("testing");
+    	client.ValidateCsr(csr, transactionId.toString());
     }
 }

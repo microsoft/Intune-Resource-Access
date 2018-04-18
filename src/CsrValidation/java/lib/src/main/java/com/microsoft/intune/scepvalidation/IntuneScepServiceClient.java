@@ -65,14 +65,14 @@ public class IntuneScepServiceClient extends IntuneClient
 	 * @param csr Base 64 encoded PKCS10 packet
 	 * @throws Exception 
 	 */
-    public void ValidateCsr(String csr) throws Exception
+    public void ValidateCsr(String csr, String transactionId) throws Exception
     {
     	if(csr == null || csr.isEmpty())
     	{
     		throw new IllegalArgumentException("The argument csr is missing");
     	}     
     	
-    	JSONObject requestBody = new JSONObject("{certificateRequest:" + csr + "}");
+    	JSONObject requestBody = new JSONObject("{transactionId:'" + transactionId + "', certificateRequest:'" + csr + "'}");
     	
     	try 
     	{
