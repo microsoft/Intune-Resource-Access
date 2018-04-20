@@ -25,7 +25,6 @@ package com.microsoft.intune.scepvalidation;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map.Entry;
