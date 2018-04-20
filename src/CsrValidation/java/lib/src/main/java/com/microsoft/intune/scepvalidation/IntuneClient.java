@@ -24,6 +24,8 @@
 package com.microsoft.intune.scepvalidation;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -32,6 +34,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import javax.naming.ServiceUnavailableException;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
@@ -39,9 +42,17 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -68,6 +79,9 @@ class IntuneClient
     protected String intuneTenant;
     protected ClientCredential aadCredential;
     protected ADALClientWrapper authClient;
+    
+    protected SSLSocketFactory sslSocketFactory = null;
+    protected HttpClientBuilder httpClientBuilder = null;
     
     private HashMap<String,String> serviceMap = new HashMap<String,String>();
     
@@ -114,6 +128,43 @@ class IntuneClient
         // Instantiate ADAL Client
     	this.aadCredential = new ClientCredential(azureAppId, azureAppKey);
     	this.authClient = new ADALClientWrapper(this.intuneTenant, this.aadCredential, configProperties);
+    }    
+    
+    /**
+     * Sets the SSL factory to be used for all HTTP clients.
+     * @param factory
+     */
+    public void setSslSocketFactory(SSLSocketFactory factory) throws IllegalArgumentException
+    {
+    	if(factory == null)
+    	{
+    		throw new IllegalArgumentException("The argument 'factory' is missing.");
+    	}
+    	
+    	this.authClient.setSslSocketFactory(factory);
+    	
+    	this.sslSocketFactory = factory;
+    	
+		String[] cipherSuiteList = {
+			    "TLS_RSA_WITH_AES_128_CBC_SHA",
+				"TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+				"TLS_RSA_WITH_AES_256_CBC_SHA",
+				"TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+				"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
+				"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA"
+			};  
+			   
+		this.httpClientBuilder = HttpClientBuilder.create();
+		SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(this.sslSocketFactory, new String[] { "TLSv1.2" }, cipherSuiteList, new DefaultHostnameVerifier());
+		this.httpClientBuilder.setSSLSocketFactory(sslConnectionFactory);
+		
+		Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+		        .register("https", sslConnectionFactory)
+		        .build();
+		
+		HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
+		
+		this.httpClientBuilder.setConnectionManager(ccm);
     }
     
     /**
@@ -166,7 +217,7 @@ class IntuneClient
     	
     	UUID activityId = UUID.randomUUID();
     	String intuneRequestUrl = intuneServiceEndpoint + "/" + collection + "?api-version=" + apiVersion;
-    	CloseableHttpClient httpclient = HttpClients.createDefault();
+    	CloseableHttpClient httpclient = this.getCloseableHttpClient(intuneRequestUrl);
         HttpPost httpPost = new HttpPost(intuneRequestUrl);
         httpPost.addHeader("Authorization", "Bearer " + authResult.getAccessToken());
         httpPost.addHeader("content-type", "application/json");
@@ -233,7 +284,7 @@ class IntuneClient
         String graphRequest = this.graphResourceUrl + intuneTenant + "/servicePrincipalsByAppId/" + this.intuneAppId + "/serviceEndpoints?api-version=" + this.graphApiVersion;
         
         UUID activityId = UUID.randomUUID();
-        CloseableHttpClient httpclient = HttpClients.createDefault();
+        CloseableHttpClient httpclient = this.getCloseableHttpClient(graphRequest);
         HttpGet httpGet = new HttpGet(graphRequest);
         httpGet.addHeader("Authorization", "Bearer " + authResult.getAccessToken());
         httpGet.addHeader("client-request-id", activityId.toString());
@@ -311,5 +362,15 @@ class IntuneClient
 		}
 		
 		return jsonResult;
+	}
+	
+	private CloseableHttpClient getCloseableHttpClient(String serviceUrl) throws MalformedURLException 
+	{
+		if(this.httpClientBuilder == null)
+		{
+			return HttpClients.createDefault();
+		}
+
+		return this.httpClientBuilder.build();
 	}
 }

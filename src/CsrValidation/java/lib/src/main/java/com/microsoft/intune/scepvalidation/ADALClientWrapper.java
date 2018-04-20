@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.naming.ServiceUnavailableException;
+import javax.net.ssl.SSLSocketFactory;
 
 import com.microsoft.aad.adal4j.AuthenticationContext;
 import com.microsoft.aad.adal4j.AuthenticationResult;
@@ -74,6 +75,20 @@ class ADALClientWrapper
     	this.credential = credential;
     	this.service = Executors.newFixedThreadPool(1);
         context = new AuthenticationContext(this.authority + aadTenant, false, service);
+    }
+    
+    /**
+     * Sets the SSL factory to be used on the HTTP client for authentication.
+     * @param factory
+     */
+    public void setSslSocketFactory(SSLSocketFactory factory) throws IllegalArgumentException
+    {
+    	if(factory == null)
+    	{
+    		throw new IllegalArgumentException("The argument 'factory' is missing.");
+    	}
+    	
+    	this.context.setSslSocketFactory(factory);
     }
     
     /**
