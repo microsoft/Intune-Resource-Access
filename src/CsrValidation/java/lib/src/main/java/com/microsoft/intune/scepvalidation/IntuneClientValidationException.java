@@ -25,19 +25,20 @@ package com.microsoft.intune.scepvalidation;
 
 import java.util.UUID;
 
-import org.json.JSONObject;
-
-public class IntuneClientValidationFailedException extends IntuneClientException
+/**
+ * Exception thrown when SCR validation fails
+ */
+public class IntuneClientValidationException extends IntuneClientException
 {
 
 	private static final long serialVersionUID = 2018_04_24_001L;
 	
 	private UUID activityId = null;
-	private JSONObject response = null;
+	private String errorMessage = null;
 	
-	public JSONObject getResponse()
+	public String getErrorMessage()
 	{
-		return this.response;
+		return this.errorMessage;
 	}
 	
 	public UUID getActivityId()
@@ -45,10 +46,10 @@ public class IntuneClientValidationFailedException extends IntuneClientException
 		return this.activityId;
 	}
 	
-	public IntuneClientValidationFailedException(JSONObject response, UUID activityId)
+	public IntuneClientValidationException(String errorMessage, UUID activityId)
 	{
-		super(response.toString());
+		super(errorMessage);
 		this.activityId = activityId;
-		this.response = response;
+		this.errorMessage = errorMessage;
 	}
 }

@@ -64,9 +64,11 @@ public class IntuneScepServiceClient extends IntuneClient
 	 * Validates whether the given CSR is a valid certificate request from Microsoft Intune.
 	 * If the CSR is not valid an exception will be thrown.
 	 * @param csr Base 64 encoded PKCS10 packet
-	 * @throws Exception 
+	 * @param transactionId The transactionId of the CSR
+	 * @throws IntuneClientValidationException The CSR failed validation
+	 * @throws Exception Unexpected validation
 	 */
-    public void ValidateCsr(String csr, String transactionId) throws Exception
+    public void ValidateCsr(String csr, String transactionId) throws IntuneClientValidationException, Exception
     {
     	if(csr == null || csr.isEmpty())
     	{
@@ -85,18 +87,22 @@ public class IntuneScepServiceClient extends IntuneClient
 					 requestBody,
 					 activityId);
     		
+    		log.info("Activity " + activityId + " has completed.");
     		log.info(result.toString());
     		
     		String returnCode = result.getString("returnCode");
-    		if (returnCode.equalsIgnoreCase("valid"))
+    		if (!returnCode.equalsIgnoreCase("valid"))
     		{
-    			throw new IntuneClientValidationFailedException(result, activityId);
+    			throw new IntuneClientValidationException(result.toString(), activityId);
     		}
     	}
     	catch(Exception e)
     	{ 
-    		this.log.error(e.getMessage(), e);
-    		throw e; // TODO: Should we throw a IntuneClientException?
+    		if (!(e instanceof IntuneClientValidationException))
+    		{
+    			this.log.error(e.getMessage(), e);
+    		}
+    		throw e;
     	}
     }
 }

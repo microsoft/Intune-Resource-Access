@@ -172,6 +172,7 @@ class IntuneClient
      * @param collection The service collection to post to.
      * @param apiVersion API Version of service to use.
      * @param json The body of the request.
+     * @param activityId Client generated ID for correlation of this activity
      * @return JSON response from service
      * @throws AuthenticationException
      * @throws ExecutionException 
