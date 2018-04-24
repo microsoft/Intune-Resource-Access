@@ -25,6 +25,7 @@ package com.microsoft.intune.scepvalidation;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -63,9 +64,11 @@ public class IntuneScepServiceClient extends IntuneClient
 	 * Validates whether the given CSR is a valid certificate request from Microsoft Intune.
 	 * If the CSR is not valid an exception will be thrown.
 	 * @param csr Base 64 encoded PKCS10 packet
-	 * @throws Exception 
+	 * @param transactionId The transactionId of the CSR
+	 * @throws IntuneClientValidationException The CSR failed validation
+	 * @throws Exception Unexpected validation
 	 */
-    public void ValidateCsr(String csr, String transactionId) throws Exception
+    public void ValidateCsr(String csr, String transactionId) throws IntuneClientValidationException, Exception
     {
     	if(csr == null || csr.isEmpty())
     	{
@@ -76,18 +79,32 @@ public class IntuneScepServiceClient extends IntuneClient
     	
     	try 
     	{
-    		JSONObject result = this.PostRequest(VALIDATION_SERVICE_NAME, 
+        	UUID activityId = UUID.randomUUID();
+
+        	JSONObject result = this.PostRequest(VALIDATION_SERVICE_NAME, 
 					 VALIDATION_COLLECTION, 
 					 serviceVersion, 
-					 requestBody);
+					 requestBody,
+					 activityId);
     		
-    		// TODO: Parse result and look for error and throw
+    		log.info("Activity " + activityId + " has completed.");
     		log.info(result.toString());
+    		
+    		String returnCode = result.getString("returnCode");
+    		if (!returnCode.equalsIgnoreCase("valid"))
+    		{
+    			String transId = result.getString("transactionId");
+    			String returnMessage = result.getString("returnMessage");
+    			throw new IntuneClientValidationException(returnCode, returnMessage, transId, activityId);
+    		}
     	}
     	catch(Exception e)
     	{ 
-    		this.log.error(e.getMessage(), e);
-    		throw e; // TODO: Should we throw a IntuneClientException?
+    		if (!(e instanceof IntuneClientValidationException))
+    		{
+    			this.log.error(e.getMessage(), e);
+    		}
+    		throw e;
     	}
     }
 }

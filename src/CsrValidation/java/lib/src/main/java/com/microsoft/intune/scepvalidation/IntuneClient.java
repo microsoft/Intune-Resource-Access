@@ -172,6 +172,7 @@ class IntuneClient
      * @param collection The service collection to post to.
      * @param apiVersion API Version of service to use.
      * @param json The body of the request.
+     * @param activityId Client generated ID for correlation of this activity
      * @return JSON response from service
      * @throws AuthenticationException
      * @throws ExecutionException 
@@ -182,7 +183,7 @@ class IntuneClient
      * @throws IllegalArgumentException 
      * @throws IntuneClientException 
      */
-    public JSONObject PostRequest(String serviceName, String collection, String apiVersion, JSONObject json) throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, AuthenticationException, IllegalArgumentException, IntuneClientException
+    public JSONObject PostRequest(String serviceName, String collection, String apiVersion, JSONObject json, UUID activityId) throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, AuthenticationException, IllegalArgumentException, IntuneClientException
     {
     	if(serviceName == null || serviceName.isEmpty())
     	{
@@ -214,7 +215,6 @@ class IntuneClient
     	
     	AuthenticationResult authResult = this.authClient.getAccessTokenFromCredential(this.intuneResourceUrl);
     	
-    	UUID activityId = UUID.randomUUID();
     	String intuneRequestUrl = intuneServiceEndpoint + "/" + collection + "?api-version=" + apiVersion;
     	CloseableHttpClient httpclient = this.getCloseableHttpClient(intuneRequestUrl);
         HttpPost httpPost = new HttpPost(intuneRequestUrl);
