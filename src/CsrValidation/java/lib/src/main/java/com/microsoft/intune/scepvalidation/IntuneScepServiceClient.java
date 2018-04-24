@@ -25,6 +25,7 @@ package com.microsoft.intune.scepvalidation;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -76,13 +77,21 @@ public class IntuneScepServiceClient extends IntuneClient
     	
     	try 
     	{
-    		JSONObject result = this.PostRequest(VALIDATION_SERVICE_NAME, 
+        	UUID activityId = UUID.randomUUID();
+
+        	JSONObject result = this.PostRequest(VALIDATION_SERVICE_NAME, 
 					 VALIDATION_COLLECTION, 
 					 serviceVersion, 
-					 requestBody);
+					 requestBody,
+					 activityId);
     		
-    		// TODO: Parse result and look for error and throw
     		log.info(result.toString());
+    		
+    		String returnCode = result.getString("returnCode");
+    		if (returnCode.equalsIgnoreCase("valid"))
+    		{
+    			throw new IntuneClientValidationFailedException(result, activityId);
+    		}
     	}
     	catch(Exception e)
     	{ 
