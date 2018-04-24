@@ -93,7 +93,9 @@ public class IntuneScepServiceClient extends IntuneClient
     		String returnCode = result.getString("returnCode");
     		if (!returnCode.equalsIgnoreCase("valid"))
     		{
-    			throw new IntuneClientValidationException(result.toString(), activityId);
+    			String transId = result.getString("transactionId");
+    			String returnMessage = result.getString("returnMessage");
+    			throw new IntuneClientValidationException(returnCode, returnMessage, transId, activityId);
     		}
     	}
     	catch(Exception e)

@@ -34,22 +34,38 @@ public class IntuneClientValidationException extends IntuneClientException
 	private static final long serialVersionUID = 2018_04_24_001L;
 	
 	private UUID activityId = null;
-	private String errorMessage = null;
+	private String errorCode = null;
+	private String transactionId = null;
 	
-	public String getErrorMessage()
+	/**
+	 * The Unique code that describes the reason the CSR failed validation
+	 */
+	public String getErrorCode()
 	{
-		return this.errorMessage;
+		return this.errorCode;
 	}
 	
+	/**
+	 * The transaction Id of the CSR that failed validation
+	 */
+	public String getTransactionId()
+	{
+		return this.transactionId;
+	}
+	
+	/**
+	 * The ID that is provided to Intune to correlate all parts of the CSR validation activity 
+	 */
 	public UUID getActivityId()
 	{
 		return this.activityId;
 	}
 	
-	public IntuneClientValidationException(String errorMessage, UUID activityId)
+	public IntuneClientValidationException(String errorCode, String errorMessage, String transactionId, UUID activityId)
 	{
 		super(errorMessage);
 		this.activityId = activityId;
-		this.errorMessage = errorMessage;
+		this.transactionId = transactionId;
+		this.errorCode = errorCode;
 	}
 }
