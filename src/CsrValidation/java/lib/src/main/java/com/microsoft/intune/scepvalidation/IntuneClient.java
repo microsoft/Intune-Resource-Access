@@ -169,7 +169,7 @@ class IntuneClient
     /**
      * Post a Request to an Intune rest service.
      * @param serviceName The name of the service to post to.
-     * @param collection The service collection to post to.
+     * @param urlSuffix The end of the url to tack onto the request.
      * @param apiVersion API Version of service to use.
      * @param json The body of the request.
      * @param activityId Client generated ID for correlation of this activity
@@ -183,16 +183,16 @@ class IntuneClient
      * @throws IllegalArgumentException 
      * @throws IntuneClientException 
      */
-    public JSONObject PostRequest(String serviceName, String collection, String apiVersion, JSONObject json, UUID activityId) throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, AuthenticationException, IllegalArgumentException, IntuneClientException
+    public JSONObject PostRequest(String serviceName, String urlSuffix, String apiVersion, JSONObject json, UUID activityId) throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, AuthenticationException, IllegalArgumentException, IntuneClientException
     {
     	if(serviceName == null || serviceName.isEmpty())
     	{
     		throw new IllegalArgumentException("The argument 'serviceName' is missing");
     	}
     	
-    	if(collection == null || collection.isEmpty())
+    	if(urlSuffix == null || urlSuffix.isEmpty())
     	{
-    		throw new IllegalArgumentException("The argument 'collection' is missing");
+    		throw new IllegalArgumentException("The argument 'urlSuffix' is missing");
     	}
     	
     	if(apiVersion == null || apiVersion.isEmpty())
@@ -215,12 +215,13 @@ class IntuneClient
     	
     	AuthenticationResult authResult = this.authClient.getAccessTokenFromCredential(this.intuneResourceUrl);
     	
-    	String intuneRequestUrl = intuneServiceEndpoint + "/" + collection + "?api-version=" + apiVersion;
+    	String intuneRequestUrl = intuneServiceEndpoint + "/" + urlSuffix;
     	CloseableHttpClient httpclient = this.getCloseableHttpClient(intuneRequestUrl);
         HttpPost httpPost = new HttpPost(intuneRequestUrl);
         httpPost.addHeader("Authorization", "Bearer " + authResult.getAccessToken());
         httpPost.addHeader("content-type", "application/json");
         httpPost.addHeader("client-request-id", activityId.toString());
+        httpPost.addHeader("api-version", apiVersion);
         httpPost.setEntity(new StringEntity(json.toString()));
         
         CloseableHttpResponse intuneResponse = null;

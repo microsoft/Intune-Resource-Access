@@ -39,6 +39,6 @@ public class Example
 		String csr = "";
 		
     	IntuneScepServiceClient client = new IntuneScepServiceClient(props);
-    	client.ValidateCsr(csr, transactionId.toString());
+    	client.ValidateRequest(transactionId.toString(), csr);
     }
 }
