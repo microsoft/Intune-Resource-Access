@@ -65,32 +65,32 @@ public class IntuneScepServiceClient extends IntuneClient
 	}
 		
 	/**
-	 * Validates whether the given CSR is a valid certificate request from Microsoft Intune.
-	 * If the CSR is not valid an exception will be thrown.  
+	 * Validates whether the given Certificate Request is a valid and from Microsoft Intune.
+	 * If the request is not valid an exception will be thrown.  
 	 * 
 	 * IMPORTANT: If an exception is thrown the SCEP server should not issue a certificate to the client.
 	 *  
-	 * @param transactionId The transactionId of the CSR
-	 * @param csr Base 64 encoded PKCS10 packet
-	 * @throws IntuneScepServiceException The CSR failed validation
+	 * @param transactionId The transactionId of the Certificate Request
+	 * @param certificateRequest Base 64 encoded PKCS10 packet
+	 * @throws IntuneScepServiceException The Certificate Request failed validation
 	 * @throws Exception Unexpected validation
 	 */
-    public void ValidateRequest(String transactionId, String csr) throws IntuneScepServiceException, Exception
+    public void ValidateRequest(String transactionId, String certificateRequest) throws IntuneScepServiceException, Exception
     {
     	if(transactionId == null || transactionId.isEmpty())
     	{
     		throw new IllegalArgumentException("The argument 'transactionId' is missing");
     	}     
     	
-    	if(csr == null || csr.isEmpty())
+    	if(certificateRequest == null || certificateRequest.isEmpty())
     	{
-    		throw new IllegalArgumentException("The argument 'csr' is missing");
+    		throw new IllegalArgumentException("The argument 'certificateRequest' is missing");
     	}     
     	
     	JSONObject requestBody = new JSONObject().put(
     			"request", (new JSONObject())
     				.put("transactionId", transactionId)
-    				.put("certificateRequest", csr));
+    				.put("certificateRequest", certificateRequest));
     	
     	Post(requestBody, VALIDATION_URL, transactionId);
     }
@@ -101,24 +101,24 @@ public class IntuneScepServiceClient extends IntuneClient
      * IMPORTANT: If an exception is thrown the SCEP server should not issue a certificate to the client.
      * 
      * @param transactionId The transactionId of the CSR
-     * @param csr Base 64 encoded PKCS10 packet
-     * @param certThumbprint
-     * @param certSerialNumber
-     * @param certExpirationDate ex: 
-     * @param certIssuingAuthority
+     * @param certificateRequest Base 64 encoded PKCS10 packet
+     * @param certThumbprint Thumbprint of the certificate issued.
+     * @param certSerialNumber Serial number of the certificate issued.
+     * @param certExpirationDate The date time string should be formated as web UTC time (YYYY-MM-DDThh:mm:ss.sssTZD) ISO 8601. 
+     * @param certIssuingAuthority Issuing Authority that issued the certificate.
      * @throws IntuneScepServiceException The service reported a failure in processing the notification examine the exception error code.
      * @throws Exception Unexpected error
      */
-    public void SendSuccessNotification(String transactionId, String csr, String certThumbprint, String certSerialNumber, String certExpirationDate, String certIssuingAuthority) throws IntuneScepServiceException, Exception
+    public void SendSuccessNotification(String transactionId, String certificateRequest, String certThumbprint, String certSerialNumber, String certExpirationDate, String certIssuingAuthority) throws IntuneScepServiceException, Exception
     {
     	if(transactionId == null || transactionId.isEmpty())
     	{
     		throw new IllegalArgumentException("The argument 'transactionId' is missing");
     	}     
     	
-    	if(csr == null || csr.isEmpty())
+    	if(certificateRequest == null || certificateRequest.isEmpty())
     	{
-    		throw new IllegalArgumentException("The argument 'csr' is missing");
+    		throw new IllegalArgumentException("The argument 'certificateRequest' is missing");
     	}     
     	
     	if(certThumbprint == null || certThumbprint.isEmpty())
@@ -144,7 +144,7 @@ public class IntuneScepServiceClient extends IntuneClient
     	JSONObject requestBody = new JSONObject().put(
     			"notification", (new JSONObject())
     				.put("transactionId", transactionId)
-    				.put("certificateRequest", csr)
+    				.put("certificateRequest", certificateRequest)
     				.put("certificateThumbprint", certThumbprint)
     				.put("certificateSerialNumber", certSerialNumber)
     				.put("certificateExpirationDateUtc", certExpirationDate)
@@ -159,22 +159,24 @@ public class IntuneScepServiceClient extends IntuneClient
      * IMPORTANT: If this method is called the SCEP server should not issue a certificate to the client.
      * 
      * @param transactionId The transactionId of the CSR
-     * @param csr Base 64 encoded PKCS10 packet
-     * @param hResult 
+     * @param certificateRequest Base 64 encoded PKCS10 packet
+     * @param hResult 32-bit error code formulated using the instructions specified in https://msdn.microsoft.com/en-us/library/cc231198.aspx. 
+     * The value specified will be reported in the Intune management console and will be used by the administrator to troubleshoot the issue. 
+     * It is recommended that your product provide documentation about the meaning of the error codes reported.
      * @param errorDescription Description of what error occurred. Max length = 255 chars
      * @throws IntuneScepServiceException The service reported a failure in processing the notification examine the exception error code.
      * @throws Exception Unexpected error
      */
-    public void SendFailureNotification(String transactionId, String csr, String hResult, String errorDescription) throws IntuneScepServiceException, Exception
+    public void SendFailureNotification(String transactionId, String certificateRequest, String hResult, String errorDescription) throws IntuneScepServiceException, Exception
     {
     	if(transactionId == null || transactionId.isEmpty())
     	{
     		throw new IllegalArgumentException("The argument 'transactionId' is missing");
     	}     
     	
-    	if(csr == null || csr.isEmpty())
+    	if(certificateRequest == null || certificateRequest.isEmpty())
     	{
-    		throw new IllegalArgumentException("The argument 'csr' is missing");
+    		throw new IllegalArgumentException("The argument 'certificateRequest' is missing");
     	}     
     	
     	if(hResult == null || hResult.isEmpty())
@@ -190,7 +192,7 @@ public class IntuneScepServiceClient extends IntuneClient
     	JSONObject requestBody = new JSONObject().put(
     			"notification", (new JSONObject())
     				.put("transactionId", transactionId)
-    				.put("certificateRequest", csr)
+    				.put("certificateRequest", certificateRequest)
     				.put("hResult", hResult)
     				.put("errorDescription", errorDescription));
     	
