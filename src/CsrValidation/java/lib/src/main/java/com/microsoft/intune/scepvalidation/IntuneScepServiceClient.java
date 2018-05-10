@@ -38,7 +38,7 @@ import com.microsoft.intune.scepvalidation.IntuneScepServiceException.ErrorCode;
  */
 public class IntuneScepServiceClient extends IntuneClient
 {
-	private String serviceVersion = "5018-02-20";
+	private String serviceVersion = "2018-02-20";
 	private final static String VALIDATION_SERVICE_NAME = "ScepRequestValidationFEService";
 	private final static String VALIDATION_URL = "ScepActions/validateRequest";
 	private final static String NOTIFY_SUCCESS_URL = "ScepActions/successNotification";
@@ -167,7 +167,7 @@ public class IntuneScepServiceClient extends IntuneClient
      * @throws IntuneScepServiceException The service reported a failure in processing the notification examine the exception error code.
      * @throws Exception Unexpected error
      */
-    public void SendFailureNotification(String transactionId, String certificateRequest, String hResult, String errorDescription) throws IntuneScepServiceException, Exception
+    public void SendFailureNotification(String transactionId, String certificateRequest, long hResult, String errorDescription) throws IntuneScepServiceException, Exception
     {
     	if(transactionId == null || transactionId.isEmpty())
     	{
@@ -177,12 +177,7 @@ public class IntuneScepServiceClient extends IntuneClient
     	if(certificateRequest == null || certificateRequest.isEmpty())
     	{
     		throw new IllegalArgumentException("The argument 'certificateRequest' is missing");
-    	}     
-    	
-    	if(hResult == null || hResult.isEmpty())
-    	{
-    		throw new IllegalArgumentException("The argument 'hResult' is missing");
-    	}     
+    	}       
     	
     	if(errorDescription == null || errorDescription.isEmpty())
     	{

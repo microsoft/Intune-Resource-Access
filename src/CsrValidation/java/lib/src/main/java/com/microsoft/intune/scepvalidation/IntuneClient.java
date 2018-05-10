@@ -143,18 +143,9 @@ class IntuneClient
     	this.authClient.setSslSocketFactory(factory);
     	
     	this.sslSocketFactory = factory;
-    	
-		String[] cipherSuiteList = {
-			    "TLS_RSA_WITH_AES_128_CBC_SHA",
-				"TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-				"TLS_RSA_WITH_AES_256_CBC_SHA",
-				"TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
-				"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
-				"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA"
-			};  
 			   
 		this.httpClientBuilder = HttpClientBuilder.create();
-		SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(this.sslSocketFactory, new String[] { "TLSv1.2" }, cipherSuiteList, new DefaultHostnameVerifier());
+		SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(this.sslSocketFactory, new String[] { "TLSv1.2" }, null, new DefaultHostnameVerifier());
 		this.httpClientBuilder.setSSLSocketFactory(sslConnectionFactory);
 		
 		Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
