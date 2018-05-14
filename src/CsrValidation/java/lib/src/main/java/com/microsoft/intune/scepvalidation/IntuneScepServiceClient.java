@@ -24,6 +24,7 @@
 package com.microsoft.intune.scepvalidation;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -44,6 +45,10 @@ public class IntuneScepServiceClient extends IntuneClient
 	private final static String NOTIFY_SUCCESS_URL = "ScepActions/successNotification";
 	private final static String NOTIFY_FAILURE_URL = "ScepActions/failureNotification";
 	private final static String SERVICE_VERSION_PROP_NAME = VALIDATION_SERVICE_NAME + "Version";
+	private final static String PROVIDER_NAME_AND_VERSION_NAME = "PROVIDER_NAME_AND_VERSION";
+	
+	private String providerNameAndVersion = null;
+	private HashMap<String,String> additionalHeaders = new HashMap<String, String>();;
 	
 	final Logger log = LoggerFactory.getLogger(IntuneScepServiceClient.class);
 	
@@ -62,6 +67,14 @@ public class IntuneScepServiceClient extends IntuneClient
 		}
 		
 		configProperties.getProperty(SERVICE_VERSION_PROP_NAME,this.serviceVersion);
+		
+		providerNameAndVersion = configProperties.getProperty(PROVIDER_NAME_AND_VERSION_NAME);
+		if(providerNameAndVersion == null)
+		{
+			throw new IllegalArgumentException("The property '" + PROVIDER_NAME_AND_VERSION_NAME + "' is missing from the property file.");
+		}
+		
+		additionalHeaders.put("UserAgent", providerNameAndVersion);
 	}
 		
 	/**
@@ -204,7 +217,8 @@ public class IntuneScepServiceClient extends IntuneClient
         			 urlSuffix, 
 					 serviceVersion, 
 					 requestBody,
-					 activityId);
+					 activityId,
+					 additionalHeaders);
     		
     		log.info("Activity " + activityId + " has completed.");
     		log.info(result.toString());

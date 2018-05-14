@@ -1,6 +1,7 @@
 AAD_APP_ID=
 AAD_APP_KEY=
 TENANT=
+PROVIDER_NAME_AND_VERSION=YourCAProviderNameAndVersion
 ScepRequestValidationFEServiceVersion=2018-02-20
 GRAPH_RESOURCE_URL=https://graph.ppe.windows.net/
 GRAPH_API_VERSION=1.6

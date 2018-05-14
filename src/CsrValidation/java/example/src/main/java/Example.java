@@ -30,6 +30,8 @@ public class Example
 {
     public static void main(String args[]) throws Exception 
     {        
+    	// *** IMPORTANT ***: This property file contains a parameter named AAD_APP_KEY.  This parameter is a secret and needs to be secured.
+    	//                    Please secure this file properly on your file system.
     	InputStream in = Example.class.getResourceAsStream("com.microsoft.intune.props");
 		Properties props = new Properties();
 		props.load(in);
@@ -37,8 +39,13 @@ public class Example
         
 		UUID transactionId = UUID.randomUUID();
 		String csr = "";
-		
+				
     	IntuneScepServiceClient client = new IntuneScepServiceClient(props);
+    	
     	client.ValidateRequest(transactionId.toString(), csr);
+    	
+    	client.SendSuccessNotification(transactionId.toString(), csr, "thumbprint", "serial", "2018-06-11T16:11:20.0904778Z", "authority");
+    	
+    	client.SendFailureNotification(transactionId.toString(), csr, 0x8000ffff, "description");
     }
 }

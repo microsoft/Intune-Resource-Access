@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
@@ -176,6 +177,29 @@ class IntuneClient
      */
     public JSONObject PostRequest(String serviceName, String urlSuffix, String apiVersion, JSONObject json, UUID activityId) throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, AuthenticationException, IllegalArgumentException, IntuneClientException
     {
+    	return this.PostRequest(serviceName, urlSuffix, apiVersion, json, activityId, null);
+    }
+    
+    /**
+     * Post a Request to an Intune rest service.
+     * @param serviceName The name of the service to post to.
+     * @param urlSuffix The end of the url to tack onto the request.
+     * @param apiVersion API Version of service to use.
+     * @param json The body of the request.
+     * @param activityId Client generated ID for correlation of this activity
+     * @param additionalHeaders key value pairs of additional header values to add to the request
+     * @return JSON response from service
+     * @throws AuthenticationException
+     * @throws ExecutionException 
+     * @throws InterruptedException 
+     * @throws ServiceUnavailableException 
+     * @throws IOException 
+     * @throws ClientProtocolException 
+     * @throws IllegalArgumentException 
+     * @throws IntuneClientException 
+     */
+    public JSONObject PostRequest(String serviceName, String urlSuffix, String apiVersion, JSONObject json, UUID activityId, Map<String,String> additionalHeaders) throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, AuthenticationException, IllegalArgumentException, IntuneClientException
+    {
     	if(serviceName == null || serviceName.isEmpty())
     	{
     		throw new IllegalArgumentException("The argument 'serviceName' is missing");
@@ -196,6 +220,7 @@ class IntuneClient
     		throw new IllegalArgumentException("The argument 'json' is missing");
     	}
     	
+    	
     	String intuneServiceEndpoint = GetServiceEndpoint(serviceName);
     	if(intuneServiceEndpoint == null || intuneServiceEndpoint.isEmpty())
     	{
@@ -213,6 +238,15 @@ class IntuneClient
         httpPost.addHeader("content-type", "application/json");
         httpPost.addHeader("client-request-id", activityId.toString());
         httpPost.addHeader("api-version", apiVersion);
+        
+        if(additionalHeaders != null)
+        {
+        	for (Map.Entry<String, String> entry : additionalHeaders.entrySet())
+        	{
+        	    httpPost.addHeader(entry.getKey(), entry.getValue());
+        	}
+        }
+        
         httpPost.setEntity(new StringEntity(json.toString()));
         
         CloseableHttpResponse intuneResponse = null;
