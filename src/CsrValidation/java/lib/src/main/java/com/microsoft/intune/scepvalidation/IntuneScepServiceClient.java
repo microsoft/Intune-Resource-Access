@@ -103,7 +103,8 @@ public class IntuneScepServiceClient extends IntuneClient
     	JSONObject requestBody = new JSONObject().put(
     			"request", (new JSONObject())
     				.put("transactionId", transactionId)
-    				.put("certificateRequest", certificateRequest));
+    				.put("certificateRequest", certificateRequest)
+    				.put("callerInfo", this.providerNameAndVersion));
     	
     	Post(requestBody, VALIDATION_URL, transactionId);
     }
@@ -161,7 +162,8 @@ public class IntuneScepServiceClient extends IntuneClient
     				.put("certificateThumbprint", certThumbprint)
     				.put("certificateSerialNumber", certSerialNumber)
     				.put("certificateExpirationDateUtc", certExpirationDate)
-    				.put("issuingCertificateAuthority", certIssuingAuthority));
+    				.put("issuingCertificateAuthority", certIssuingAuthority)
+    				.put("callerInfo", this.providerNameAndVersion));
     	
     	Post(requestBody, NOTIFY_SUCCESS_URL, transactionId);
     }
@@ -202,7 +204,8 @@ public class IntuneScepServiceClient extends IntuneClient
     				.put("transactionId", transactionId)
     				.put("certificateRequest", certificateRequest)
     				.put("hResult", hResult)
-    				.put("errorDescription", errorDescription));
+    				.put("errorDescription", errorDescription)
+    				.put("callerInfo", this.providerNameAndVersion));
     	
     	Post(requestBody, NOTIFY_FAILURE_URL, transactionId);
     }
