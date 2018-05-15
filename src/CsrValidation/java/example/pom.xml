@@ -11,8 +11,8 @@
 			<version>3.7.0</version>
 			<configuration>
 				<!-- or whatever version you use -->
-				<source>1.8</source>
-				<target>1.8</target>
+				<source>1.7</source>
+				<target>1.7</target>
 			</configuration>
 		</plugin>
 		<plugin>
@@ -23,6 +23,14 @@
                 <mainClass>Example</mainClass>
             </configuration>
         </plugin>
+        <plugin>
+        	<groupId>org.apache.maven.plugins</groupId>
+        	<artifactId>maven-pmd-plugin</artifactId>
+        	<version>3.9.0</version>
+        	<configuration>
+  				<linkXRef>false</linkXRef>
+			</configuration>
+      	</plugin>
 	</plugins>
   </build>
   <dependencies>
@@ -36,5 +44,8 @@
        <artifactId>slf4j-simple</artifactId>
        <version>1.6.4</version>
    </dependency>
-  </dependencies>  
+  </dependencies>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 </project>
