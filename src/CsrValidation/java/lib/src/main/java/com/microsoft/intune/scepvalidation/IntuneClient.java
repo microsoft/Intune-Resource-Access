@@ -24,7 +24,6 @@
 package com.microsoft.intune.scepvalidation;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,8 +45,8 @@ import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -56,13 +55,12 @@ import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.microsoft.aad.adal4j.AuthenticationException;
 import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.aad.adal4j.ClientCredential;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * IntuneClient - A client which can be used to make requests to Intune services.
@@ -91,43 +89,42 @@ class IntuneClient
      * Constructs an IntuneClient object which can be used to make requests to Intune services.
      * @param configProperties Properties object containing client configuration information.
      * @throws IllegalArgumentException
-     * @throws IOException 
      */
-    public IntuneClient(Properties configProperties) throws IllegalArgumentException, IOException
+    public IntuneClient(Properties configProperties) throws IllegalArgumentException
     {
-    	if(configProperties == null)
-		{
-			throw new IllegalArgumentException("The argument 'configProperties' is missing"); 
-		}
-    	
-    	// Read required properties
-    	String azureAppId = configProperties.getProperty("AAD_APP_ID");
-    	if(azureAppId == null || azureAppId.isEmpty())
-    	{
-    		throw new IllegalArgumentException("The argument 'azureAppId' is missing");
-    	}
-    	
-    	String azureAppKey = configProperties.getProperty("AAD_APP_KEY");
-    	if(azureAppKey == null || azureAppKey.isEmpty())
-    	{
-    		throw new IllegalArgumentException("The argument 'azureAppKey' is missing");
-    	}
-    	
-    	this.intuneTenant = configProperties.getProperty("TENANT");
-    	if(this.intuneTenant == null || this.intuneTenant.isEmpty())
-    	{
-    		throw new IllegalArgumentException("The argument 'intuneTenant' is missing");
-    	}
-    	
-    	// Read optional properties
-    	this.intuneAppId = configProperties.getProperty("INTUNE_APP_ID", this.intuneAppId);
+        if(configProperties == null)
+        {
+            throw new IllegalArgumentException("The argument 'configProperties' is missing"); 
+        }
+        
+        // Read required properties
+        String azureAppId = configProperties.getProperty("AAD_APP_ID");
+        if(azureAppId == null || azureAppId.isEmpty())
+        {
+            throw new IllegalArgumentException("The argument 'azureAppId' is missing");
+        }
+        
+        String azureAppKey = configProperties.getProperty("AAD_APP_KEY");
+        if(azureAppKey == null || azureAppKey.isEmpty())
+        {
+            throw new IllegalArgumentException("The argument 'azureAppKey' is missing");
+        }
+        
+        this.intuneTenant = configProperties.getProperty("TENANT");
+        if(this.intuneTenant == null || this.intuneTenant.isEmpty())
+        {
+            throw new IllegalArgumentException("The argument 'intuneTenant' is missing");
+        }
+        
+        // Read optional properties
+        this.intuneAppId = configProperties.getProperty("INTUNE_APP_ID", this.intuneAppId);
         this.intuneResourceUrl = configProperties.getProperty("INTUNE_RESOURCE_URL", this.intuneResourceUrl);
         this.graphApiVersion = configProperties.getProperty("GRAPH_API_VERSION", this.graphApiVersion);
         this.graphResourceUrl = configProperties.getProperty("GRAPH_RESOURCE_URL", this.graphResourceUrl);
         
         // Instantiate ADAL Client
-    	this.aadCredential = new ClientCredential(azureAppId, azureAppKey);
-    	this.authClient = new ADALClientWrapper(this.intuneTenant, this.aadCredential, configProperties);
+        this.aadCredential = new ClientCredential(azureAppId, azureAppKey);
+        this.authClient = new ADALClientWrapper(this.intuneTenant, this.aadCredential, configProperties);
     }    
     
     /**
@@ -136,26 +133,26 @@ class IntuneClient
      */
     public void setSslSocketFactory(SSLSocketFactory factory) throws IllegalArgumentException
     {
-    	if(factory == null)
-    	{
-    		throw new IllegalArgumentException("The argument 'factory' is missing.");
-    	}
-    	
-    	this.authClient.setSslSocketFactory(factory);
-    	
-    	this.sslSocketFactory = factory;
-			   
-		this.httpClientBuilder = HttpClientBuilder.create();
-		SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(this.sslSocketFactory, new String[] { "TLSv1.2" }, null, new DefaultHostnameVerifier());
-		this.httpClientBuilder.setSSLSocketFactory(sslConnectionFactory);
-		
-		Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-		        .register("https", sslConnectionFactory)
-		        .build();
-		
-		HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
-		
-		this.httpClientBuilder.setConnectionManager(ccm);
+        if(factory == null)
+        {
+            throw new IllegalArgumentException("The argument 'factory' is missing.");
+        }
+        
+        this.authClient.setSslSocketFactory(factory);
+        
+        this.sslSocketFactory = factory;
+               
+        this.httpClientBuilder = HttpClientBuilder.create();
+        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(this.sslSocketFactory, new String[] { "TLSv1.2" }, null, new DefaultHostnameVerifier());
+        this.httpClientBuilder.setSSLSocketFactory(sslConnectionFactory);
+        
+        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("https", sslConnectionFactory)
+                .build();
+        
+        HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
+        
+        this.httpClientBuilder.setConnectionManager(ccm);
     }
     
     /**
@@ -177,7 +174,7 @@ class IntuneClient
      */
     public JSONObject PostRequest(String serviceName, String urlSuffix, String apiVersion, JSONObject json, UUID activityId) throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, AuthenticationException, IllegalArgumentException, IntuneClientException
     {
-    	return this.PostRequest(serviceName, urlSuffix, apiVersion, json, activityId, null);
+        return this.PostRequest(serviceName, urlSuffix, apiVersion, json, activityId, null);
     }
     
     /**
@@ -200,39 +197,39 @@ class IntuneClient
      */
     public JSONObject PostRequest(String serviceName, String urlSuffix, String apiVersion, JSONObject json, UUID activityId, Map<String,String> additionalHeaders) throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, AuthenticationException, IllegalArgumentException, IntuneClientException
     {
-    	if(serviceName == null || serviceName.isEmpty())
-    	{
-    		throw new IllegalArgumentException("The argument 'serviceName' is missing");
-    	}
-    	
-    	if(urlSuffix == null || urlSuffix.isEmpty())
-    	{
-    		throw new IllegalArgumentException("The argument 'urlSuffix' is missing");
-    	}
-    	
-    	if(apiVersion == null || apiVersion.isEmpty())
-    	{
-    		throw new IllegalArgumentException("The argument 'apiVersion' is missing");
-    	}
-    	
-    	if(json == null)
-    	{
-    		throw new IllegalArgumentException("The argument 'json' is missing");
-    	}
-    	
-    	
-    	String intuneServiceEndpoint = GetServiceEndpoint(serviceName);
-    	if(intuneServiceEndpoint == null || intuneServiceEndpoint.isEmpty())
-    	{
-        	IntuneServiceNotFoundException ex = new IntuneServiceNotFoundException(serviceName);
-        	this.log.error(ex.getMessage(), ex);
-        	throw ex;
-    	}
-    	
-    	AuthenticationResult authResult = this.authClient.getAccessTokenFromCredential(this.intuneResourceUrl);
-    	
-    	String intuneRequestUrl = intuneServiceEndpoint + "/" + urlSuffix;
-    	CloseableHttpClient httpclient = this.getCloseableHttpClient(intuneRequestUrl);
+        if(serviceName == null || serviceName.isEmpty())
+        {
+            throw new IllegalArgumentException("The argument 'serviceName' is missing");
+        }
+        
+        if(urlSuffix == null || urlSuffix.isEmpty())
+        {
+            throw new IllegalArgumentException("The argument 'urlSuffix' is missing");
+        }
+        
+        if(apiVersion == null || apiVersion.isEmpty())
+        {
+            throw new IllegalArgumentException("The argument 'apiVersion' is missing");
+        }
+        
+        if(json == null)
+        {
+            throw new IllegalArgumentException("The argument 'json' is missing");
+        }
+        
+        
+        String intuneServiceEndpoint = GetServiceEndpoint(serviceName);
+        if(intuneServiceEndpoint == null || intuneServiceEndpoint.isEmpty())
+        {
+            IntuneServiceNotFoundException ex = new IntuneServiceNotFoundException(serviceName);
+            this.log.error(ex.getMessage(), ex);
+            throw ex;
+        }
+        
+        AuthenticationResult authResult = this.authClient.getAccessTokenFromCredential(this.intuneResourceUrl);
+        
+        String intuneRequestUrl = intuneServiceEndpoint + "/" + urlSuffix;
+        CloseableHttpClient httpclient = this.getCloseableHttpClient(intuneRequestUrl);
         HttpPost httpPost = new HttpPost(intuneRequestUrl);
         httpPost.addHeader("Authorization", "Bearer " + authResult.getAccessToken());
         httpPost.addHeader("content-type", "application/json");
@@ -241,10 +238,10 @@ class IntuneClient
         
         if(additionalHeaders != null)
         {
-        	for (Map.Entry<String, String> entry : additionalHeaders.entrySet())
-        	{
-        	    httpPost.addHeader(entry.getKey(), entry.getValue());
-        	}
+            for (Map.Entry<String, String> entry : additionalHeaders.entrySet())
+            {
+                httpPost.addHeader(entry.getKey(), entry.getValue());
+            }
         }
         
         httpPost.setEntity(new StringEntity(json.toString()));
@@ -253,58 +250,58 @@ class IntuneClient
         JSONObject jsonResult = null;
         try 
         {
-        	intuneResponse = httpclient.execute(httpPost);
-        	jsonResult = ParseResponseToJSON(intuneResponse, intuneRequestUrl, activityId);
+            intuneResponse = httpclient.execute(httpPost);
+            jsonResult = ParseResponseToJSON(intuneResponse, intuneRequestUrl, activityId);
         }
         catch(UnknownHostException e)
         {
-        	this.log.error("Failed to contact intune service with URL: " + intuneRequestUrl, e);
-        	serviceMap.clear(); // clear contents in case the service location has changed and we cached the value
-        	throw e;
+            this.log.error("Failed to contact intune service with URL: " + intuneRequestUrl, e);
+            serviceMap.clear(); // clear contents in case the service location has changed and we cached the value
+            throw e;
         }
         finally 
-        {	
-        	if(intuneResponse != null)
-        		intuneResponse.close();
+        {    
+            if(intuneResponse != null)
+                intuneResponse.close();
         }
         return jsonResult;
     }
     
     private synchronized String GetServiceEndpoint(String serviceName) throws ServiceUnavailableException, ClientProtocolException, AuthenticationException, InterruptedException, ExecutionException, IOException, IntuneClientException
     {
-    	if(serviceName == null || serviceName.isEmpty())
-    	{
-    		throw new IllegalArgumentException("The argument 'serviceName' is missing");
-    	}
-    	
-    	String serviceNameLower = serviceName.toLowerCase();
-    	
-    	// Pull down the service map if we haven't populated it OR we are forcing a refresh
-    	if(serviceMap.size() <= 0)
-    	{
-    		this.log.info("Refreshing service map from Microsoft.Graph");
-    		RefreshServiceMap();
-    	}
+        if(serviceName == null || serviceName.isEmpty())
+        {
+            throw new IllegalArgumentException("The argument 'serviceName' is missing");
+        }
+        
+        String serviceNameLower = serviceName.toLowerCase();
+        
+        // Pull down the service map if we haven't populated it OR we are forcing a refresh
+        if(serviceMap.size() <= 0)
+        {
+            this.log.info("Refreshing service map from Microsoft.Graph");
+            RefreshServiceMap();
+        }
 
-		if(serviceMap.containsKey(serviceNameLower))
-		{
-			return serviceMap.get(serviceNameLower);
-		}
-		
-		// LOG Cache contents
-		this.log.info("Could not find endpoint for service '" + serviceName + "'");
-		this.log.info("ServiceMap: ");
-		for(Entry<String, String> entry:serviceMap.entrySet())
-		{
-			this.log.info(entry.getKey() + ":" + entry.getValue());
-		}
-		
-		return null;
+        if(serviceMap.containsKey(serviceNameLower))
+        {
+            return serviceMap.get(serviceNameLower);
+        }
+        
+        // LOG Cache contents
+        this.log.info("Could not find endpoint for service '" + serviceName + "'");
+        this.log.info("ServiceMap: ");
+        for(Entry<String, String> entry:serviceMap.entrySet())
+        {
+            this.log.info(entry.getKey() + ":" + entry.getValue());
+        }
+        
+        return null;
     }
     
     private void RefreshServiceMap() throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, AuthenticationException, IntuneClientException
     {
-    	AuthenticationResult authResult = this.authClient.getAccessTokenFromCredential(this.graphResourceUrl);
+        AuthenticationResult authResult = this.authClient.getAccessTokenFromCredential(this.graphResourceUrl);
         
         String graphRequest = this.graphResourceUrl + intuneTenant + "/servicePrincipalsByAppId/" + this.intuneAppId + "/serviceEndpoints?api-version=" + this.graphApiVersion;
         
@@ -316,86 +313,86 @@ class IntuneClient
         CloseableHttpResponse graphResponse = null;
         try 
         {
-        	graphResponse = httpclient.execute(httpGet);
+            graphResponse = httpclient.execute(httpGet);
 
             JSONObject jsonResult = ParseResponseToJSON(graphResponse, graphRequest, activityId);
-			
-        	for(Object obj:jsonResult.getJSONArray("value"))
+            
+            for(Object obj:jsonResult.getJSONArray("value"))
             {
-            	JSONObject jObj = (JSONObject)obj;
-            	serviceMap.put(jObj.getString("serviceName").toLowerCase(), jObj.getString("uri"));
+                JSONObject jObj = (JSONObject)obj;
+                serviceMap.put(jObj.getString("serviceName").toLowerCase(), jObj.getString("uri"));
             } 
         } 
         finally 
         {
-        	if(graphResponse != null)
-        		graphResponse.close();
+            if(graphResponse != null)
+                graphResponse.close();
         }
     }
-	
-	private JSONObject ParseResponseToJSON(CloseableHttpResponse response, String requestUrl, UUID activityId) throws IntuneClientException, IOException
-	{
+    
+    private JSONObject ParseResponseToJSON(CloseableHttpResponse response, String requestUrl, UUID activityId) throws IntuneClientException, IOException
+    {
         JSONObject jsonResult = null;
         HttpEntity httpEntity = null;
-		try 
+        try 
         {
-		    httpEntity = response.getEntity();
-        	if(httpEntity == null)
-        	{
-            	throw new IntuneClientException("ActivityId: " + activityId + " Unable to get httpEntity from response getEntity returned null.");
-        	}
-        	
+            httpEntity = response.getEntity();
+            if(httpEntity == null)
+            {
+                throw new IntuneClientException("ActivityId: " + activityId + " Unable to get httpEntity from response getEntity returned null.");
+            }
+            
 
-        	String httpEntityStr = null;
-        	try
-        	{
-        		httpEntityStr = EntityUtils.toString(httpEntity);
-        	}
+            String httpEntityStr = null;
+            try
+            {
+                httpEntityStr = EntityUtils.toString(httpEntity);
+            }
             catch(IllegalArgumentException|IOException e)
             {
-            	throw new IntuneClientException("ActivityId: " + activityId + " Unable to convert httpEntity from response to string", e);
+                throw new IntuneClientException("ActivityId: " + activityId + " Unable to convert httpEntity from response to string", e);
             }
-        	
-        	try
-        	{
-        		jsonResult = new JSONObject(httpEntityStr);
-        	}
-        	catch(JSONException e)
-        	{
-            	throw new IntuneClientException("ActivityId: " + activityId + " Unable to parse response from Intune to JSON", e);
-        	}
+            
+            try
+            {
+                jsonResult = new JSONObject(httpEntityStr);
+            }
+            catch(JSONException e)
+            {
+                throw new IntuneClientException("ActivityId: " + activityId + " Unable to parse response from Intune to JSON", e);
+            }
             
             StatusLine statusLine = response.getStatusLine();
             if(statusLine == null)
             {
-            	throw new IntuneClientException("ActivityId: " + activityId + " Unable to retrieve status line from intune response");
+                throw new IntuneClientException("ActivityId: " + activityId + " Unable to retrieve status line from intune response");
             }
             
             int statusCode = statusLine.getStatusCode();
             if(statusCode < 200 || statusCode >= 300)
             {
-            	String msg = "Request to: " + requestUrl + " returned: " + statusLine;
-            	IntuneClientHttpErrorException ex = new IntuneClientHttpErrorException(statusLine, jsonResult, activityId);
-            	this.log.error(msg, ex);
-            	throw ex;
+                String msg = "Request to: " + requestUrl + " returned: " + statusLine;
+                IntuneClientHttpErrorException ex = new IntuneClientHttpErrorException(statusLine, jsonResult, activityId);
+                this.log.error(msg, ex);
+                throw ex;
             }
-		} 
+        } 
         finally 
         {
-        	if(httpEntity != null)
-        		EntityUtils.consume(httpEntity);
-		}
-		
-		return jsonResult;
-	}
-	
-	private CloseableHttpClient getCloseableHttpClient(String serviceUrl) throws MalformedURLException 
-	{
-		if(this.httpClientBuilder == null)
-		{
-			return HttpClients.createDefault();
-		}
+            if(httpEntity != null)
+                EntityUtils.consume(httpEntity);
+        }
+        
+        return jsonResult;
+    }
+    
+    private CloseableHttpClient getCloseableHttpClient(String serviceUrl) 
+    {
+        if(this.httpClientBuilder == null)
+        {
+            return HttpClients.createDefault();
+        }
 
-		return this.httpClientBuilder.build();
-	}
+        return this.httpClientBuilder.build();
+    }
 }

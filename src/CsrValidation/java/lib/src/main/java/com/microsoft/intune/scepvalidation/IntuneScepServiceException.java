@@ -33,101 +33,101 @@ import org.slf4j.LoggerFactory;
  */
 public class IntuneScepServiceException extends IntuneClientException
 {
-	private static final long serialVersionUID = 2018_04_24_001L;
-	
-	final Logger log = LoggerFactory.getLogger(IntuneScepServiceException.class);
-	
-	private UUID activityId = null;
-	private String errorCode = null;
-	private String errorDescription = null;
-	private ErrorCode parsedErrorCode = ErrorCode.Unknown;
-	private String transactionId = null;
-	
-	public enum ErrorCode{
-		Unknown,
-		Success,
-		CertificateRequestDecodingFailed,
-		ChallengePasswordMissing,
-		ChallengeDeserializationError,
-		ChallengeDecryptionError,
-		ChallengeDecodingError,
-		ChallengeInvalidTimestamp,
-		ChallengeExpired,
-		SubjectNameMissing,
-		SubjectNameMismatch,
-		SubjectAltNameMissing,
-		SubjectAltNameMismatch,
-		KeyUsageMismatch,
-		KeyLengthMismatch,
-		EnhancedKeyUsageMissing,
-		EnhancedKeyUsageMismatch,
-		AadKeyIdentifierListMissing,
-		RegisteredKeyMismatch,
-		SigningCertThumbprintMismatch,
-		ScepProfileNoLongerTargetedToTheClient,
-		SignatureValidationFailed,
-		BadCertificateRequestIdInChallenge,
-		BadDeviceIdInChallenge,
-		BadUserIdInChallenge;
-	};
-	
-	/**
-	 * The Unique code that describes the reason for the failure as returned from the server.
-	 */
-	public String getOriginalErrorCode()
-	{
-		return this.errorCode;
-	}
-	
-	/**
-	 * The Unique code that describes the reason for the failure parsed from what the server returned.
-	 */
-	public ErrorCode getParsedErrorCode()
-	{
-		return parsedErrorCode;
-	}
-	
-	/**
-	 * A short description for the error the service returned.
-	 */
-	public String getErrorDescription()
-	{
-		return this.errorDescription;
-	}
-	
-	/**
-	 * The transaction Id used for to correlate all SCEP service parts of the service call.
-	 */
-	public String getTransactionId()
-	{
-		return this.transactionId;
-	}
-	
-	/**
-	 * The ID that is provided to Intune to correlate all parts of the service call. 
-	 */
-	public UUID getActivityId()
-	{
-		return this.activityId;
-	}
-	
-	public IntuneScepServiceException(String errorCode, String errorDescription, String transactionId, UUID activityId)
-	{		
-		super("ActivityId:" + activityId + "," +
-			  "TransactionId:" + transactionId + "," +
-			  "ErrorCode:" + errorCode + "," +
-			  "ErrorDescription:" + errorDescription);
-		
-		this.activityId = activityId;
-		this.transactionId = transactionId;
-		this.errorCode = errorCode;
-		try
-		{
-			parsedErrorCode = ErrorCode.valueOf(this.errorCode);
-		}
-		catch(IllegalArgumentException e)
-		{
-			log.warn("Error Code value not expected: " + this.errorCode);
-		}
-	}
+    private static final long serialVersionUID = 2018_04_24_001L;
+    
+    final Logger log = LoggerFactory.getLogger(IntuneScepServiceException.class);
+    
+    private UUID activityId = null;
+    private String errorCode = null;
+    private String errorDescription = null;
+    private ErrorCode parsedErrorCode = ErrorCode.Unknown;
+    private String transactionId = null;
+    
+    public enum ErrorCode{
+        Unknown,
+        Success,
+        CertificateRequestDecodingFailed,
+        ChallengePasswordMissing,
+        ChallengeDeserializationError,
+        ChallengeDecryptionError,
+        ChallengeDecodingError,
+        ChallengeInvalidTimestamp,
+        ChallengeExpired,
+        SubjectNameMissing,
+        SubjectNameMismatch,
+        SubjectAltNameMissing,
+        SubjectAltNameMismatch,
+        KeyUsageMismatch,
+        KeyLengthMismatch,
+        EnhancedKeyUsageMissing,
+        EnhancedKeyUsageMismatch,
+        AadKeyIdentifierListMissing,
+        RegisteredKeyMismatch,
+        SigningCertThumbprintMismatch,
+        ScepProfileNoLongerTargetedToTheClient,
+        SignatureValidationFailed,
+        BadCertificateRequestIdInChallenge,
+        BadDeviceIdInChallenge,
+        BadUserIdInChallenge;
+    };
+    
+    /**
+     * The Unique code that describes the reason for the failure as returned from the server.
+     */
+    public String getOriginalErrorCode()
+    {
+        return this.errorCode;
+    }
+    
+    /**
+     * The Unique code that describes the reason for the failure parsed from what the server returned.
+     */
+    public ErrorCode getParsedErrorCode()
+    {
+        return parsedErrorCode;
+    }
+    
+    /**
+     * A short description for the error the service returned.
+     */
+    public String getErrorDescription()
+    {
+        return this.errorDescription;
+    }
+    
+    /**
+     * The transaction Id used for to correlate all SCEP service parts of the service call.
+     */
+    public String getTransactionId()
+    {
+        return this.transactionId;
+    }
+    
+    /**
+     * The ID that is provided to Intune to correlate all parts of the service call. 
+     */
+    public UUID getActivityId()
+    {
+        return this.activityId;
+    }
+    
+    public IntuneScepServiceException(String errorCode, String errorDescription, String transactionId, UUID activityId)
+    {        
+        super("ActivityId:" + activityId + "," +
+              "TransactionId:" + transactionId + "," +
+              "ErrorCode:" + errorCode + "," +
+              "ErrorDescription:" + errorDescription);
+        
+        this.activityId = activityId;
+        this.transactionId = transactionId;
+        this.errorCode = errorCode;
+        try
+        {
+            parsedErrorCode = ErrorCode.valueOf(this.errorCode);
+        }
+        catch(IllegalArgumentException e)
+        {
+            log.warn("Error Code value not expected: " + this.errorCode);
+        }
+    }
 }

@@ -23,7 +23,7 @@
 
 package com.microsoft.intune.scepvalidation;
 
-import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -52,29 +52,36 @@ class ADALClientWrapper
      * Azure Active Directory Authentication Client
      * @param aadTenant - Azure Active Directory tenant
      * @param credential - Credential to use for authentication
-     * @throws IOException
      * @throws IllegalArgumentException
      */
-    public ADALClientWrapper(String aadTenant, ClientCredential credential, Properties props) throws IOException, IllegalArgumentException
+    public ADALClientWrapper(String aadTenant, ClientCredential credential, Properties props) throws IllegalArgumentException
     {
-    	if(aadTenant == null || aadTenant.isEmpty())
-    	{
-    		throw new IllegalArgumentException("The argument 'aadTenant' is missing");
-    	}
-    	
-    	if(credential == null)
-    	{
-    		throw new IllegalArgumentException("The argument 'credential' is missing");	
-    	}
-    	
-    	if(props != null)
-    	{
-    		this.authority = props.getProperty("AUTH_AUTHORITY",this.authority);
-    	}
-    	
-    	this.credential = credential;
-    	this.service = Executors.newFixedThreadPool(1);
-        context = new AuthenticationContext(this.authority + aadTenant, false, service);
+        if(aadTenant == null || aadTenant.isEmpty())
+        {
+            throw new IllegalArgumentException("The argument 'aadTenant' is missing");
+        }
+        
+        if(credential == null)
+        {
+            throw new IllegalArgumentException("The argument 'credential' is missing");    
+        }
+        
+        if(props != null)
+        {
+            this.authority = props.getProperty("AUTH_AUTHORITY",this.authority);
+        }
+        
+        this.credential = credential;
+        this.service = Executors.newFixedThreadPool(1);
+        
+        try 
+        {
+            context = new AuthenticationContext(this.authority + aadTenant, false, service);
+        }
+        catch(MalformedURLException e)
+        {
+            throw new IllegalArgumentException("AUTH_AUTHORITY parameter was not formatted correctly which resulted in a MalformedURLException", e);
+        }
     }
     
     /**
@@ -83,12 +90,12 @@ class ADALClientWrapper
      */
     public void setSslSocketFactory(SSLSocketFactory factory) throws IllegalArgumentException
     {
-    	if(factory == null)
-    	{
-    		throw new IllegalArgumentException("The argument 'factory' is missing.");
-    	}
-    	
-    	this.context.setSslSocketFactory(factory);
+        if(factory == null)
+        {
+            throw new IllegalArgumentException("The argument 'factory' is missing.");
+        }
+        
+        this.context.setSslSocketFactory(factory);
     }
     
     /**
@@ -102,13 +109,13 @@ class ADALClientWrapper
      * @throws ServiceUnavailableException 
      */
     public AuthenticationResult getAccessTokenFromCredential(String resource) 
-    		throws ServiceUnavailableException, InterruptedException, ExecutionException, IllegalArgumentException
+            throws ServiceUnavailableException, InterruptedException, ExecutionException, IllegalArgumentException
     {
-    	if(resource == null || resource.isEmpty())
-    	{
-    		throw new IllegalArgumentException("The argument 'resource' is missing");
-    	}
-    	
+        if(resource == null || resource.isEmpty())
+        {
+            throw new IllegalArgumentException("The argument 'resource' is missing");
+        }
+        
         AuthenticationResult result = null;
         
         Future<AuthenticationResult> future = context.acquireToken(resource, credential, null);

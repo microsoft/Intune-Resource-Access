@@ -4,18 +4,18 @@
   <artifactId>csr-validation-example</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <build>
-	<plugins>
-		<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-compiler-plugin</artifactId>
-			<version>3.7.0</version>
-			<configuration>
-				<!-- or whatever version you use -->
-				<source>1.7</source>
-				<target>1.7</target>
-			</configuration>
-		</plugin>
-		<plugin>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.7.0</version>
+            <configuration>
+                <!-- or whatever version you use -->
+                <source>1.7</source>
+                <target>1.7</target>
+            </configuration>
+        </plugin>
+        <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
             <version>1.2.1</version>
@@ -24,22 +24,22 @@
             </configuration>
         </plugin>
         <plugin>
-        	<groupId>org.apache.maven.plugins</groupId>
-        	<artifactId>maven-pmd-plugin</artifactId>
-        	<version>3.9.0</version>
-        	<configuration>
-  				<linkXRef>false</linkXRef>
-			</configuration>
-      	</plugin>
-	</plugins>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+            <version>3.9.0</version>
+            <configuration>
+                  <linkXRef>false</linkXRef>
+            </configuration>
+          </plugin>
+    </plugins>
   </build>
   <dependencies>
-	<dependency>
-	    <groupId>com.microsoft.intune.scep</groupId>
-	    <artifactId>csr-validation</artifactId>
-	    <version>0.0.1-SNAPSHOT</version>
-	</dependency>
-	<dependency>
+    <dependency>
+        <groupId>com.microsoft.intune.scep</groupId>
+        <artifactId>csr-validation</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
        <groupId>org.slf4j</groupId>
        <artifactId>slf4j-simple</artifactId>
        <version>1.6.4</version>

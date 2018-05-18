@@ -26,30 +26,30 @@ package com.microsoft.intune.scepvalidation;
 public class IntuneClientException extends Exception 
 {
 
-	private static final long serialVersionUID = -7994643837442182060L;
+    private static final long serialVersionUID = -7994643837442182060L;
 
-	public IntuneClientException() 
-	{
-	}
+    public IntuneClientException() 
+    {
+    }
 
-	public IntuneClientException(String arg0) 
-	{
-		super(arg0);
-	}
+    public IntuneClientException(String arg0) 
+    {
+        super(arg0);
+    }
 
-	public IntuneClientException(Throwable arg0) 
-	{
-		super(arg0);
-	}
+    public IntuneClientException(Throwable arg0) 
+    {
+        super(arg0);
+    }
 
-	public IntuneClientException(String arg0, Throwable arg1) 
-	{
-		super(arg0, arg1);
-	}
+    public IntuneClientException(String arg0, Throwable arg1) 
+    {
+        super(arg0, arg1);
+    }
 
-	public IntuneClientException(String arg0, Throwable arg1, boolean arg2, boolean arg3) 
-	{
-		super(arg0, arg1, arg2, arg3);
-	}
+    public IntuneClientException(String arg0, Throwable arg1, boolean arg2, boolean arg3) 
+    {
+        super(arg0, arg1, arg2, arg3);
+    }
 
 }
