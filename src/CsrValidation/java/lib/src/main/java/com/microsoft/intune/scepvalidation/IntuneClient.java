@@ -72,7 +72,7 @@ class IntuneClient
     protected String intuneAppId = "0000000a-0000-0000-c000-000000000000";
     protected String intuneResourceUrl = "https://api.manage.microsoft.com/";
     protected String graphApiVersion = "1.6";
-    protected String graphResourceUrl = "https://graph.microsoft.com/";
+    protected String graphResourceUrl = "https://graph.windows.net/";
     
     protected String intuneTenant;
     protected ClientCredential aadCredential;

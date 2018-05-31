@@ -43,7 +43,7 @@ import com.microsoft.aad.adal4j.ClientCredential;
 class ADALClientWrapper 
 {
 
-    private String authority = "https://login.windows.net/";
+    private String authority = "https://login.microsoftonline.com/";
     private ClientCredential credential = null;
     private ExecutorService service = null;
     private AuthenticationContext context = null;
