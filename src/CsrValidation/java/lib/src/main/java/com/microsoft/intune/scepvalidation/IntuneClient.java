@@ -24,6 +24,8 @@
 package com.microsoft.intune.scepvalidation;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +38,7 @@ import javax.naming.ServiceUnavailableException;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -81,6 +84,9 @@ class IntuneClient
     protected SSLSocketFactory sslSocketFactory = null;
     protected HttpClientBuilder httpClientBuilder = null;
     
+    protected String proxyHost = null;
+    protected String proxyPort = null;
+    
     private HashMap<String,String> serviceMap = new HashMap<String,String>();
     
     final Logger log = LoggerFactory.getLogger(IntuneClient.class);
@@ -125,18 +131,30 @@ class IntuneClient
         // Instantiate ADAL Client
         this.aadCredential = new ClientCredential(azureAppId, azureAppKey);
         this.authClient = new ADALClientWrapper(this.intuneTenant, this.aadCredential, configProperties);
-    }    
+        
+        proxyHost = configProperties.getProperty("PROXY_HOST");
+        proxyPort = configProperties.getProperty("PROXY_PORT");
+        if(proxyHost != null && !proxyHost.isEmpty() &&
+           proxyPort != null && !proxyPort.isEmpty())
+        {
+            this.log.info("Setting AuthClient ProxyHost:" + proxyHost + " ProxyPort:" + proxyPort);
+            Proxy httpProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, Integer.parseInt(proxyPort)));
+            authClient.setProxy(httpProxy);
+
+            this.log.info("Setting HttpClient ProxyHost:" + proxyHost + " ProxyPort:" + proxyPort);
+            HttpHost proxy = new HttpHost(proxyHost, Integer.parseInt(proxyPort), null);
+            this.httpClientBuilder = HttpClients.custom().setProxy(proxy);
+        }
+    }
     
-    /**
-     * Sets the SSL factory to be used for all HTTP clients.
-     * @param factory
-     */
     public void setSslSocketFactory(SSLSocketFactory factory) throws IllegalArgumentException
     {
         if(factory == null)
         {
             throw new IllegalArgumentException("The argument 'factory' is missing.");
         }
+        
+        this.log.info("Setting SSL Socket Factory");
         
         this.authClient.setSslSocketFactory(factory);
         
@@ -146,6 +164,14 @@ class IntuneClient
         SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(this.sslSocketFactory, new String[] { "TLSv1.2" }, null, new DefaultHostnameVerifier());
         this.httpClientBuilder.setSSLSocketFactory(sslConnectionFactory);
         
+        if(proxyHost != null && !proxyHost.isEmpty() &&
+           proxyPort != null && !proxyPort.isEmpty())
+        {
+            this.log.info("Setting HttpClient ProxyHost:" + proxyHost + " ProxyPort:" + proxyPort);
+            HttpHost proxy = new HttpHost(proxyHost, Integer.parseInt(proxyPort), null);
+            this.httpClientBuilder.setProxy(proxy);
+        }
+        
         Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("https", sslConnectionFactory)
                 .build();
@@ -153,6 +179,11 @@ class IntuneClient
         HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
         
         this.httpClientBuilder.setConnectionManager(ccm);
+    }
+    
+    public void setProxy(Proxy proxy)
+    {
+        this.authClient.setProxy(proxy);
     }
     
     /**

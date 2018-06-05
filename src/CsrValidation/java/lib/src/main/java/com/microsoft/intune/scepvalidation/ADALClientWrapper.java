@@ -24,6 +24,7 @@
 package com.microsoft.intune.scepvalidation;
 
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -96,6 +97,11 @@ class ADALClientWrapper
         }
         
         this.context.setSslSocketFactory(factory);
+    }
+    
+    public void setProxy(Proxy proxy)
+    {
+        this.context.setProxy(proxy);
     }
     
     /**
