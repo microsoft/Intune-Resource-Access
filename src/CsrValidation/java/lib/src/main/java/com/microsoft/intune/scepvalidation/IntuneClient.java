@@ -48,6 +48,7 @@ import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
@@ -147,6 +148,10 @@ class IntuneClient
         }
     }
     
+    /**
+     * Sets the SSL factory to be used for all HTTP clients.
+     * @param factory
+     */
     public void setSslSocketFactory(SSLSocketFactory factory) throws IllegalArgumentException
     {
         if(factory == null)
@@ -174,16 +179,12 @@ class IntuneClient
         
         Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("https", sslConnectionFactory)
+                .register("http", PlainConnectionSocketFactory.getSocketFactory())
                 .build();
         
         HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
         
         this.httpClientBuilder.setConnectionManager(ccm);
-    }
-    
-    public void setProxy(Proxy proxy)
-    {
-        this.authClient.setProxy(proxy);
     }
     
     /**
