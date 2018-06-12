@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PFXImportPS", "PFXImportPS\PFXImportPS.csproj", "{76BA0E44-7B20-42DF-A87B-7903B7A25A88}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PFXImportPSUnitTests", "UnitTests\PFXImportPSUnitTests.csproj", "{6AA3E7AA-BCF3-407D-861A-2B9223CDEF12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncryptionUtilities", "EncryptionUtilities\Source\EncryptionUtilities.csproj", "{D4FF3D7B-3C1A-47B0-9983-95DD89D2AED4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncryptionUtilitiesUnitTests", "EncryptionUtilities\UnitTests\EncryptionUtilitiesUnitTests.csproj", "{FE9A5E10-F05A-461B-8A78-25F0F8DEB635}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{76BA0E44-7B20-42DF-A87B-7903B7A25A88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76BA0E44-7B20-42DF-A87B-7903B7A25A88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76BA0E44-7B20-42DF-A87B-7903B7A25A88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76BA0E44-7B20-42DF-A87B-7903B7A25A88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AA3E7AA-BCF3-407D-861A-2B9223CDEF12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AA3E7AA-BCF3-407D-861A-2B9223CDEF12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AA3E7AA-BCF3-407D-861A-2B9223CDEF12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AA3E7AA-BCF3-407D-861A-2B9223CDEF12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4FF3D7B-3C1A-47B0-9983-95DD89D2AED4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4FF3D7B-3C1A-47B0-9983-95DD89D2AED4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4FF3D7B-3C1A-47B0-9983-95DD89D2AED4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4FF3D7B-3C1A-47B0-9983-95DD89D2AED4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE9A5E10-F05A-461B-8A78-25F0F8DEB635}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE9A5E10-F05A-461B-8A78-25F0F8DEB635}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE9A5E10-F05A-461B-8A78-25F0F8DEB635}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE9A5E10-F05A-461B-8A78-25F0F8DEB635}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
