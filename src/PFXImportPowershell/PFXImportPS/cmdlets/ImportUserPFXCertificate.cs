@@ -139,28 +139,40 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             foreach (UserPFXCertificate cert in CertificateList)
             {
                 string url;
+                string urlNoVersion;
                 if (IsUpdate.IsPresent)
                 {
-                    url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates({2})", Authenticate.GraphURI, Authenticate.SchemaVersion, cert.Thumbprint);
+                    GetUserPFXCertificate userPfxCmdlet = new GetUserPFXCertificate();
+                    string userId = userPfxCmdlet.GetUserIdFromUpn(cert.UserPrincipalName);
+                    url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates({2}-{3})?{4}", Authenticate.GraphURI, Authenticate.SchemaVersion, userId, cert.Thumbprint, Authenticate.APIVersionString);
+                    urlNoVersion = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates({2}-{3})", Authenticate.GraphURI, Authenticate.SchemaVersion, userId, cert.Thumbprint);
                 }
                 else
                 {
                     url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates?{2}", Authenticate.GraphURI, Authenticate.SchemaVersion, Authenticate.APIVersionString);
+                    urlNoVersion = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates", Authenticate.GraphURI, Authenticate.SchemaVersion);
                 }
 
                 HttpWebRequest request = CreateWebRequest(url, AuthenticationResult);
+                HttpWebRequest requestNoVersion = CreateWebRequest(urlNoVersion, AuthenticationResult);
 
                 string certJson = SerializationHelpers.SerializeUserPFXCertificate(cert);
                 byte[] contentBytes = Encoding.UTF8.GetBytes(certJson);
 
                 request.ContentLength = contentBytes.Length;
+                requestNoVersion.ContentLength = contentBytes.Length;
 
                 using (Stream reqStream = request.GetRequestStream())
                 {
                     reqStream.Write(contentBytes, 0, contentBytes.Length);
                 }
 
-                ProcessResponse(request, cert);
+                using (Stream reqStream = requestNoVersion.GetRequestStream())
+                {
+                    reqStream.Write(contentBytes, 0, contentBytes.Length);
+                }
+
+                ProcessResponse(request, requestNoVersion, cert);
             }
 
             this.WriteCommandDetail(string.Format(LogMessages.ImportCertificatesSuccess, successCnt));
@@ -172,7 +184,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes", 
             Justification = "Not relevant here")]
-        private void ProcessResponse(HttpWebRequest request, UserPFXCertificate cert)
+        private void ProcessResponse(HttpWebRequest request, HttpWebRequest requestNoVersion, UserPFXCertificate cert)
         {
             bool needsRetry = false;
             TimeSpan waitTime = TimeSpan.Zero;
@@ -223,21 +235,35 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 }
                 else
                 {
-                    failureCnt++;
+                    //Need to handle case where we want to try without version
+                    if(requestNoVersion != null)
+                    {
+                        this.WriteError(
+                            new ErrorRecord(
+                                we,
+                                "Requesting with version failed, trying without version",
+                                ErrorCategory.WriteError,
+                                cert));
+                        ProcessResponse(requestNoVersion, null, cert);
+                    }
+                    else
+                    {
+                        failureCnt++;
 
-                    var resp = new StreamReader(we.Response.GetResponseStream()).ReadToEnd();
+                        var resp = new StreamReader(we.Response.GetResponseStream()).ReadToEnd();
 
-                    dynamic obj = JsonConvert.DeserializeObject(resp);
-                    var messageFromServer = obj.error.message;
+                        dynamic obj = JsonConvert.DeserializeObject(resp);
+                        var messageFromServer = obj.error.message;
 
-                    this.WriteDebug(string.Format("Error Message: {0}", messageFromServer));
+                        this.WriteDebug(string.Format("Error Message: {0}", messageFromServer));
 
-                    this.WriteError(
-                        new ErrorRecord(
-                            we,
-                            "\n\n Error Message" + messageFromServer + "\n\n request-id:" + we.Response.Headers["request-id"],
-                            ErrorCategory.WriteError,
-                            cert));
+                        this.WriteError(
+                            new ErrorRecord(
+                                we,
+                                "\n\n Error Message" + messageFromServer + "\n\n request-id:" + we.Response.Headers["request-id"],
+                                ErrorCategory.WriteError,
+                                cert));
+                    }
                 }
             }
 
@@ -246,7 +272,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 this.WriteWarning(string.Format(LogMessages.GetUserPfxTooManyRequests, retryAfter));
                 Thread.Sleep(TimeSpan.FromSeconds(retryAfter));
-                ProcessResponse(request, cert);
+                ProcessResponse(request, requestNoVersion, cert);
             }
         }
     }
