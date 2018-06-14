@@ -42,11 +42,11 @@ namespace Microsoft.Management.Powershell.PFXImport.UnitTests
     {
         private const string TestFilePath1 = @"TestCertificates\TestPFX.pfx";
 
-        private const string TestUPN1 = "IWUser0@pfximport1802.ccscpt.net";
+        private const string TestUPN1 = "IWUser0@contoso.onmicrosoft.com";
 
         private const string TestProviderName1 = "Microsoft Software Key Storage Provider";
 
-        private const string TestKeyName1 = "TestKey";
+        private const string TestKeyName1 = "IntuneImportPFXTestKey";
 
         private const string TestAlgorithmName = "RSA";
 

@@ -38,6 +38,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     using Services.Api;
     using Serialization;
     using DirectoryServices;
+    using System.Collections;
 
     public struct UserThumbprint
     {
@@ -50,8 +51,10 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "IntuneUserPfxCertificate", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Medium)]
     [OutputType(typeof(List<UserPFXCertificate>))]
-    public class GetUserPFXCertificate : Cmdlet
+    public class GetUserPFXCertificate : PSCmdlet
     {
+
+
         /// <summary>
         /// AuthenticationResult retrieved from Get-IntuneAuthenticationToken
         /// </summary>
@@ -90,7 +93,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// </summary>
         /// <param name="url">The graph url for the request.</param>
         /// <returns>The Created HttpWebRequest.</returns>
-        public virtual HttpWebRequest CreateWebRequest(string url, AuthenticationResult authRes)
+        public static HttpWebRequest CreateWebRequest(string url, AuthenticationResult authRes)
         {
             if(authRes == null)
             {
@@ -108,11 +111,11 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// </summary>
         /// <param name="user">The User Principal Name.</param>
         /// <returns>The Azuer UserId.</returns>
-        public virtual string GetUserIdFromUpn(string user)
+        public static string GetUserIdFromUpn(string user, string graphURI, string schemaVersion, AuthenticationResult authenticationResult)
         {
-            string url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/users?$filter=userPrincipalName eq '{2}'", Authenticate.GraphURI, Authenticate.SchemaVersion, user);
+            string url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/users?$filter=userPrincipalName eq '{2}'", graphURI, schemaVersion, user);
             HttpWebRequest request;
-            request = CreateWebRequest(url, AuthenticationResult);
+            request = CreateWebRequest(url, authenticationResult);
 
             using (var response = (HttpWebResponse)request.GetResponse())
             {
@@ -129,11 +132,9 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 }
                 else
                 {
-                    this.WriteError(new ErrorRecord(new InvalidOperationException(response.StatusDescription), response.StatusCode.ToString(), ErrorCategory.InvalidResult, user));
+                   throw new InvalidOperationException(response.StatusDescription);
                 }
             }
-
-            return null;
         }
 
         /// <summary>
@@ -151,13 +152,17 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                         AuthenticationResult));
             }
 
-            string urlbase = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates", Authenticate.GraphURI, Authenticate.SchemaVersion);
+            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
+            string graphURI = Authenticate.GetGraphURI(modulePrivateData);
+            string schemaVersion = Authenticate.GetSchemaVersion(modulePrivateData);
+
+            string urlbase = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates", graphURI, schemaVersion);
 
             if (UserThumbprintList != null && UserThumbprintList.Count > 0)
             {
                 foreach (UserThumbprint userthumbprint in UserThumbprintList)
                 {
-                    string userid = GetUserIdFromUpn(userthumbprint.User);
+                    string userid = GetUserIdFromUpn(userthumbprint.User, graphURI, schemaVersion, AuthenticationResult);
 
                     string url = string.Format("{0}/{1}-{2}", urlbase, userid, userthumbprint.Thumbprint);
                     HttpWebRequest request;
