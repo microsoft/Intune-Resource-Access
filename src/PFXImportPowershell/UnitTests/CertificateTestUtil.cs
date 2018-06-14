@@ -23,7 +23,7 @@
 
 namespace Microsoft.Management.Powershell.PFXImport.UnitTests
 {
- /*   using CERTENROLLLib;
+    using CERTENROLLLib;
     using System;
     using System.Security.Cryptography.X509Certificates;
 
@@ -95,5 +95,4 @@ namespace Microsoft.Management.Powershell.PFXImport.UnitTests
             return newCert;
         }
     }
-    */
 }
