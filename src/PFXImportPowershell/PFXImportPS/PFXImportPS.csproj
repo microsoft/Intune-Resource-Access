@@ -79,7 +79,9 @@
     <Compile Include="UserPFXCertificate.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="IntunePfxImport.psd1" />
+    <None Include="IntunePfxImport.psd1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

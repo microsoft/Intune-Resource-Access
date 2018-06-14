@@ -107,21 +107,9 @@ namespace Microsoft.Management.Services.Api
         public UserPFXCertificate() { }
 
         /// <summary>
-        /// Id Key. Takes from the Thumbprint.
+        /// Id Key. Takes from the UserId and Thumbprint.
         /// </summary>
-        public string Id
-        {
-            get
-            {
-                return this.Thumbprint;
-            }
-
-            set
-            {
-                this.Thumbprint = value;
-            }
-        }
-
+        public string Id { get; set; }
         /// <summary>
         /// SHA-1 thumbprint of the PFX certificate.
         /// </summary>

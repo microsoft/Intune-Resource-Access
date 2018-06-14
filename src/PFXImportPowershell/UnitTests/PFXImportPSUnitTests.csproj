@@ -98,9 +98,6 @@
   </Choose>
   <ItemGroup>
     <Compile Include="CertificateTestUtil.cs" />
-    <Compile Include="DeletePFXCertificatesUnitTests.cs" />
-    <Compile Include="GetPFXCertificatesUnitTests.cs" />
-    <Compile Include="ImportPFXCertificatesUnitTests.cs" />
     <Compile Include="NewUserPFXCertificateUnitTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

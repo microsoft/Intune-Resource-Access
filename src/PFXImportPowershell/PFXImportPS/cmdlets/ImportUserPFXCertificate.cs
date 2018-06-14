@@ -38,11 +38,13 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     using Services.Api;
     using Newtonsoft.Json;
     using DirectoryServices;
+    using System.Collections;
+
     /// <summary>
     /// Imports PFX certificates for delivery to user devices.
     /// </summary>
     [Cmdlet(VerbsData.Import, "IntuneUserPfxCertificate", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Medium)]
-    public class ImportUserPFXCertificate : Cmdlet
+    public class ImportUserPFXCertificate : PSCmdlet
     {
         private int successCnt;
         private int failureCnt;
@@ -126,6 +128,10 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             successCnt = 0;
             failureCnt = 0;
 
+            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
+            string graphURI = Authenticate.GetGraphURI(modulePrivateData);
+            string schemaVersion = Authenticate.GetSchemaVersion(modulePrivateData);
+
             if (CertificateList == null || CertificateList.Count == 0)
             {
                 this.ThrowTerminatingError(
@@ -141,12 +147,12 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 string url;
                 if (IsUpdate.IsPresent)
                 {
-                    string userId = GetUserIdFromUpn(cert.UserPrincipalName);
-                    url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates({2}-{3})", Authenticate.GraphURI, Authenticate.SchemaVersion, userId, cert.Thumbprint);
+                    string userId = GetUserPFXCertificate.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
+                    url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates({2}-{3})", graphURI, schemaVersion, userId, cert.Thumbprint);
                 }
                 else
                 {
-                    url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates", Authenticate.GraphURI, Authenticate.SchemaVersion);
+                    url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates", graphURI, schemaVersion);
                 }
 
                 HttpWebRequest request = CreateWebRequest(url, AuthenticationResult);

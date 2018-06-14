@@ -24,17 +24,32 @@
 namespace Microsoft.Management.Powershell.PFXImport
 {
     using System;
+    using System.Collections;
     using System.Diagnostics.CodeAnalysis;
     using System.Security;
     using IdentityModel.Clients.ActiveDirectory;
 
     public class Authenticate
     {
-        public const string AuthURI = "login.windows-ppe.net";//"login.microsoftonline.com";
-        public const string GraphURI = "https://graph.microsoft-ppe.com";// "https://graph.microsoft.com";
-        public const string SchemaVersion = "test_Intune_OneDF";//"beta";
+        public const string AuthURI = "login.microsoftonline.com";
+        public const string GraphURI = "https://graph.microsoft.com";
+        public const string SchemaVersion = "beta";
 
         public const string ClientId = "1950a258-227b-4e31-a9cf-717495945fc2";
+
+        public static string GetAuthURI(Hashtable modulePrivateData)
+        {
+            return (string)modulePrivateData["AuthURI"] ?? Authenticate.AuthURI;
+        }
+
+        public static string GetGraphURI(Hashtable modulePrivateData)
+        {
+            return (string)modulePrivateData["GraphURI"] ?? Authenticate.GraphURI;
+        }
+        public static string GetSchemaVersion(Hashtable modulePrivateData)
+        {
+            return (string)modulePrivateData["SchemaVersion"] ?? Authenticate.SchemaVersion;
+        }
 
         [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Declaring it as a function helps to test a code path.")]
         [SuppressMessage("Microsoft.Usage", "CA2211:NonConstantFieldsShouldNotBeVisible", Justification = "Needs to be public and can't make functions consts")]
@@ -50,21 +65,21 @@ namespace Microsoft.Management.Powershell.PFXImport
 
         private static Uri redirectUri = new Uri("urn:ietf:wg:oauth:2.0:oob");
 
-        public static AuthenticationResult GetAuthToken(string user, SecureString password)
+        public static AuthenticationResult GetAuthToken(string user, SecureString password, Hashtable modulePrivateData)
         {
-            string authority = string.Format("https://{0}/common", AuthURI);
+            string authority = string.Format("https://{0}/common", GetAuthURI(modulePrivateData));
             AuthenticationContext authContext = new AuthenticationContext(authority);
             PlatformParameters platformParams = new PlatformParameters(PromptBehavior.Auto);
 
             if(password == null)
             {
                 UserIdentifier userId = new UserIdentifier(user, UserIdentifierType.OptionalDisplayableId);
-                return authContext.AcquireTokenAsync(GraphURI, ClientId, redirectUri, platformParams, userId).Result;
+                return authContext.AcquireTokenAsync(GetGraphURI(modulePrivateData), ClientId, redirectUri, platformParams, userId).Result;
             }
             else
             {
                 UserPasswordCredential userCreds = new UserPasswordCredential(user, password);
-                return AuthenticationContextIntegratedAuthExtensions.AcquireTokenAsync(authContext, GraphURI, ClientId, userCreds).Result;
+                return AuthenticationContextIntegratedAuthExtensions.AcquireTokenAsync(authContext, GetGraphURI(modulePrivateData), ClientId, userCreds).Result;
             }
         }
     }
