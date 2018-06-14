@@ -9,7 +9,7 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 
 ## Create initial Key Example
 
-	# 1. Setup Key
+	# 1. Setup Key (if you don't have a dedicated provider, you can use "Microsoft Software Key Storage Provider")
 	Add-IntuneKspKey "<ProviderName>" "<KeyAlgoritm>" "<KeyName>"
 	
 ## Set up userPFXCertifcate object (including encrypting password)
