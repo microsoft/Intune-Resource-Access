@@ -153,6 +153,7 @@ namespace Microsoft.Management.Powershell.PFXImport.UnitTests
             {
                 return true;
             };
+            mockCmdlet.Setup<string>(a => a.GetUserIdFromUpn(It.IsAny<string>())).Returns<string>((a) => { return "1"; });
 
             List<UserPFXCertificate> thumbprintList = new List<UserPFXCertificate>();
             thumbprintList.Add(userPFXCert2Import);

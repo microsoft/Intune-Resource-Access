@@ -397,54 +397,20 @@ namespace Microsoft.Management.Powershell.PFXImport.UnitTests
 
         private void ProviderKeyInitialize(string providerName, string keyName, string algorithmName)
         {
-            CNGNCryptInterop ncrypt = new CNGNCryptInterop();
-            IntPtr provider = IntPtr.Zero;
-            IntPtr key = IntPtr.Zero;
-
-            provider = ncrypt.OpenStorageProvider(providerName);
-            try
+            ManagedRSAEncryption managedRSA = new ManagedRSAEncryption();
+            if(!managedRSA.TryGenerateLocalRSAKey(providerName, keyName))
             {
-                key = ncrypt.GenerateKey(provider, algorithmName, keyName, 2048);
+                //Delete and try again
+                managedRSA.DestroyLocalRSAKey(providerName, keyName);
+                managedRSA.TryGenerateLocalRSAKey(providerName, keyName);
             }
-            catch (CryptographicException e)
-            {
-                //Key was made previously but not cleaned up. We'll clean and then create
-                key = ncrypt.OpenKey(provider, keyName);
-                ncrypt.DestroyKey(key);
-                key = ncrypt.GenerateKey(provider, algorithmName, keyName);
-            }
-
-            ncrypt.FreeObject(key);
-            ncrypt.FreeObject(provider);
         }
 
         public void ProviderKeyCleanup(string providerName, string keyName)
         {
             //Clear out the test key
-            CNGNCryptInterop ncrypt = new CNGNCryptInterop();
-            IntPtr provider = IntPtr.Zero;
-            IntPtr key = IntPtr.Zero;
-
-            provider = ncrypt.OpenStorageProvider(providerName);
-
-            try
-            {
-                key = ncrypt.OpenKey(provider, keyName);
-            }
-            catch (Exception e)
-            {
-                //Probably means key doesn't exist, so we're fine
-            }
-
-            if (key != null && key != IntPtr.Zero)
-            {
-                ncrypt.DestroyKey(key);
-            }
-
-            if (provider != null && provider != IntPtr.Zero)
-            {
-                ncrypt.FreeObject(provider);
-            }
+            ManagedRSAEncryption managedRSA = new ManagedRSAEncryption();
+            managedRSA.DestroyLocalRSAKey(providerName, keyName);
         }
 
         private void ValidatePasswordDecryptable(UserPFXCertificate userPFXResult, string expectedPassword, string hashAlgorithm, int paddingFlags)

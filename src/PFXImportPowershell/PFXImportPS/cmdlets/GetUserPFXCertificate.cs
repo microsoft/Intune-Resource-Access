@@ -159,11 +159,11 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 {
                     string userid = GetUserIdFromUpn(userthumbprint.User);
 
-                    string urlWithoutVersion = string.Format("{0}/{1}-{2}", urlbase, userid, userthumbprint.Thumbprint);
+                    string url = string.Format("{0}/{1}-{2}", urlbase, userid, userthumbprint.Thumbprint);
                     HttpWebRequest request;
                     try
                     {
-                        request = CreateWebRequest(urlWithoutVersion, AuthenticationResult);
+                        request = CreateWebRequest(url, AuthenticationResult);
 
                         // Returns a single record and comes back in a different format than the other requests.
                         ProcessSingleResponse(request, "User:" + userthumbprint.User + " Thumbprint:" + userthumbprint.Thumbprint);
@@ -171,20 +171,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                     catch (WebException we)
                     {
                         this.WriteError(new ErrorRecord(we, we.Message + " request-id:" + we.Response.Headers["request-id"], ErrorCategory.InvalidResult, userthumbprint));
-
-                        try
-                        {
-                            string urlWithVersion = string.Format("{0}/{1}-{2}?{3}", urlbase, userid, userthumbprint.Thumbprint, Authenticate.APIVersionString);
-
-                            request = CreateWebRequest(urlWithoutVersion, AuthenticationResult);
-
-                            // Returns a single record and comes back in a different format than the other requests.
-                            ProcessSingleResponse(request, "User:" + userthumbprint.User + " Thumbprint:" + userthumbprint.Thumbprint);
-                        }
-                        catch(WebException weWithVersion)
-                        {
-                            this.WriteError(new ErrorRecord(weWithVersion, weWithVersion.Message + " request-id:" + weWithVersion.Response.Headers["request-id"], ErrorCategory.InvalidResult, userthumbprint));
-                        }
                     }
                 }
             }
@@ -192,8 +178,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 foreach (string user in UserList)
                 {
-                    string url = string.Format("{0}?$filter=userPrincipalName eq '{2}'", urlbase, user);
-                    string urlWithVersion = string.Format("{0}?{1}&$filter=userPrincipalName eq '{2}'", urlbase, Authenticate.APIVersionString, user);
+                    string url = string.Format("{0}?$filter=userPrincipalName eq '{1}'", urlbase, user);
                     HttpWebRequest request;
                     try
                     {
@@ -203,16 +188,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                     catch (WebException we)
                     {
                         this.WriteError(new ErrorRecord(we, we.Message + " request-id:" + we.Response.Headers["request-id"], ErrorCategory.InvalidResult, user));
-
-                        try
-                        {
-                            request = CreateWebRequest(url, AuthenticationResult);
-                            ProcessCollectionResponse(request, user);
-                        }
-                        catch(WebException weWithVersion)
-                        {
-                            this.WriteError(new ErrorRecord(weWithVersion, weWithVersion.Message + " request-id:" + weWithVersion.Response.Headers["request-id"], ErrorCategory.InvalidResult, user));
-                        }
                     }
                 }
             }

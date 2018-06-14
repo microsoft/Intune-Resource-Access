@@ -45,116 +45,24 @@ namespace Microsoft.Intune.Test.EncryptionUtilitiesUnitTests
         [TestInitialize]
         public void TestInitialize()
         {
-            //Create the test key
-            CNGNCryptInterop ncrypt = new CNGNCryptInterop();
-            IntPtr provider = IntPtr.Zero;
-            IntPtr key = IntPtr.Zero;
-
-            provider = ncrypt.OpenStorageProvider(TestProvider);
-            try
+            ManagedRSAEncryption managedRSA = new ManagedRSAEncryption();
+            if (!managedRSA.TryGenerateLocalRSAKey(TestProvider, TestKeyName))
             {
-                key = ncrypt.GenerateKey(provider, TestKeyAlgorithmName, TestKeyName);
+                //Delete and try again
+                managedRSA.DestroyLocalRSAKey(TestProvider, TestKeyName);
+                managedRSA.TryGenerateLocalRSAKey(TestProvider, TestKeyName);
             }
-            catch(CryptographicException e)
-            {
-                //Key was made previously but not cleaned up. We'll clean and then create
-                key = ncrypt.OpenKey(provider, TestKeyName);
-                ncrypt.DestroyKey(key);
-                key = ncrypt.GenerateKey(provider, TestKeyAlgorithmName, TestKeyName);
-            }
-
-            ncrypt.FreeObject(key);
-            ncrypt.FreeObject(provider);
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            // Clear out the test key
-
-            CNGNCryptInterop ncrypt = new CNGNCryptInterop();
-            IntPtr provider = IntPtr.Zero;
-            IntPtr key = IntPtr.Zero;
-
-            provider = ncrypt.OpenStorageProvider(TestProvider);
-
-            try
-            {
-                key = ncrypt.OpenKey(provider, TestKeyName);
-            }
-            catch (Exception e)
-            {
-                // Probably means key doesn't exist, so we're fine
-            }
-
-            if (key != null && key != IntPtr.Zero)
-            {
-                ncrypt.DestroyKey(key);
-            }
-
-            if (provider != null && provider != IntPtr.Zero)
-            {
-                ncrypt.FreeObject(provider);
-            }
+            //Clear out the test key
+            ManagedRSAEncryption managedRSA = new ManagedRSAEncryption();
+            managedRSA.DestroyLocalRSAKey(TestProvider, TestKeyName);
         }
 
-        [TestMethod]
-        public void LocalKeyEncryptionDecryptionE2E()
-        {
-            byte[] toEncrypt = new byte[] { 1, 2, 3, 4 };
-            UnmanagedRSAEncryption unmanaged = new UnmanagedRSAEncryption();
-            byte[] encrypted = unmanaged.EncryptWithLocalKey(TestProvider, TestKeyName, toEncrypt);
-            byte[] decrypted = unmanaged.DecryptWithLocalKey(TestProvider, TestKeyName, encrypted, 
-                PaddingHashAlgorithmNames.SHA512, PaddingFlags.OAEPPadding);
 
-            CollectionAssert.AreNotEqual(encrypted, toEncrypt);
-            CollectionAssert.AreNotEqual(encrypted, decrypted);
-            CollectionAssert.AreEqual(toEncrypt, decrypted);
-
-            Assert.AreNotEqual(0, encrypted.Length);
-            Assert.AreNotEqual(0, decrypted.Length);
-            Assert.IsNotNull(encrypted);
-            Assert.IsNotNull(decrypted);
-        }
-
-        [TestMethod]
-        public void LocalKeyEncryptionDecryptionOAEPE2E()
-        {
-            byte[] toEncrypt = new byte[] { 1, 2, 3, 4 };
-            UnmanagedRSAEncryption unmanaged = new UnmanagedRSAEncryption();
-
-            byte[] encrypted = unmanaged.EncryptWithLocalKey(TestProvider, TestKeyName, toEncrypt, PaddingHashAlgorithmNames.SHA256, PaddingFlags.OAEPPadding);
-            byte[] decrypted = unmanaged.DecryptWithLocalKey(TestProvider, TestKeyName, encrypted, PaddingHashAlgorithmNames.SHA256, PaddingFlags.OAEPPadding);
-
-            CollectionAssert.AreNotEqual(encrypted, toEncrypt);
-            CollectionAssert.AreNotEqual(encrypted, decrypted);
-            CollectionAssert.AreEqual(toEncrypt, decrypted);
-
-            Assert.AreNotEqual(0, encrypted.Length);
-            Assert.AreNotEqual(0, decrypted.Length);
-            Assert.IsNotNull(encrypted);
-            Assert.IsNotNull(decrypted);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(CryptographicException))]
-        public void LocalKeyDecryptionKeyMissingThrows()
-        {
-            byte[] toEncrypt = new byte[] { 1, 2, 3, 4 };
-            UnmanagedRSAEncryption unmanaged = new UnmanagedRSAEncryption();
-            byte[] encrypted = unmanaged.EncryptWithLocalKey(TestProvider, TestKeyName, toEncrypt);
-            unmanaged.DecryptWithLocalKey(TestProvider, "FakeKeyName", encrypted, null, PaddingFlags.PKCS1Padding);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(CryptographicException))]
-        public void LocalKeyDecryptionProviderMissingThrows()
-        {
-            byte[] toEncrypt = new byte[] { 1, 2, 3, 4 };
-            UnmanagedRSAEncryption unmanaged = new UnmanagedRSAEncryption();
-            byte[] encrypted = unmanaged.EncryptWithLocalKey(TestProvider, TestKeyName, toEncrypt);
-            unmanaged.DecryptWithLocalKey("FakeProviderName", TestKeyName, encrypted, null, PaddingFlags.PKCS1Padding);
-        }
 
         [TestMethod]
         public void CertKeyEncryptionE2E()
@@ -190,18 +98,5 @@ namespace Microsoft.Intune.Test.EncryptionUtilitiesUnitTests
             CollectionAssert.AreNotEqual(recryptedWithDeviceCert, decryptedWithDeviceCert);
         }
 
-        /// <summary>
-        /// Default ICNGNCryptInterop mock 
-        /// </summary>
-        /// <returns></returns>
-        private Mock<ICNGNCryptInterop> ConstructDefaultMock()
-        {
-            Mock<ICNGNCryptInterop> cryptInterop = new Mock<ICNGNCryptInterop>();
-            cryptInterop.Setup<IntPtr>(a => a.OpenStorageProvider(It.IsAny<string>(), It.IsAny<int>())).Returns(IntPtr.Zero);
-            cryptInterop.Setup<IntPtr>(a => a.OpenKey(It.IsAny<IntPtr>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>())).Returns(IntPtr.Zero);
-            cryptInterop.Setup(a => a.FreeObject(IntPtr.Zero));
-            cryptInterop.Setup(a => a.CheckNTStatus(It.IsAny<uint>())).Returns(true);
-            return cryptInterop;
-        }
     }
 }

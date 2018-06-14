@@ -30,10 +30,9 @@ namespace Microsoft.Management.Powershell.PFXImport
 
     public class Authenticate
     {
-        public const string AuthURI = "login.microsoftonline.com";
-        public const string GraphURI = "https://graph.microsoft.com";
-        public const string SchemaVersion = "beta";
-        public const string APIVersionString = "api-version=5018-02-27";
+        public const string AuthURI = "login.windows-ppe.net";//"login.microsoftonline.com";
+        public const string GraphURI = "https://graph.microsoft-ppe.com";// "https://graph.microsoft.com";
+        public const string SchemaVersion = "test_Intune_OneDF";//"beta";
 
         public const string ClientId = "1950a258-227b-4e31-a9cf-717495945fc2";
 
