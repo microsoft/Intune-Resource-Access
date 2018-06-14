@@ -2,48 +2,91 @@
 
 This project consists of helper Powershell Commandlets for importing PFX certificates to Microsoft Intune.
 
-# Example Usage
+# Example Powershell Usage
 
 ## Prerequisite:
-	Import-Module Microsoft.Management.Powershell.PFXImport.dll
+	Import-Module IntunePfxImport.psd1
 
 ## Create initial Key Example
 
 	# 1. Setup Key
-	Add-IntuneKspKey "Microsoft Software Key Storage Provider" "RSA" "<KeyName>"
+	Add-IntuneKspKey "<ProviderName>" "<KeyAlgoritm>" "<KeyName>"
 	
-## Get Base64 String Certificate Example
+## Set up userPFXCertifcate object (including encrypting password)
 
 	# 1. Setup Secure File Password
 	$SecureFilePassword = ConvertTo-SecureString -String "<PFXPassword>" -AsPlainText -Force
 	# 2. Get Base64 String Certificate
 	$Base64Certificate =ConvertTo-IntuneBase64EncodedPfxCertificate -CertificatePath "<FullPathPFXToCert>"
 	# 3. Base64 String
-	$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "Microsoft Software Key Storage Provider" "<KeyName>"
+	$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "IntendedPurpose" "PaddingScheme"
 	
 
-## Encrypt + Import Example
+## Import Example
 
-	# 1. Get-AuthToken
-	$authResult = Get-IntuneAuthenticationToken -AdminUserName "<AdminUPN>"
-	# 2. Setup Secure File Password
-	$SecureFilePassword = ConvertTo-SecureString -String "<PFXPassword>" -AsPlainText -Force
-	# 3. Encrypt PFX File
-	$userPFXObject = New-IntuneUserPfxCertificate "<FullPathPFXToCert>" $SecureFilePassword "<UserUPN>" "Microsoft Software Key Storage Provider" "<KeyName>"
-	# 4. Import User PFX
+	# 1. Import User PFX
 	Import-IntuneUserPfxCertificate -AuthenticationResult $authResult -CertificateList $userPFXObject
 	
 ## Get PFX Certificate By Thumbprint Example
 
-	# 1. Get-AuthToken
-	$authResult = Get-IntuneAuthenticationToken  -AdminUserName "<AdminUPN>"
-	# 2. Get-PfxCertificates
-	Get-IntuneUserPfxCertificate -AuthenticationResult $authResult -ThumbprintList "<PFXThumbprint>"
+	# 1. Get-PfxCertificates (Specific records)
+	Get-IntuneUserPfxCertificate -AuthenticationResult $authResult -UserThumbprintList <UserThumbprintObjs>
+	# 2. Get-PfxCertificates (Specific users)
+	Get-IntuneUserPfxCertificate -AuthenticationResult $authResult -UsertList "<UserUPN>"
+	# 3. Get-PfxCertificates (All records)
+	Get-IntuneUserPfxCertificate -AuthenticationResult $authResult
 
 
 ## Remove PFX Certificate By Thumbprint Example
 
-	# 1. Get-AuthToken
-	$authResult = Get-IntuneAuthToken -AdminUserName "<AdminUPN>"
-	# 2. Remove-PfxCertificates
-	Remove-IntuneUserPfxCertificate -AuthenticationResult $authResult -ThumbprintList "<PFXThumbprint>"
+	# 1. Remove-PfxCertificates (Specific records)
+	Remove-IntuneUserPfxCertificate -AuthenticationResult $authResult -UserThumbprintList <UserThumbprintObjs>
+	# 2. Remove-PfxCertificates (Specific users)
+	Remove-IntuneUserPfxCertificate -AuthenticationResult $authResult -UsertList "<UserUPN>"
+
+
+
+#Graph Usage
+
+##GET
+https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{Userid}-{Thumbprint}')  --A specific record
+https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates/?$filter=userPrincipalName eq '{UPN}' –-A specific User
+https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates --All records
+
+##POST
+https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates
+ 
+with an example payload:
+ 
+{
+        "@odata.type": "#microsoft.graph.userPFXCertificate",
+        "id": "",
+        "thumbprint": "f6f51856-1856-f6f5-5618-f5f65618f5f6",
+        “intendedPurpose”: “smimeEncryption”,
+        “userPrincipalName”: “User1@contoso.onmicrosoft.com”,
+        “startDateTime”: “2016-12-31T23:58:46.7156189-07:00”,
+        “expirationDateTime”: “2016-12-31T23:57:57.2481234-07:00”,
+        “providerName”: “Provider Name value”,
+        “keyName”: “Key Name value”,
+        “encryptedPfxBlob”: “{Base64Encrypted Blob}“,
+        “encryptedPfxPassword”: “{Base64Encrypted Blob}“,
+        “createdDateTime”: “2017-01-01T00:02:43.5775965-07:00”,
+        “lastModifiedDateTime”: “2017-01-01T00:00:35.1329464-07:00”
+}
+
+##PATCH
+https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{UserId}-{Thumbprint}')
+
+For payload, see above example.
+
+##DELETE
+https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{UserId}-{Thumbprint}')
+
+
+#Other Useful graph examples
+
+##Lookup up user id from UPN
+GET
+https://graph.microsoft.com/test_intune_1806/users?$filter=userPrincipalName eq '{UPN}'
+
+The user id is found in the id value of the returned object.

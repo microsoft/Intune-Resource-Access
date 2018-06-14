@@ -148,12 +148,18 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 
             if (UserList != null)
             {
-                GetUserPFXCertificate getCerts = new GetUserPFXCertificate();
-                getCerts.AuthenticationResult = AuthenticationResult;
-                getCerts.UserList = UserList;
+                PowerShell ps = PowerShell.Create();
+                ps.AddCommand("Import-Module").AddParameter("ModuleInfo", this.MyInvocation.MyCommand.Module);
+                ps.Invoke();
+                ps.Commands.Clear();
 
-                foreach (UserPFXCertificate cert in getCerts.Invoke<UserPFXCertificate>())
+                ps.AddCommand("Get-IntuneUserPfxCertificate");
+                ps.AddParameter("AuthenticationResult", AuthenticationResult);
+                ps.AddParameter("UserList", UserList);
+                
+                foreach (PSObject result in ps.Invoke())
                 {
+                    UserPFXCertificate cert = result.BaseObject as UserPFXCertificate;
                     string userId = GetUserPFXCertificate.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
                     UserThumbprintList.Add(new UserThumbprint() { User = userId, Thumbprint = cert.Thumbprint });
                 }
@@ -176,7 +182,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 string url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates/{2}-{3}", graphURI, schemaVersion, userThumbprint.User, userThumbprint.Thumbprint);
                 HttpWebRequest request;
                 request = CreateWebRequest(url, AuthenticationResult);
-                ProcessResponse(request, request, userThumbprint.User + "-" + userThumbprint.Thumbprint);
+                ProcessResponse(request, userThumbprint.User + "-" + userThumbprint.Thumbprint);
             }
 
             this.WriteCommandDetail(string.Format(LogMessages.RemoveCertificateSuccess, successCnt));
