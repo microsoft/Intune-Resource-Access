@@ -5,7 +5,7 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 # Example Usage
 
 ## Prerequisite:
-	Import Microsoft.Management.Powershell.PFXImport.dll
+	Import-Module Microsoft.Management.Powershell.PFXImport.dll
 
 ## Create initial Key Example
 
@@ -25,7 +25,7 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 ## Encrypt + Import Example
 
 	# 1. Get-AuthToken
-	$authResult = Get-IntuneAuthenticationToken -AdminUserName "<UserUPN>"
+	$authResult = Get-IntuneAuthenticationToken -AdminUserName "<AdminUPN>"
 	# 2. Setup Secure File Password
 	$SecureFilePassword = ConvertTo-SecureString -String "<PFXPassword>" -AsPlainText -Force
 	# 3. Encrypt PFX File
@@ -36,7 +36,7 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 ## Get PFX Certificate By Thumbprint Example
 
 	# 1. Get-AuthToken
-	$authResult = Get-IntuneAuthenticationToken  -AdminUserName "<UserUPN>"
+	$authResult = Get-IntuneAuthenticationToken  -AdminUserName "<AdminUPN>"
 	# 2. Get-PfxCertificates
 	Get-IntuneUserPfxCertificate -AuthenticationResult $authResult -ThumbprintList "<PFXThumbprint>"
 
@@ -44,6 +44,6 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 ## Remove PFX Certificate By Thumbprint Example
 
 	# 1. Get-AuthToken
-	$authResult = Get-IntuneAuthToken -AdminUserName "<UserUPN>"
+	$authResult = Get-IntuneAuthToken -AdminUserName "<AdminUPN>"
 	# 2. Remove-PfxCertificates
 	Remove-IntuneUserPfxCertificate -AuthenticationResult $authResult -ThumbprintList "<PFXThumbprint>"
