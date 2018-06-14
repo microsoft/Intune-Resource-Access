@@ -24,7 +24,6 @@
 package com.microsoft.intune.scepvalidation;
 
 import java.net.MalformedURLException;
-import java.net.Proxy;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -41,7 +40,7 @@ import com.microsoft.aad.adal4j.ClientCredential;
 /**
  * Azure Active Directory Authentication Client
  */
-class ADALClientWrapper 
+public class ADALClientWrapper 
 {
 
     private String authority = "https://login.microsoftonline.com/";
@@ -89,7 +88,7 @@ class ADALClientWrapper
      * Sets the SSL factory to be used on the HTTP client for authentication.
      * @param factory
      */
-    public void setSslSocketFactory(SSLSocketFactory factory) throws IllegalArgumentException
+    public void SetSslSocketFactory(SSLSocketFactory factory) throws IllegalArgumentException
     {
         if(factory == null)
         {
@@ -97,11 +96,6 @@ class ADALClientWrapper
         }
         
         this.context.setSslSocketFactory(factory);
-    }
-    
-    public void setProxy(Proxy proxy)
-    {
-        this.context.setProxy(proxy);
     }
     
     /**
