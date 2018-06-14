@@ -61,28 +61,23 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 
         protected override void ProcessRecord()
         {
-            CNGNCryptInterop ncrypt = new CNGNCryptInterop();
-            IntPtr provider = IntPtr.Zero;
-            IntPtr key = IntPtr.Zero;
-
-            provider = ncrypt.OpenStorageProvider(ProviderName);
-            try
+            ManagedRSAEncryption managedRSA = new ManagedRSAEncryption();
+            if(managedRSA.TryGenerateLocalRSAKey(ProviderName, KeyName, KeyLength))
             {
-                key = ncrypt.GenerateKey(provider, AlgorithmName, KeyName, keyLength);
+                //Creation succeeded
             }
-            catch (CryptographicException e)
+            else
             {
-                if (e.HResult == KeyExistsErrorCode)
-                {
-                    // Key was made previously but not cleaned up. We'll clean and then create
-                    key = ncrypt.OpenKey(provider, KeyName);
-                    ncrypt.DestroyKey(key);
-                    key = ncrypt.GenerateKey(provider, AlgorithmName, KeyName, keyLength);
-                }
+                //Creation failed, likely already exists
+                this.WriteError(
+                    new ErrorRecord(
+                        new InvalidOperationException("Key Creation failed, it likely already exists"), 
+                        "KeyAlreadyExists", 
+                        ErrorCategory.InvalidOperation, 
+                        null));
+
             }
 
-            ncrypt.FreeObject(key);
-            ncrypt.FreeObject(provider);
         }
     }
 }

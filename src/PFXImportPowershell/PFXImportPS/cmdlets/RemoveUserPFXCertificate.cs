@@ -167,13 +167,10 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 
             foreach (string thumbprint in ThumbprintList)
             {
-                string url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates/{2}?{3}", Authenticate.GraphURI, Authenticate.SchemaVersion, thumbprint, Authenticate.APIVersionString);
-                string nonVersionUrl = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates/{2}", Authenticate.GraphURI, Authenticate.SchemaVersion, thumbprint);
+                string url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates/{2}", Authenticate.GraphURI, Authenticate.SchemaVersion, thumbprint);
                 HttpWebRequest request;
                 request = CreateWebRequest(url, AuthenticationResult);
-                HttpWebRequest nonVersionRequest;
-                nonVersionRequest = CreateWebRequest(nonVersionUrl, AuthenticationResult);
-                ProcessResponse(request, nonVersionRequest, thumbprint);
+                ProcessResponse(request, thumbprint);
             }
 
             this.WriteCommandDetail(string.Format(LogMessages.RemoveCertificateSuccess, successCnt));
@@ -185,7 +182,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes", 
             Justification = "Not relevant here")]
-        private void ProcessResponse(HttpWebRequest request, HttpWebRequest nonVersionRequest, string thumbprint)
+        private void ProcessResponse(HttpWebRequest request, string thumbprint)
         {
             bool needsRetry = false;
             TimeSpan waitTime = TimeSpan.Zero;
@@ -237,28 +234,13 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 }
                 else
                 {
-                    //Need to handle case where we try without the version string
-                    if(nonVersionRequest != null)
-                    {
-                        this.WriteError(
-                        new ErrorRecord(
-                            we,
-                            "Requesting with version failed, trying without version",
-                            ErrorCategory.WriteError,
-                            null));
-                        ProcessResponse(nonVersionRequest, null, thumbprint);
-                    }
-                    else
-                    {
-                        var resp = new StreamReader(we.Response.GetResponseStream()).ReadToEnd();
+                    var resp = new StreamReader(we.Response.GetResponseStream()).ReadToEnd();
 
-                        dynamic obj = JsonConvert.DeserializeObject(resp);
-                        var messageFromServer = obj.error.message;
+                    dynamic obj = JsonConvert.DeserializeObject(resp);
+                    var messageFromServer = obj.error.message;
 
-                        this.WriteDebug(string.Format("Error Message: {0}", messageFromServer));
-                        this.WriteError(new ErrorRecord(we, we.Message + messageFromServer + " request-id:" + we.Response.Headers["request-id"], ErrorCategory.InvalidResult, null));
-
-                    }
+                    this.WriteDebug(string.Format("Error Message: {0}", messageFromServer));
+                    this.WriteError(new ErrorRecord(we, we.Message + messageFromServer + " request-id:" + we.Response.Headers["request-id"], ErrorCategory.InvalidResult, null));
                 }
             }
 
@@ -267,7 +249,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 this.WriteWarning(string.Format(LogMessages.GetUserPfxTooManyRequests, retryAfter));
                 Thread.Sleep(TimeSpan.FromSeconds(retryAfter));
-                ProcessResponse(request, nonVersionRequest, thumbprint);
+                ProcessResponse(request, thumbprint);
             }
         }
     }

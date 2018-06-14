@@ -154,50 +154,6 @@ namespace Microsoft.Intune.Test.EncryptionUtilitiesUnitTests
             byte[] encrypted = util.EncryptWithLocalKey(TestProvider, TestKeyName, toEncrypt, "Not a real padding hash function", PaddingFlags.OAEPPadding);
         }
 
-        /// <summary>
-        /// Managed and native CNG encryption / decryption interop test
-        /// </summary>
-        [TestMethod]
-        public void ManagedEncryptNativeDecryptInterop()
-        {
-            byte[] toEncrypt = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 };
-            ManagedRSAEncryption managed = new ManagedRSAEncryption();
-            UnmanagedRSAEncryption unmanaged = new UnmanagedRSAEncryption();
-
-            byte[] encrypted = managed.EncryptWithLocalKey(TestProvider, TestKeyName, toEncrypt);
-            byte[] decrypted = unmanaged.DecryptWithLocalKey(TestProvider, TestKeyName, encrypted);
-
-            CollectionAssert.AreNotEqual(encrypted, toEncrypt);
-            CollectionAssert.AreNotEqual(encrypted, decrypted);
-            CollectionAssert.AreEqual(toEncrypt, decrypted);
-
-            Assert.AreNotEqual(0, encrypted.Length);
-            Assert.AreNotEqual(0, decrypted.Length);
-            Assert.IsNotNull(encrypted);
-            Assert.IsNotNull(decrypted);
-        }
-
-        /// <summary>
-        /// Managed and native CNG encryption / decryption interop test
-        /// </summary>
-        [TestMethod]
-        public void NativeEncryptManagedDecryptInterop()
-        {
-            byte[] toEncrypt = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 };
-            ManagedRSAEncryption managed = new ManagedRSAEncryption();
-            UnmanagedRSAEncryption unmanaged = new UnmanagedRSAEncryption();
-
-            byte[] encrypted = unmanaged.EncryptWithLocalKey(TestProvider, TestKeyName, toEncrypt);
-            byte[] decrypted = managed.DecryptWithLocalKey(TestProvider, TestKeyName, encrypted);
-
-            CollectionAssert.AreNotEqual(encrypted, toEncrypt);
-            CollectionAssert.AreNotEqual(encrypted, decrypted);
-            CollectionAssert.AreEqual(toEncrypt, decrypted);
-
-            Assert.AreNotEqual(0, encrypted.Length);
-            Assert.AreNotEqual(0, decrypted.Length);
-            Assert.IsNotNull(encrypted);
-            Assert.IsNotNull(decrypted);
-        }
+        
     }
 }
