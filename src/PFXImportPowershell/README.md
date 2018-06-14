@@ -46,47 +46,47 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 
 
 
-#Graph Usage
+# Graph Usage
 
-##GET
-https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{Userid}-{Thumbprint}')  --A specific record
-https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates/?$filter=userPrincipalName eq '{UPN}' –-A specific User
-https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates --All records
+## GET
+	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{Userid}-{Thumbprint}')  --A specific record
+	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates/?$filter=userPrincipalName eq '{UPN}' â€“-A specific User
+	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates --All records
 
-##POST
-https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates
+## POST
+	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates
  
-with an example payload:
+	with an example payload:
  
-{
-        "@odata.type": "#microsoft.graph.userPFXCertificate",
-        "id": "",
-        "thumbprint": "f6f51856-1856-f6f5-5618-f5f65618f5f6",
-        “intendedPurpose”: “smimeEncryption”,
-        “userPrincipalName”: “User1@contoso.onmicrosoft.com”,
-        “startDateTime”: “2016-12-31T23:58:46.7156189-07:00”,
-        “expirationDateTime”: “2016-12-31T23:57:57.2481234-07:00”,
-        “providerName”: “Provider Name value”,
-        “keyName”: “Key Name value”,
-        “encryptedPfxBlob”: “{Base64Encrypted Blob}“,
-        “encryptedPfxPassword”: “{Base64Encrypted Blob}“,
-        “createdDateTime”: “2017-01-01T00:02:43.5775965-07:00”,
-        “lastModifiedDateTime”: “2017-01-01T00:00:35.1329464-07:00”
-}
+	{
+		"@odata.type": "#microsoft.graph.userPFXCertificate",
+		"id": "",
+		"thumbprint": "f6f51856-1856-f6f5-5618-f5f65618f5f6",
+		"intendedPurpose": "smimeEncryption",
+		"userPrincipalName": "User1@contoso.onmicrosoft.com",
+		"startDateTime": "2016-12-31T23:58:46.7156189-07:00",
+		"expirationDateTime": "2016-12-31T23:57:57.2481234-07:00",
+		"providerName": "Provider Name value",
+		"keyName": "Key Name value",
+		"encryptedPfxBlob": "{Base64Encrypted Blob}",
+		"encryptedPfxPassword": "{Base64Encrypted Blob}",
+		"createdDateTime": "2017-01-01T00:02:43.5775965-07:00",
+		"lastModifiedDateTime": "2017-01-01T00:00:35.1329464-07:0"
+	}
 
-##PATCH
-https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{UserId}-{Thumbprint}')
+## PATCH
+	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{UserId}-{Thumbprint}')
 
-For payload, see above example.
+	For payload, see above example.
 
-##DELETE
-https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{UserId}-{Thumbprint}')
+## DELETE
+	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{UserId}-{Thumbprint}')
 
 
-#Other Useful graph examples
+# Other Useful graph examples
 
-##Lookup up user id from UPN
-GET
-https://graph.microsoft.com/test_intune_1806/users?$filter=userPrincipalName eq '{UPN}'
+## Lookup up user id from UPN
+	GET
+	https://graph.microsoft.com/test_intune_1806/users?$filter=userPrincipalName eq '{UPN}'
 
-The user id is found in the id value of the returned object.
+	The user id is found in the id value of the returned object.
