@@ -37,12 +37,14 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     using Serialization;
     using Services.Api;
     using Newtonsoft.Json;
+    using DirectoryServices;
+    using System.Collections;
 
     /// <summary>
     /// Imports PFX certificates for delivery to user devices.
     /// </summary>
     [Cmdlet(VerbsData.Import, "IntuneUserPfxCertificate", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Medium)]
-    public class ImportUserPFXCertificate : Cmdlet
+    public class ImportUserPFXCertificate : PSCmdlet
     {
         private int successCnt;
         private int failureCnt;
@@ -126,6 +128,10 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             successCnt = 0;
             failureCnt = 0;
 
+            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
+            string graphURI = Authenticate.GetGraphURI(modulePrivateData);
+            string schemaVersion = Authenticate.GetSchemaVersion(modulePrivateData);
+
             if (CertificateList == null || CertificateList.Count == 0)
             {
                 this.ThrowTerminatingError(
@@ -139,40 +145,29 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             foreach (UserPFXCertificate cert in CertificateList)
             {
                 string url;
-                string urlNoVersion;
                 if (IsUpdate.IsPresent)
                 {
-                    GetUserPFXCertificate userPfxCmdlet = new GetUserPFXCertificate();
-                    string userId = userPfxCmdlet.GetUserIdFromUpn(cert.UserPrincipalName);
-                    url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates({2}-{3})?{4}", Authenticate.GraphURI, Authenticate.SchemaVersion, userId, cert.Thumbprint, Authenticate.APIVersionString);
-                    urlNoVersion = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates({2}-{3})", Authenticate.GraphURI, Authenticate.SchemaVersion, userId, cert.Thumbprint);
+                    string userId = GetUserPFXCertificate.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
+                    url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates({2}-{3})", graphURI, schemaVersion, userId, cert.Thumbprint);
                 }
                 else
                 {
-                    url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates?{2}", Authenticate.GraphURI, Authenticate.SchemaVersion, Authenticate.APIVersionString);
-                    urlNoVersion = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates", Authenticate.GraphURI, Authenticate.SchemaVersion);
+                    url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates", graphURI, schemaVersion);
                 }
 
                 HttpWebRequest request = CreateWebRequest(url, AuthenticationResult);
-                HttpWebRequest requestNoVersion = CreateWebRequest(urlNoVersion, AuthenticationResult);
 
                 string certJson = SerializationHelpers.SerializeUserPFXCertificate(cert);
                 byte[] contentBytes = Encoding.UTF8.GetBytes(certJson);
 
                 request.ContentLength = contentBytes.Length;
-                requestNoVersion.ContentLength = contentBytes.Length;
 
                 using (Stream reqStream = request.GetRequestStream())
                 {
                     reqStream.Write(contentBytes, 0, contentBytes.Length);
                 }
 
-                using (Stream reqStream = requestNoVersion.GetRequestStream())
-                {
-                    reqStream.Write(contentBytes, 0, contentBytes.Length);
-                }
-
-                ProcessResponse(request, requestNoVersion, cert);
+                ProcessResponse(request, cert);
             }
 
             this.WriteCommandDetail(string.Format(LogMessages.ImportCertificatesSuccess, successCnt));
@@ -182,9 +177,42 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             }
         }
 
+        /// <summary>
+        /// Uses a graph call to return the UserId for a specified UPN
+        /// </summary>
+        /// <param name="user">The User Principal Name.</param>
+        /// <returns>The Azuer UserId.</returns>
+        public virtual string GetUserIdFromUpn(string user)
+        {
+            string url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/users?$filter=userPrincipalName eq '{2}'", Authenticate.GraphURI, Authenticate.SchemaVersion, user);
+            HttpWebRequest request;
+            request = CreateWebRequest(url, AuthenticationResult);
+
+            using (var response = (HttpWebResponse)request.GetResponse())
+            {
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string responseMessage = string.Empty;
+                    using (StreamReader rs = new StreamReader(response.GetResponseStream()))
+                    {
+                        responseMessage = rs.ReadToEnd();
+                    }
+
+                    User userObj = SerializationHelpers.DeserializeUser(responseMessage);
+                    return userObj.Id;
+                }
+                else
+                {
+                    this.WriteError(new ErrorRecord(new InvalidOperationException(response.StatusDescription), response.StatusCode.ToString(), ErrorCategory.InvalidResult, user));
+                }
+            }
+
+            return null;
+        }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes", 
             Justification = "Not relevant here")]
-        private void ProcessResponse(HttpWebRequest request, HttpWebRequest requestNoVersion, UserPFXCertificate cert)
+        private void ProcessResponse(HttpWebRequest request, UserPFXCertificate cert)
         {
             bool needsRetry = false;
             TimeSpan waitTime = TimeSpan.Zero;
@@ -235,35 +263,23 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 }
                 else
                 {
-                    //Need to handle case where we want to try without version
-                    if(requestNoVersion != null)
-                    {
-                        this.WriteError(
-                            new ErrorRecord(
-                                we,
-                                "Requesting with version failed, trying without version",
-                                ErrorCategory.WriteError,
-                                cert));
-                        ProcessResponse(requestNoVersion, null, cert);
-                    }
-                    else
-                    {
-                        failureCnt++;
 
-                        var resp = new StreamReader(we.Response.GetResponseStream()).ReadToEnd();
+                    failureCnt++;
 
-                        dynamic obj = JsonConvert.DeserializeObject(resp);
-                        var messageFromServer = obj.error.message;
+                    var resp = new StreamReader(we.Response.GetResponseStream()).ReadToEnd();
 
-                        this.WriteDebug(string.Format("Error Message: {0}", messageFromServer));
+                    dynamic obj = JsonConvert.DeserializeObject(resp);
+                    var messageFromServer = obj.error.message;
 
-                        this.WriteError(
-                            new ErrorRecord(
-                                we,
-                                "\n\n Error Message" + messageFromServer + "\n\n request-id:" + we.Response.Headers["request-id"],
-                                ErrorCategory.WriteError,
-                                cert));
-                    }
+                    this.WriteDebug(string.Format("Error Message: {0}", messageFromServer));
+
+                    this.WriteError(
+                        new ErrorRecord(
+                            we,
+                            "\n\n Error Message" + messageFromServer + "\n\n request-id:" + we.Response.Headers["request-id"],
+                            ErrorCategory.WriteError,
+                            cert));
+                    
                 }
             }
 
@@ -272,7 +288,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 this.WriteWarning(string.Format(LogMessages.GetUserPfxTooManyRequests, retryAfter));
                 Thread.Sleep(TimeSpan.FromSeconds(retryAfter));
-                ProcessResponse(request, requestNoVersion, cert);
+                ProcessResponse(request, cert);
             }
         }
     }

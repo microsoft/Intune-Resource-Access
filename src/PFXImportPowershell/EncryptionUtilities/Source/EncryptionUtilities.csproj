@@ -32,16 +32,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ByteExtensionMethods.cs" />
-    <Compile Include="SecureStringUtil.cs" />
-    <Compile Include="CNGNCryptInteropFactory.cs" />
-    <Compile Include="UnmanagedRSAEncryption.cs" />
     <Compile Include="CNGNCryptInterop.cs" />
     <Compile Include="ICNGLocalKeyCrypto.cs" />
-    <Compile Include="ICNGNCryptInterop.cs" />
-    <Compile Include="ICNGNCryptInteropFactory.cs" />
+    <Compile Include="SecureStringUtil.cs" />
     <Compile Include="ManagedRSAEncryption.cs" />
-    <Compile Include="NativeMethods.cs" />
-    <Compile Include="NTSTATUS.cs" />
     <Compile Include="PaddingFlags.cs" />
     <Compile Include="PaddingHashAlgorithmNames.cs" />
   </ItemGroup>

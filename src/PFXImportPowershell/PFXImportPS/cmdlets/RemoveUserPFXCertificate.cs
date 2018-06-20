@@ -37,12 +37,13 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     using IdentityModel.Clients.ActiveDirectory;
     using Services.Api;
     using Newtonsoft.Json;
+    using System.Collections;
 
     /// <summary>
     /// Removes existing certificates based on provided PFX Certificates, Thumbprints, or User.
     /// </summary>
     [Cmdlet(VerbsCommon.Remove, "IntuneUserPfxCertificate", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Medium)]
-    public class RemoveUserPFXCertificate : Cmdlet
+    public class RemoveUserPFXCertificate : PSCmdlet
     {
         private int successCnt;
         private int failureCnt;
@@ -69,11 +70,11 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         }
 
         /// <summary>
-        /// List of thumbprints of the PFX Certificates to remove.
+        /// List of user/thumbprints pairs of the PFX Certificates to remove.
         /// </summary>
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Doesn't work for powershell parameters")]
         [Parameter(ValueFromPipeline = true, Mandatory = true, ParameterSetName = "FromThumbprints")]
-        public List<string> ThumbprintList
+        public List<UserThumbprint> UserThumbprintList
         {
             get;
             set;
@@ -108,10 +109,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             return request;
         }
 
-        public virtual GetUserPFXCertificate GetUserPFXCertificate()
-        {
-            return new GetUserPFXCertificate();
-        }
 
         /// <summary>
         /// ProcessRecord.
@@ -128,8 +125,12 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                         AuthenticationResult));
             }
 
+            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
+            string graphURI = Authenticate.GetGraphURI(modulePrivateData);
+            string schemaVersion = Authenticate.GetSchemaVersion(modulePrivateData);
+
             if ((CertificateList == null || CertificateList.Count == 0) &&
-               (ThumbprintList == null || ThumbprintList.Count == 0) &&
+               (UserThumbprintList == null || UserThumbprintList.Count == 0) &&
                (UserList == null || UserList.Count == 0))
             {
                 this.ThrowTerminatingError(
@@ -140,40 +141,48 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                         AuthenticationResult));
             }
 
-            if (ThumbprintList == null)
+            if (UserThumbprintList == null)
             {
-                ThumbprintList = new List<string>();
+                UserThumbprintList = new List<UserThumbprint>();
             }
 
             if (UserList != null)
             {
-                GetUserPFXCertificate getCerts = this.GetUserPFXCertificate();
-                getCerts.AuthenticationResult = AuthenticationResult;
-                getCerts.UserList = UserList;
+                PowerShell ps = PowerShell.Create();
+                ps.AddCommand("Import-Module").AddParameter("ModuleInfo", this.MyInvocation.MyCommand.Module);
+                ps.Invoke();
+                ps.Commands.Clear();
 
-                foreach (UserPFXCertificate cert in getCerts.Invoke<UserPFXCertificate>())
+                ps.AddCommand("Get-IntuneUserPfxCertificate");
+                ps.AddParameter("AuthenticationResult", AuthenticationResult);
+                ps.AddParameter("UserList", UserList);
+                
+                foreach (PSObject result in ps.Invoke())
                 {
-                    ThumbprintList.Add(cert.Thumbprint);
+                    UserPFXCertificate cert = result.BaseObject as UserPFXCertificate;
+                    string userId = GetUserPFXCertificate.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
+                    UserThumbprintList.Add(new UserThumbprint() { User = userId, Thumbprint = cert.Thumbprint });
                 }
             }
 
             if (CertificateList != null && CertificateList.Count > 0)
             {
-                ThumbprintList.AddRange(CertificateList.Select(p => p.Thumbprint).ToList());
+                foreach(UserPFXCertificate cert in CertificateList)
+                {
+                    string userId = GetUserPFXCertificate.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
+                    UserThumbprintList.Add(new UserThumbprint() { User = userId, Thumbprint = cert.Thumbprint });
+                }
             }
 
             successCnt = 0;
             failureCnt = 0;
 
-            foreach (string thumbprint in ThumbprintList)
+            foreach (UserThumbprint userThumbprint in UserThumbprintList)
             {
-                string url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates/{2}?{3}", Authenticate.GraphURI, Authenticate.SchemaVersion, thumbprint, Authenticate.APIVersionString);
-                string nonVersionUrl = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates/{2}", Authenticate.GraphURI, Authenticate.SchemaVersion, thumbprint);
+                string url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates/{2}-{3}", graphURI, schemaVersion, userThumbprint.User, userThumbprint.Thumbprint);
                 HttpWebRequest request;
                 request = CreateWebRequest(url, AuthenticationResult);
-                HttpWebRequest nonVersionRequest;
-                nonVersionRequest = CreateWebRequest(nonVersionUrl, AuthenticationResult);
-                ProcessResponse(request, nonVersionRequest, thumbprint);
+                ProcessResponse(request, userThumbprint.User + "-" + userThumbprint.Thumbprint);
             }
 
             this.WriteCommandDetail(string.Format(LogMessages.RemoveCertificateSuccess, successCnt));
@@ -185,7 +194,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes", 
             Justification = "Not relevant here")]
-        private void ProcessResponse(HttpWebRequest request, HttpWebRequest nonVersionRequest, string thumbprint)
+        private void ProcessResponse(HttpWebRequest request, string userthumbprint)
         {
             bool needsRetry = false;
             TimeSpan waitTime = TimeSpan.Zero;
@@ -207,10 +216,10 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 
                         this.WriteError(
                             new ErrorRecord(
-                                new InvalidOperationException(string.Format("Remove failed for {0}: {1}{2}{3}", thumbprint, response.StatusCode, Environment.NewLine, responseMessage)),
+                                new InvalidOperationException(string.Format("Remove failed for {0}: {1}{2}{3}", userthumbprint, response.StatusCode, Environment.NewLine, responseMessage)),
                                 "Remove Failed",
                                 ErrorCategory.InvalidResult,
-                                thumbprint));
+                                userthumbprint));
                         failureCnt++;
                     }
                     else
@@ -237,28 +246,13 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 }
                 else
                 {
-                    //Need to handle case where we try without the version string
-                    if(nonVersionRequest != null)
-                    {
-                        this.WriteError(
-                        new ErrorRecord(
-                            we,
-                            "Requesting with version failed, trying without version",
-                            ErrorCategory.WriteError,
-                            null));
-                        ProcessResponse(nonVersionRequest, null, thumbprint);
-                    }
-                    else
-                    {
-                        var resp = new StreamReader(we.Response.GetResponseStream()).ReadToEnd();
+                    var resp = new StreamReader(we.Response.GetResponseStream()).ReadToEnd();
 
-                        dynamic obj = JsonConvert.DeserializeObject(resp);
-                        var messageFromServer = obj.error.message;
+                    dynamic obj = JsonConvert.DeserializeObject(resp);
+                    var messageFromServer = obj.error.message;
 
-                        this.WriteDebug(string.Format("Error Message: {0}", messageFromServer));
-                        this.WriteError(new ErrorRecord(we, we.Message + messageFromServer + " request-id:" + we.Response.Headers["request-id"], ErrorCategory.InvalidResult, null));
-
-                    }
+                    this.WriteDebug(string.Format("Error Message: {0}", messageFromServer));
+                    this.WriteError(new ErrorRecord(we, we.Message + messageFromServer + " request-id:" + we.Response.Headers["request-id"], ErrorCategory.InvalidResult, null));
                 }
             }
 
@@ -267,7 +261,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 this.WriteWarning(string.Format(LogMessages.GetUserPfxTooManyRequests, retryAfter));
                 Thread.Sleep(TimeSpan.FromSeconds(retryAfter));
-                ProcessResponse(request, nonVersionRequest, thumbprint);
+                ProcessResponse(request, userthumbprint);
             }
         }
     }

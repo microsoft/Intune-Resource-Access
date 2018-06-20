@@ -38,6 +38,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     using Services.Api;
     using Serialization;
     using DirectoryServices;
+    using System.Collections;
 
     public struct UserThumbprint
     {
@@ -50,8 +51,10 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "IntuneUserPfxCertificate", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Medium)]
     [OutputType(typeof(List<UserPFXCertificate>))]
-    public class GetUserPFXCertificate : Cmdlet
+    public class GetUserPFXCertificate : PSCmdlet
     {
+
+
         /// <summary>
         /// AuthenticationResult retrieved from Get-IntuneAuthenticationToken
         /// </summary>
@@ -90,7 +93,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// </summary>
         /// <param name="url">The graph url for the request.</param>
         /// <returns>The Created HttpWebRequest.</returns>
-        public virtual HttpWebRequest CreateWebRequest(string url, AuthenticationResult authRes)
+        public static HttpWebRequest CreateWebRequest(string url, AuthenticationResult authRes)
         {
             if(authRes == null)
             {
@@ -108,11 +111,11 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// </summary>
         /// <param name="user">The User Principal Name.</param>
         /// <returns>The Azuer UserId.</returns>
-        public virtual string GetUserIdFromUpn(string user)
+        public static string GetUserIdFromUpn(string user, string graphURI, string schemaVersion, AuthenticationResult authenticationResult)
         {
-            string url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/users?$filter=userPrincipalName eq '{2}'", Authenticate.GraphURI, Authenticate.SchemaVersion, user);
+            string url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/users?$filter=userPrincipalName eq '{2}'", graphURI, schemaVersion, user);
             HttpWebRequest request;
-            request = CreateWebRequest(url, AuthenticationResult);
+            request = CreateWebRequest(url, authenticationResult);
 
             using (var response = (HttpWebResponse)request.GetResponse())
             {
@@ -129,11 +132,9 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 }
                 else
                 {
-                    this.WriteError(new ErrorRecord(new InvalidOperationException(response.StatusDescription), response.StatusCode.ToString(), ErrorCategory.InvalidResult, user));
+                   throw new InvalidOperationException(response.StatusDescription);
                 }
             }
-
-            return null;
         }
 
         /// <summary>
@@ -151,19 +152,23 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                         AuthenticationResult));
             }
 
-            string urlbase = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates", Authenticate.GraphURI, Authenticate.SchemaVersion);
+            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
+            string graphURI = Authenticate.GetGraphURI(modulePrivateData);
+            string schemaVersion = Authenticate.GetSchemaVersion(modulePrivateData);
+
+            string urlbase = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates", graphURI, schemaVersion);
 
             if (UserThumbprintList != null && UserThumbprintList.Count > 0)
             {
                 foreach (UserThumbprint userthumbprint in UserThumbprintList)
                 {
-                    string userid = GetUserIdFromUpn(userthumbprint.User);
+                    string userid = GetUserIdFromUpn(userthumbprint.User, graphURI, schemaVersion, AuthenticationResult);
 
-                    string urlWithoutVersion = string.Format("{0}/{1}-{2}", urlbase, userid, userthumbprint.Thumbprint);
+                    string url = string.Format("{0}/{1}-{2}", urlbase, userid, userthumbprint.Thumbprint);
                     HttpWebRequest request;
                     try
                     {
-                        request = CreateWebRequest(urlWithoutVersion, AuthenticationResult);
+                        request = CreateWebRequest(url, AuthenticationResult);
 
                         // Returns a single record and comes back in a different format than the other requests.
                         ProcessSingleResponse(request, "User:" + userthumbprint.User + " Thumbprint:" + userthumbprint.Thumbprint);
@@ -171,20 +176,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                     catch (WebException we)
                     {
                         this.WriteError(new ErrorRecord(we, we.Message + " request-id:" + we.Response.Headers["request-id"], ErrorCategory.InvalidResult, userthumbprint));
-
-                        try
-                        {
-                            string urlWithVersion = string.Format("{0}/{1}-{2}?{3}", urlbase, userid, userthumbprint.Thumbprint, Authenticate.APIVersionString);
-
-                            request = CreateWebRequest(urlWithoutVersion, AuthenticationResult);
-
-                            // Returns a single record and comes back in a different format than the other requests.
-                            ProcessSingleResponse(request, "User:" + userthumbprint.User + " Thumbprint:" + userthumbprint.Thumbprint);
-                        }
-                        catch(WebException weWithVersion)
-                        {
-                            this.WriteError(new ErrorRecord(weWithVersion, weWithVersion.Message + " request-id:" + weWithVersion.Response.Headers["request-id"], ErrorCategory.InvalidResult, userthumbprint));
-                        }
                     }
                 }
             }
@@ -192,8 +183,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 foreach (string user in UserList)
                 {
-                    string url = string.Format("{0}?$filter=userPrincipalName eq '{2}'", urlbase, user);
-                    string urlWithVersion = string.Format("{0}?{1}&$filter=userPrincipalName eq '{2}'", urlbase, Authenticate.APIVersionString, user);
+                    string url = string.Format("{0}?$filter=userPrincipalName eq '{1}'", urlbase, user);
                     HttpWebRequest request;
                     try
                     {
@@ -203,16 +193,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                     catch (WebException we)
                     {
                         this.WriteError(new ErrorRecord(we, we.Message + " request-id:" + we.Response.Headers["request-id"], ErrorCategory.InvalidResult, user));
-
-                        try
-                        {
-                            request = CreateWebRequest(url, AuthenticationResult);
-                            ProcessCollectionResponse(request, user);
-                        }
-                        catch(WebException weWithVersion)
-                        {
-                            this.WriteError(new ErrorRecord(weWithVersion, weWithVersion.Message + " request-id:" + weWithVersion.Response.Headers["request-id"], ErrorCategory.InvalidResult, user));
-                        }
                     }
                 }
             }

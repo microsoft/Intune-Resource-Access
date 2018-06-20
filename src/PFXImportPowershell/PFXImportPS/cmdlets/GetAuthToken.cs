@@ -24,6 +24,7 @@
 namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 {
     using System;
+    using System.Collections;
     using System.Management.Automation;
     using System.Security;
     using IdentityModel.Clients.ActiveDirectory;
@@ -58,7 +59,9 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 
         protected override void ProcessRecord()
         {
-            AuthenticationResult authToken = Authenticate.GetAuthToken(AdminUserName, AdminPassword);
+
+            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
+            AuthenticationResult authToken = Authenticate.GetAuthToken(AdminUserName, AdminPassword, modulePrivateData);
             if (!Authenticate.AuthTokenIsValid(authToken))
             {
                 this.ThrowTerminatingError(
