@@ -38,7 +38,7 @@ public class Example
         Properties props = new Properties();
         props.load(in);
         in.close();
-		
+        
         UUID transactionId = UUID.randomUUID();
         String csr = "BASE64 Encoded CSR would go here";
         
@@ -52,20 +52,20 @@ public class Example
         
         try 
         {
-        	client.ValidateRequest(transactionId.toString(), csr);
+            client.ValidateRequest(transactionId.toString(), csr);
             
             client.SendSuccessNotification(transactionId.toString(), csr, "thumbprint", "serial", "2018-06-11T16:11:20.0904778Z", "authority");
             
-            client.SendFailureNotification(transactionId.toString(), csr, 0x8000ffff, "description");	
+            client.SendFailureNotification(transactionId.toString(), csr, 0x8000ffff, "description");    
         }
         catch(IntuneScepServiceException e)
         {
-        	// ERROR Handling for known exception scenario here
+            // ERROR Handling for known exception scenario here
             System.exit(1);
         }
         catch(Exception e)
         {
-        	// ERROR Handling for unknown exception here
+            // ERROR Handling for unknown exception here
             System.exit(1);
         }
         

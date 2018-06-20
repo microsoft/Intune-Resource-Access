@@ -71,8 +71,8 @@ public class IntuneScepServiceClient extends IntuneClient
      */
     public IntuneScepServiceClient(Properties configProperties, ADALClientWrapper adalClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException 
     {
-    	super(configProperties, adalClient, httpClientBuilder);
-    	
+        super(configProperties, adalClient, httpClientBuilder);
+        
         if(configProperties == null)
         {
             throw new IllegalArgumentException("The argument 'configProperties' is missing"); 
@@ -89,7 +89,7 @@ public class IntuneScepServiceClient extends IntuneClient
         additionalHeaders.put("UserAgent", providerNameAndVersion);
     }
 
-	/**
+    /**
      * Validates whether the given Certificate Request is a valid and from Microsoft Intune.
      * If the request is not valid an exception will be thrown.  
      * 
