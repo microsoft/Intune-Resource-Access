@@ -104,6 +104,8 @@ public class Test
                         public boolean matches(HttpUriRequest resp) {
                             return resp.getURI().getHost().equals(Helper.SERVICE_URL);
                         }}));
+            
+            assertTrue(e.getParsedErrorCode() == IntuneScepServiceException.ErrorCode.ChallengeDecodingError);
             return;
         }
         
@@ -177,45 +179,6 @@ public class Test
                         }}));
 
             verify(helper.httpClient, times(0)).execute(
-                    argThat(new ArgumentMatcher<HttpUriRequest>() {
-                        @Override
-                        public boolean matches(HttpUriRequest resp) {
-                            return resp.getURI().getHost().equals(Helper.SERVICE_URL);
-                        }}));
-            return;
-        }
-        
-        assertNotNull(null);
-    }
-    
-    @org.junit.Test
-    public void TestStatusCodeErrorThrows() throws IntuneScepServiceException, Exception 
-    {
-        Helper helper = new Helper();
-        
-        when(helper.intuneStatus.getStatusCode())
-            .thenReturn(401);
-        
-        IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.adal, helper.httpBuilder);
-        
-        UUID transactionId = UUID.randomUUID();
-        String csr = "test";
-        try 
-        {
-            client.ValidateRequest(transactionId.toString(), csr);
-        }
-        catch(IntuneClientHttpErrorException e)
-        {
-            verify(helper.adal, times(2)).getAccessTokenFromCredential(anyString());
-            
-            verify(helper.httpClient, times(1)).execute(
-                    argThat(new ArgumentMatcher<HttpUriRequest>() {
-                        @Override
-                        public boolean matches(HttpUriRequest resp) {
-                            return resp.getURI().getHost().equals(Helper.GRAPH_URL);
-                        }}));
-
-            verify(helper.httpClient, times(1)).execute(
                     argThat(new ArgumentMatcher<HttpUriRequest>() {
                         @Override
                         public boolean matches(HttpUriRequest resp) {
