@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.UUID;
 
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ import com.microsoft.intune.scepvalidation.IntuneScepServiceException.ErrorCode;
 public class IntuneScepServiceClient extends IntuneClient
 {
     private String serviceVersion = "2018-02-20";
-    private final static String VALIDATION_SERVICE_NAME = "ScepRequestValidationFEService";
+    public final static String VALIDATION_SERVICE_NAME = "ScepRequestValidationFEService";
     private final static String VALIDATION_URL = "ScepActions/validateRequest";
     private final static String NOTIFY_SUCCESS_URL = "ScepActions/successNotification";
     private final static String NOTIFY_FAILURE_URL = "ScepActions/failureNotification";
@@ -52,13 +53,26 @@ public class IntuneScepServiceClient extends IntuneClient
     final Logger log = LoggerFactory.getLogger(IntuneScepServiceClient.class);
     
     /**
-     * IntuneSceptService Client constructor
+     * IntuneScepService Client constructor
      * @param configProperties Properties object containing client configuration information.
      * @throws IllegalArgumentException
      */
-    public IntuneScepServiceClient(Properties configProperties) throws IllegalArgumentException {
-        super(configProperties);
-
+    public IntuneScepServiceClient(Properties configProperties) throws IllegalArgumentException 
+    {
+        this(configProperties, null, null);
+    }
+    
+    /**
+     * IntuneScepService Client constructor meant for dependency injection
+     * @param configProperties
+     * @param adalClient
+     * @param httpClientBuilder
+     * @throws IllegalArgumentException
+     */
+    public IntuneScepServiceClient(Properties configProperties, ADALClientWrapper adalClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException 
+    {
+        super(configProperties, adalClient, httpClientBuilder);
+        
         if(configProperties == null)
         {
             throw new IllegalArgumentException("The argument 'configProperties' is missing"); 
@@ -74,7 +88,7 @@ public class IntuneScepServiceClient extends IntuneClient
         
         additionalHeaders.put("UserAgent", providerNameAndVersion);
     }
-        
+
     /**
      * Validates whether the given Certificate Request is a valid and from Microsoft Intune.
      * If the request is not valid an exception will be thrown.  

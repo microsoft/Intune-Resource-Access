@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import com.microsoft.intune.scepvalidation.IntuneScepServiceClient;
+import com.microsoft.intune.scepvalidation.IntuneScepServiceException;
 
 public class Example 
 {
@@ -37,9 +38,9 @@ public class Example
         Properties props = new Properties();
         props.load(in);
         in.close();
-		
+        
         UUID transactionId = UUID.randomUUID();
-        String csr = "";
+        String csr = "BASE64 Encoded CSR would go here";
         
         IntuneScepServiceClient client = new IntuneScepServiceClient(props);
         
@@ -49,10 +50,25 @@ public class Example
         //SSLTunnelSocketFactory sslFactory = new SSLTunnelSocketFactory("127.0.0.1", new Integer(8888).toString());
         //client.SetSslSocketFactory(sslFactory);
         
-        client.ValidateRequest(transactionId.toString(), csr);
+        try 
+        {
+            client.ValidateRequest(transactionId.toString(), csr);
+            
+            client.SendSuccessNotification(transactionId.toString(), csr, "thumbprint", "serial", "2018-06-11T16:11:20.0904778Z", "authority");
+            
+            client.SendFailureNotification(transactionId.toString(), csr, 0x8000ffff, "description");    
+        }
+        catch(IntuneScepServiceException e)
+        {
+            // ERROR Handling for known exception scenario here
+            System.exit(1);
+        }
+        catch(Exception e)
+        {
+            // ERROR Handling for unknown exception here
+            System.exit(1);
+        }
         
-        client.SendSuccessNotification(transactionId.toString(), csr, "thumbprint", "serial", "2018-06-11T16:11:20.0904778Z", "authority");
-        
-        client.SendFailureNotification(transactionId.toString(), csr, 0x8000ffff, "description");
+        System.exit(0);
     }
  }
