@@ -269,7 +269,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         }
 
         /// <summary>
-        /// Parses thepadding flags into an RSAEncryptionPadding object we can use with the API
+        /// Parses the padding flags into an RSAEncryptionPadding object we can use with the API
         /// Look in PaddingFlags.cs for values, but supports only PKCS1 amd OAEP
         /// </summary>
         /// <param name="hashAlgorithm">Name of the hash algorithm to use, look in the PaddingHashAlgorithmNames enum for values</param>
@@ -308,20 +308,24 @@ namespace Microsoft.Intune.EncryptionUtilities
         /// <returns>CNG HashAlgorithmName</returns>
         private HashAlgorithmName GetHashAlgorithmNameFromPlaintext(string hashAlgorithm)
         {
+            if (hashAlgorithm == null)
+            {
+                throw new ArgumentNullException(nameof(hashAlgorithm));
+            }
             HashAlgorithmName hashAlgorithmName;
-            if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA1))
+            if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA1, StringComparison.Ordinal))
             {
                 hashAlgorithmName = HashAlgorithmName.SHA1;
             }
-            else if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA256))
+            else if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA256, StringComparison.Ordinal))
             {
                 hashAlgorithmName = HashAlgorithmName.SHA256;
             }
-            else if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA384))
+            else if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA384, StringComparison.Ordinal))
             {
                 hashAlgorithmName = HashAlgorithmName.SHA384;
             }
-            else if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA512))
+            else if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA512, StringComparison.Ordinal))
             {
                 hashAlgorithmName = HashAlgorithmName.SHA512;
             }
