@@ -109,6 +109,7 @@ namespace Microsoft.Management.Services.Api
         /// <summary>
         /// Id Key. Takes from the UserId and Thumbprint.
         /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Id { get; set; }
         /// <summary>
         /// SHA-1 thumbprint of the PFX certificate.
