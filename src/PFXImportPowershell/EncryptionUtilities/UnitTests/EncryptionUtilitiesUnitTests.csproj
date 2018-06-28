@@ -40,10 +40,6 @@
       <Project>{95939ab7-7982-4bbc-b73e-c74aded25f66}</Project>
       <Name>Microsoft.Intune.EncryptionUtilities</Name>
     </ProjectReference>
-    <ProjectReference Include="$(REPOROOT)\src\CommonLibraries\TestCommon\Source\TestCommon.csproj">
-      <Project>{D74CCFD9-8458-4FCD-8842-E5938A64603E}</Project>
-      <Name>TestCommon</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">

@@ -92,14 +92,12 @@ namespace Microsoft.Intune.EncryptionUtilities
         public byte[] DecryptWithLocalKey(string providerName, string keyName, byte[] toDecrypt, string hashAlgorithm = PaddingHashAlgorithmNames.SHA512, int paddingFlags = PaddingFlags.OAEPPadding)
         {
             CngProvider provider = new CngProvider(providerName);
-            CngKey key = null;
-            RSACng rsa = null;
             bool keyExists = false;
             byte[] decrypted;
 
             try
             {
-                keyExists = CngKey.Exists(keyName, provider))
+                keyExists = CngKey.Exists(keyName, provider);
             }
             catch (CryptographicException e)
             {
