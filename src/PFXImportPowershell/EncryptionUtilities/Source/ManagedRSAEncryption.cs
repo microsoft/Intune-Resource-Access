@@ -51,52 +51,31 @@ namespace Microsoft.Intune.EncryptionUtilities
         public byte[] EncryptWithLocalKey(string providerName, string keyName, byte[] toEncrypt, string hashAlgorithm = PaddingHashAlgorithmNames.SHA512, int paddingFlags = PaddingFlags.OAEPPadding)
         {
             CngProvider provider = new CngProvider(providerName);
-            CngKey key = null;
-            RSACng rsa = null;
             bool keyExists = false;
             byte[] encryptedData = null;
 
             try
             {
-                try
-                {
-                    if (CngKey.Exists(keyName, provider))
-                    {
-                        keyExists = true;
-                    }
-                }
-                catch (CryptographicException e)
-                {
-                    // This happens if the provider isn't a valid one, but we want the exception to have better info
-                    throw new CryptographicException(string.Format("The provider {0} does not exist", providerName), e);
-                }
-
-                if (keyExists)
-                {
-                    key = CngKey.Open(keyName, provider);
-                }
-                else
-                {
-                    throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for encryption", keyName));
-                }
-
-                rsa = new RSACng(key);
-                RSAEncryptionPadding padding = this.GetRSAPadding(hashAlgorithm, paddingFlags);
-                encryptedData = rsa.Encrypt(toEncrypt, padding);
+                keyExists = CngKey.Exists(keyName, provider);
             }
-            finally
+            catch (CryptographicException e)
             {
-                if (rsa != null)
-                {
-                    rsa.Dispose();
-                }
-
-                if (key != null)
-                {
-                    key.Dispose();
-                }
+                // This happens if the provider isn't a valid one, but we want the exception to have better info
+                throw new CryptographicException(string.Format("The provider {0} does not exist", providerName), e);
             }
 
+            if (!keyExists)
+            {
+                throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for encryption", keyName));
+            }
+            using (CngKey key = CngKey.Open(keyName, provider))
+            {
+                using (RSACng rsa = new RSACng(key))
+                {
+                    RSAEncryptionPadding padding = this.GetRSAPadding(hashAlgorithm, paddingFlags);
+                    encryptedData = rsa.Encrypt(toEncrypt, padding);
+                }
+            }
             return encryptedData;
         }
 
@@ -120,45 +99,27 @@ namespace Microsoft.Intune.EncryptionUtilities
 
             try
             {
-                try
-                {
-                    if (CngKey.Exists(keyName, provider))
-                    {
-                        keyExists = true;
-                    }
-                }
-                catch (CryptographicException e)
-                {
-                    // This happens if the provider isn't a valid one, but we want the exception to have better info
-                    throw new CryptographicException(string.Format("The provider {0} does not exist", providerName), e);
-                }
-
-                if (keyExists)
-                {
-                    key = CngKey.Open(keyName, provider);
-                }
-                else
-                {
-                    throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for decryption", keyName));
-                }
-
-                rsa = new RSACng(key);
-                RSAEncryptionPadding padding = this.GetRSAPadding(hashAlgorithm, paddingFlags);
-                decrypted = rsa.Decrypt(toDecrypt, padding);
+                keyExists = CngKey.Exists(keyName, provider))
             }
-            finally
+            catch (CryptographicException e)
             {
-                if (rsa != null)
-                {
-                    rsa.Dispose();
-                }
-
-                if (key != null)
-                {
-                    key.Dispose();
-                }
+                // This happens if the provider isn't a valid one, but we want the exception to have better info
+                throw new CryptographicException(string.Format("The provider {0} does not exist", providerName), e);
             }
 
+            if (!keyExists)
+            {
+                throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for decryption", keyName));
+            }
+
+            using (CngKey key = CngKey.Open(keyName, provider))
+            {
+                using (RSACng rsa = new RSACng(key))
+                {
+                    RSAEncryptionPadding padding = this.GetRSAPadding(hashAlgorithm, paddingFlags);
+                    decrypted = rsa.Decrypt(toDecrypt, padding);
+                }
+            }
             return decrypted;
         }
 
@@ -172,33 +133,21 @@ namespace Microsoft.Intune.EncryptionUtilities
         public bool TryGenerateLocalRSAKey(string providerName, string keyName, int keyLength = 2048)
         {
             CngProvider provider = new CngProvider(providerName);
-            CngKey key = null;
 
-            try
+            if (CngKey.Exists(keyName, provider))
             {
-                if (CngKey.Exists(keyName, provider))
-                {
-                    return false;
-                }
-                else
-                {
-                    CngKeyCreationParameters keyParams = new CngKeyCreationParameters()
-                    {
-                        ExportPolicy = CngExportPolicies.None,
-                        Provider = provider,
-                        Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None) }
-                    };
-
-                    key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams);
-                    return true;
-                }
+                return false;
             }
-            finally
+            CngKeyCreationParameters keyParams = new CngKeyCreationParameters()
             {
-                if (key != null)
-                {
-                    key.Dispose();
-                }
+                ExportPolicy = CngExportPolicies.None,
+                Provider = provider,
+                Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None) }
+            };
+
+            using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams)) {
+                // nothing to do inside here, except to return without throwing an exception
+                return true;
             }
         }
 
@@ -320,7 +269,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         }
 
         /// <summary>
-        /// Parses thepadding flags into an RSAEncryptionPadding object we can use with the API
+        /// Parses the padding flags into an RSAEncryptionPadding object we can use with the API
         /// Look in PaddingFlags.cs for values, but supports only PKCS1 amd OAEP
         /// </summary>
         /// <param name="hashAlgorithm">Name of the hash algorithm to use, look in the PaddingHashAlgorithmNames enum for values</param>
@@ -359,20 +308,24 @@ namespace Microsoft.Intune.EncryptionUtilities
         /// <returns>CNG HashAlgorithmName</returns>
         private HashAlgorithmName GetHashAlgorithmNameFromPlaintext(string hashAlgorithm)
         {
+            if (hashAlgorithm == null)
+            {
+                throw new ArgumentNullException(nameof(hashAlgorithm));
+            }
             HashAlgorithmName hashAlgorithmName;
-            if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA1))
+            if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA1, StringComparison.Ordinal))
             {
                 hashAlgorithmName = HashAlgorithmName.SHA1;
             }
-            else if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA256))
+            else if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA256, StringComparison.Ordinal))
             {
                 hashAlgorithmName = HashAlgorithmName.SHA256;
             }
-            else if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA384))
+            else if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA384, StringComparison.Ordinal))
             {
                 hashAlgorithmName = HashAlgorithmName.SHA384;
             }
-            else if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA512))
+            else if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA512, StringComparison.Ordinal))
             {
                 hashAlgorithmName = HashAlgorithmName.SHA512;
             }

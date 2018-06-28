@@ -109,6 +109,10 @@ namespace Microsoft.Intune.EncryptionUtilities
                 throw new ArgumentNullException(nameof(dest));
             }
 
+            // NOTE: SecureString only appends individual char data, thus it does not
+            //       treat higher Unicode code points as a single character.  This makes
+            //       it 'safe' to simply check against a destination buffer length
+            //       that is twice the number of chars stored in SecureString.
             if (dest.Length < source.Length * 2)
             {
                 throw new ArgumentException("Buffer too small");
@@ -215,7 +219,15 @@ namespace Microsoft.Intune.EncryptionUtilities
                 }
                 else
                 {
-                    throw new InvalidDataException("Invalid UTF-8 encoding");
+                    // This is not necessarily invalid UTF-8 encoding.
+                    // For example, it could be a code point outside the BMP.
+                    // Rather, all UTF-8 characters up to 3-byte encoding
+                    // are in code point range of 0x0000..0xFFFF, and thus
+                    // encode a value that fits into a single UCS-2 character. 
+                    // Example: U+1F355 is the "SLICE OF PIZZA" unicode character.
+                    //          U+1F355 is UTF-8 encoded as the four-byte sequence F0 9F 8D 95
+                    //          This would be valid UTF-8, but fail here.
+                    throw new InvalidDataException("Cannot convert UTF-8 characters above 0xFFFF into USC-2");
                 }
             }
 
