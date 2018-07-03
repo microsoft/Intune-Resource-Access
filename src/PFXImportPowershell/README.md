@@ -87,6 +87,6 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 
 ## Lookup up user id from UPN
 	GET
-	https://graph.microsoft.com/test_intune_1806/users?$filter=userPrincipalName eq '{UPN}'
+	https://graph.microsoft.com/beta/users?$filter=userPrincipalName eq '{UPN}'
 
 	The user id is found in the id value of the returned object.
