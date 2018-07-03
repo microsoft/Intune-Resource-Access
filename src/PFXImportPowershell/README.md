@@ -19,7 +19,7 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 	# 2. Get Base64 String Certificate
 	$Base64Certificate =ConvertTo-IntuneBase64EncodedPfxCertificate -CertificatePath "<FullPathPFXToCert>"
 	# 3. Base64 String
-	$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "IntendedPurpose" "PaddingScheme"
+	$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>"
 	
 
 ## Import Example
@@ -60,7 +60,6 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
  
 	{
 		"@odata.type": "#microsoft.graph.userPFXCertificate",
-		"id": "",
 		"thumbprint": "f6f51856-1856-f6f5-5618-f5f65618f5f6",
 		"intendedPurpose": "smimeEncryption",
 		"userPrincipalName": "User1@contoso.onmicrosoft.com",
