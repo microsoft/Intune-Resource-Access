@@ -19,7 +19,7 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 	# 2. Get Base64 String Certificate
 	$Base64Certificate =ConvertTo-IntuneBase64EncodedPfxCertificate -CertificatePath "<FullPathPFXToCert>"
 	# 3. Base64 String
-	$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>"
+	$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate -PfxPassword $SecureFilePassword -UPN "<UserUPN>" -ProviderName "<ProviderName>" -KeyName "<KeyName>" [-IntendedPurpose "<Unassigned | SmimeEncryption | SmimeSigning>" -PaddingScheme "<None | Pkcs1 | OaepSha1 | OaepSha256 | OaepSha384 | OaepSha512>"
 	
 
 ## Import Example
@@ -76,7 +76,22 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 ## PATCH
 	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{UserId}-{Thumbprint}')
 
-	For payload, see above example.
+	with an example payload:
+	{
+		"@odata.type": "#microsoft.graph.userPFXCertificate",
+		"id": "a10643dd-e667-4be4-8e4d-4e1c8e77bfd4-f6f51856-1856-f6f5-5618-f5f65618f5f6"
+		"thumbprint": "f6f51856-1856-f6f5-5618-f5f65618f5f6",
+		"intendedPurpose": "smimeEncryption",
+		"userPrincipalName": "User1@contoso.onmicrosoft.com",
+		"startDateTime": "2016-12-31T23:58:46.7156189-07:00",
+		"expirationDateTime": "2016-12-31T23:57:57.2481234-07:00",
+		"providerName": "Provider Name value",
+		"keyName": "Key Name value",
+		"encryptedPfxBlob": "{Base64Encrypted Blob}",
+		"encryptedPfxPassword": "{Base64Encrypted Blob}",
+		"createdDateTime": "2017-01-01T00:02:43.5775965-07:00",
+		"lastModifiedDateTime": "2017-01-01T00:00:35.1329464-07:0"
+	}
 
 ## DELETE
 	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{UserId}-{Thumbprint}')
