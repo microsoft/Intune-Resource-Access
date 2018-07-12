@@ -30,6 +30,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace lib
 {
@@ -166,7 +167,16 @@ namespace lib
                 HttpResponseMessage response = await client.PostAsync(intuneRequestUrl, httpContent);
                 if (response.IsSuccessStatusCode)
                 {
-                    jsonResponse = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                    string result = response.Content.ReadAsStringAsync().Result;
+                    try
+                    {
+                        jsonResponse = JObject.Parse(result);
+                    }
+                    catch (JsonReaderException e)
+                    {
+                        throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {result}");
+                    }
+                    
                 }
                 else
                 {
@@ -242,7 +252,15 @@ namespace lib
 
                 if (response.IsSuccessStatusCode)
                 {
-                    JObject jsonResponse = JObject.Parse(result);
+                    JObject jsonResponse;
+                    try
+                    {
+                        jsonResponse = JObject.Parse(result);
+                    }
+                    catch(JsonReaderException e)
+                    {
+                        throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {result}");
+                    }
 
                     JToken serviceEndpoints = null;
                     if (jsonResponse.TryGetValue("value", out serviceEndpoints))
