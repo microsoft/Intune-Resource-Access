@@ -63,7 +63,7 @@ namespace lib
 
             if(intuneClient == null)
             {
-                intuneClient = new IntuneClient(azureAppId, azureAppKey, intuneTenant, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl, authAuthority);
+                intuneClient = new IntuneClient(azureAppId, azureAppKey, intuneTenant, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl, authAuthority, trace:trace);
             }
             this.intuneClient = intuneClient;
 
@@ -216,7 +216,7 @@ namespace lib
                 string code = (string)result["code"];
                 string errorDescription = (string)result["errorDescription"];
 
-                IntuneScepServiceException e = new IntuneScepServiceException(code, errorDescription, transactionId, activityId);
+                IntuneScepServiceException e = new IntuneScepServiceException(code, errorDescription, transactionId, activityId, trace);
 
                 if (e.getParsedErrorCode() != IntuneScepServiceException.ErrorCode.Success)
                 {

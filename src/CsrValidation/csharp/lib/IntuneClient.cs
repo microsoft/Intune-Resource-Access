@@ -71,7 +71,7 @@ namespace lib
 
             if (authClient == null)
             {
-                authClient = new ADALClientWrapper(this.intuneTenant, this.aadCredential, authAuthority: authAuthority);
+                authClient = new ADALClientWrapper(this.intuneTenant, this.aadCredential, authAuthority: authAuthority, trace:trace);
             }
             this.authClient = authClient;
 
@@ -238,9 +238,11 @@ namespace lib
                 client.DefaultRequestHeaders.Add("client-request-id", activityId.ToString());
 
                 HttpResponseMessage response = await client.GetAsync(graphRequest);
+                String result = response.Content.ReadAsStringAsync().Result;
+
                 if (response.IsSuccessStatusCode)
                 {
-                    JObject jsonResponse = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                    JObject jsonResponse = JObject.Parse(result);
 
                     JToken serviceEndpoints = null;
                     if (jsonResponse.TryGetValue("value", out serviceEndpoints))
@@ -254,12 +256,12 @@ namespace lib
                     }
                     else
                     {
-                        // TODO: figure out what to do here for error
+                        throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {jsonResponse.ToString()}");
                     }
                 }
                 else
                 {
-                    // TODO: figure out what to do here for error
+                    throw new IntuneClientException($"ServiceDiscovery returned unsuccesfully with HTTP StatusCode:{response.StatusCode} and Response:{result}");
                 }
             }
             catch (HttpRequestException e)

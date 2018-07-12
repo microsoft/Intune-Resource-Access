@@ -23,6 +23,7 @@
 
 
 using System;
+using System.Diagnostics;
 
 namespace lib
 {
@@ -107,7 +108,7 @@ namespace lib
             return this.activityId;
         }
 
-        public IntuneScepServiceException(string errorCode, string errorDescription, string transactionId, Guid activityId) : base(
+        public IntuneScepServiceException(string errorCode, string errorDescription, string transactionId, Guid activityId, TraceSource trace) : base(
             "ActivityId:" + activityId + "," +
             "TransactionId:" + transactionId + "," +
             "ErrorCode:" + errorCode + "," +
@@ -116,15 +117,15 @@ namespace lib
             this.activityId = activityId;
             this.transactionId = transactionId;
             this.errorCode = errorCode;
+
             try
             {
-                // TODO: Figure out how to parse
-                //parsedErrorCode = this.errorCode;
+                parsedErrorCode = (ErrorCode)Enum.Parse(typeof(ErrorCode), this.errorCode);
             }
-            catch (ArgumentException e)
+            catch(ArgumentException)
             {
-                // TODO: Log
-                //log.warn("Error Code value not expected: " + this.errorCode);
+                trace.TraceEvent(TraceEventType.Error, 0, $"Error Code value not expected: {this.errorCode}");
+                throw;
             }
         }
     }

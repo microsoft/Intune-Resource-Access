@@ -50,7 +50,6 @@ namespace lib
         {
             initialize(aadTenant, credential, authAuthority);
 
-            // TODO: catch some exception here
             context = new AuthenticationContextWrapper(new AuthenticationContext(this.authority + aadTenant, false));
 
             this.trace = trace ?? this.trace;
@@ -93,13 +92,11 @@ namespace lib
                 throw new ArgumentException(nameof(resource));
             }
 
-            // TODO: catch some exceptions here
             AuthenticationResult result = await context.AcquireTokenAsync(resource, credential);
 
             if (result == null)
             {
-                // TODO: figure out exception here
-                throw new Exception("Authentication result was null");
+                throw new IntuneClientException("Authentication result was null");
             }
 
             return result;

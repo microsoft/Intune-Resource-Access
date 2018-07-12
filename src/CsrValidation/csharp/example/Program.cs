@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,18 +13,19 @@ namespace example
         static void Main(string[] args)
         {
             IntuneScepServiceClient client = new IntuneScepServiceClient(
-                "", 
-                "", 
-                "", 
-                "", 
-                graphResourceUrl: "https://graph.ppe.windows.net/", 
-                intuneResourceUrl: "https://api.manage-dogfood.microsoft.com/", 
-                authAuthority:"https://login.windows-ppe.net/"
+                providerNameAndVersion: "",
+                intuneTenant: "",
+                azureAppId: "",
+                azureAppKey: "",
+                trace:new TraceSource("log")
             );
 
             Guid transactionId = Guid.NewGuid();
-            (client.ValidateRequestAsync(transactionId.ToString(), "testing")).Wait();
+            String csr = "";
 
+            (client.ValidateRequestAsync(transactionId.ToString(), csr)).Wait();
+
+            Console.WriteLine("No exceptions mean CSR was validated! Press any key to continue...");
             Console.ReadKey();
         }
     }
