@@ -40,59 +40,45 @@ namespace Microsoft.Intune
     /// </summary>
     public class IntuneClient : IIntuneClient
     {
-        private const string DEFAULT_INTUNE_RESOURCE_URL = "https://api.manage.microsoft.com/";
-        protected TraceSource trace = new TraceSource(nameof(IntuneClient));
+        public const string DEFAULT_INTUNE_RESOURCE_URL = "https://api.manage.microsoft.com/";
+        private TraceSource trace = new TraceSource(nameof(IntuneClient));
 
         /// <summary>
         /// The resource URL of Intune that we are requesting access from ADAL for.
         /// </summary>
-        protected string intuneResourceUrl = null;
+        private string intuneResourceUrl = null;
 
         /// <summary>
         /// The active directory authentication library client to request tokens from
         /// </summary>
-        protected AdalClient adalClient;
+        private AdalClient adalClient;
 
         /// <summary>
         /// HttpClient to utilize when making requests to Intune
         /// </summary>
-        protected IHttpClient httpClient;
+        private IHttpClient httpClient;
 
         /// <summary>
         /// The API that provides ocations for services in Intune.
         /// </summary>
-        protected IIntuneServiceLocationProvider locationProvider;
+        private IIntuneServiceLocationProvider locationProvider;
 
         /// <summary>
         /// Constructs an IntuneClient object which can be used to make requests to Intune services.
         /// </summary>
-        /// <param name="azureAppId"></param>
-        /// <param name="azureAppKey"></param>
-        /// <param name="intuneTenant"></param>
-        /// <param name="intuneAppId"></param>
-        /// <param name="intuneResourceUrl"></param>
-        /// <param name="graphApiVersion"></param>
-        /// <param name="graphResourceUrl"></param>
-        public IntuneClient(string azureAppId, string azureAppKey, string intuneTenant, AdalClient adalClient, IIntuneServiceLocationProvider locationProvider, IHttpClient httpClient = null, string intuneResourceUrl = null, TraceSource trace = null)
+        /// <param name="adalClient">Authorization Client.</param>
+        /// <param name="locationProvider">Service Location provider to be used for service discovery.</param>
+        /// <param name="httpClient">HttpClient to use for all requests.</param>
+        /// <param name="intuneResourceUrl">URL of Intune resource to request access to.</param>
+        /// <param name="trace">Trace</param>
+        public IntuneClient(AdalClient adalClient, IIntuneServiceLocationProvider locationProvider, IHttpClient httpClient = null, string intuneResourceUrl = DEFAULT_INTUNE_RESOURCE_URL, TraceSource trace = null)
         {
             // Required parameters
-            if (string.IsNullOrWhiteSpace(azureAppId))
+            if(string.IsNullOrWhiteSpace(intuneResourceUrl))
             {
-                throw new ArgumentException(nameof(azureAppId));
+                throw new ArgumentNullException(nameof(intuneResourceUrl));
             }
-
-            if (string.IsNullOrWhiteSpace(azureAppKey))
-            {
-                throw new ArgumentException(nameof(azureAppKey));
-            }
-
-            if (string.IsNullOrWhiteSpace(intuneTenant))
-            {
-                throw new ArgumentException(nameof(intuneTenant));
-            }
-
-            // Optional parameters
-            this.intuneResourceUrl = string.IsNullOrWhiteSpace(intuneResourceUrl) ? DEFAULT_INTUNE_RESOURCE_URL : intuneResourceUrl;
+            this.intuneResourceUrl = intuneResourceUrl;
 
             if (trace != null)
             {

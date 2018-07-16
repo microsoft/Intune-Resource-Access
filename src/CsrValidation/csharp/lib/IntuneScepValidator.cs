@@ -34,18 +34,18 @@ namespace Microsoft.Intune
     /// </summary>
     public class IntuneScepValidator
     {
-        public static readonly string DEFAULT_SERVICE_VERSION = "2018-02-20";
-        public static readonly string VALIDATION_SERVICE_NAME = "ScepRequestValidationFEService";
-        public static readonly string VALIDATION_URL = "ScepActions/validateRequest";
-        public static readonly string NOTIFY_SUCCESS_URL = "ScepActions/successNotification";
-        public static readonly string NOTIFY_FAILURE_URL = "ScepActions/failureNotification";
+        public const string DEFAULT_SERVICE_VERSION = "2018-02-20";
+        public const string VALIDATION_SERVICE_NAME = "ScepRequestValidationFEService";
+        public const string VALIDATION_URL = "ScepActions/validateRequest";
+        public const string NOTIFY_SUCCESS_URL = "ScepActions/successNotification";
+        public const string NOTIFY_FAILURE_URL = "ScepActions/failureNotification";
 
-        protected TraceSource trace = new TraceSource(nameof(IntuneScepValidator));
+        private TraceSource trace = new TraceSource(nameof(IntuneScepValidator));
 
         /// <summary>
         /// The version of the ScepRequestValidationFEService that we are making requests against.
         /// </summary>
-        public string serviceVersion = null;
+        private string serviceVersion = null;
 
         /// <summary>
         /// The CertificateAuthority Identifier to be used in log correlation on Intune.
@@ -58,9 +58,35 @@ namespace Microsoft.Intune
         private IIntuneClient intuneClient = null;
 
         /// <summary>
-        /// IntuneScepValidator constructor
+        /// Creates an new instance of IntuneScepValidator
         /// </summary>
-        public IntuneScepValidator(string providerNameAndVersion, string azureAppId, string azureAppKey, string intuneTenant, string serviceVersion = null, string intuneAppId = null, string intuneResourceUrl = null, string graphApiVersion = null, string graphResourceUrl = null, string authAuthority = null, TraceSource trace = null, IIntuneClient intuneClient = null, IHttpClient httpClient = null)
+        /// <param name="providerNameAndVersion">A string that uniquely identifies your Certificate Authority and any version info for your app.</param>
+        /// <param name="azureAppId">Azure Active Directory application Id to use for authentication.</param>
+        /// <param name="azureAppKey">Azure Active Directory application key to use for authentication.</param>
+        /// <param name="intuneTenant">Tenant name of intune customer.</param>
+        /// <param name="serviceVersion">Specific version of ScepRequestValidationFEService to make requests to.</param>
+        /// <param name="intuneAppId">Application Id of Intune in graph.</param>
+        /// <param name="intuneResourceUrl">Intune resources URL to request access to.</param>
+        /// <param name="graphApiVersion">Specific version of graph to make requests to.</param>
+        /// <param name="graphResourceUrl">Graph resource URL to request access to.</param>
+        /// <param name="authAuthority">Authorization authority to use for requesting access to resources.</param>
+        /// <param name="trace">Trace</param>
+        /// <param name="intuneClient">IntuneClient to use to make requests to intune.</param>
+        /// <param name="httpClient">HttpClient to use to make any http requests.</param>
+        public IntuneScepValidator(
+            string providerNameAndVersion, 
+            string azureAppId, 
+            string azureAppKey, 
+            string intuneTenant, 
+            string serviceVersion = DEFAULT_SERVICE_VERSION, 
+            string intuneAppId = null, 
+            string intuneResourceUrl = null, 
+            string graphApiVersion = null, 
+            string graphResourceUrl = null, 
+            string authAuthority = null, 
+            TraceSource trace = null, 
+            IIntuneClient intuneClient = null, 
+            IHttpClient httpClient = null)
         {
             // Required Parameters
             if (string.IsNullOrWhiteSpace(providerNameAndVersion))
@@ -69,15 +95,20 @@ namespace Microsoft.Intune
             }
             this.providerNameAndVersion = providerNameAndVersion;
 
+            if(string.IsNullOrWhiteSpace(serviceVersion))
+            {
+                throw new ArgumentNullException(nameof(serviceVersion));
+            }
+            this.serviceVersion = serviceVersion;
+
             // Optional Parameters
-            this.serviceVersion = string.IsNullOrWhiteSpace(serviceVersion) ? DEFAULT_SERVICE_VERSION : this.serviceVersion;
             if (trace != null)
             {
                 this.trace = trace;
             }
 
             // Dependencies
-            httpClient = httpClient ?? new HttpClient(new System.Net.Http.HttpClient());
+            var client = httpClient ?? new HttpClient(new System.Net.Http.HttpClient());
             var adalClient = new AdalClient(
                         // Required
                         aadTenant: intuneTenant,
@@ -85,30 +116,26 @@ namespace Microsoft.Intune
                         // Overrides
                         trace: trace,
                         // Dependencies
-                        authAuthority: authAuthority
+                        authAuthority: authAuthority ?? AdalClient.DEFAULT_AUTHORITY
                         );
             this.intuneClient = intuneClient ?? new IntuneClient(
-                    // Required
-                    azureAppId: azureAppId,
-                    azureAppKey: azureAppKey,
-                    intuneTenant: intuneTenant,
                     // Overrides
-                    intuneResourceUrl: intuneResourceUrl,
+                    intuneResourceUrl: intuneResourceUrl ?? IntuneClient.DEFAULT_INTUNE_RESOURCE_URL,
                     trace: trace,
                     // Dependencies
                     adalClient: adalClient,
-                    httpClient: httpClient,
+                    httpClient: client,
                     locationProvider: new IntuneServiceLocationProvider(
                         // Required
                         intuneTenant: intuneTenant,
                         // Overrides
-                        graphApiVersion: graphApiVersion, 
-                        graphResourceUrl: graphResourceUrl,
-                        intuneAppId: intuneAppId,
+                        graphApiVersion: graphApiVersion ?? IntuneServiceLocationProvider.DEFAULT_GRAPH_VERSION, 
+                        graphResourceUrl: graphResourceUrl ?? IntuneServiceLocationProvider.DEFAULT_RESOURCE_URL,
+                        intuneAppId: intuneAppId ?? IntuneServiceLocationProvider.DEFAULT_INTUNE_APP_ID,
                         trace: trace,
                         // Dependencies
                         authClient: adalClient,
-                        httpClient: httpClient
+                        httpClient: client
                         )
                     );
         }

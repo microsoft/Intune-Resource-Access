@@ -198,7 +198,7 @@ namespace UnitTests
 
 
             var adalClient = new AdalClient("test", new ClientCredential("test", "test"));
-            var intuneClient = new IntuneClient("test", "test", "test", adalClient: adalClient, locationProvider: locationProviderMock.Object);
+            var intuneClient = new IntuneClient(adalClient: adalClient, locationProvider: locationProviderMock.Object);
             var scepClient = new IntuneScepValidator("test", "test", "test", "test", intuneClient: intuneClient);
 
             Guid transactionId = Guid.NewGuid();

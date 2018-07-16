@@ -35,42 +35,52 @@ namespace Microsoft.Intune
 {
     public class IntuneServiceLocationProvider : IIntuneServiceLocationProvider
     {
-        private const string DEFAULT_INTUNE_APP_ID = "0000000a-0000-0000-c000-000000000000";
-        private const string DEFAULT_RESOURCE_URL = "https://graph.windows.net/";
-        private const string DEFAULT_GRAPH_VERSION = "1.6";
+        public const string DEFAULT_INTUNE_APP_ID = "0000000a-0000-0000-c000-000000000000";
+        public const string DEFAULT_RESOURCE_URL = "https://graph.windows.net/";
+        public const string DEFAULT_GRAPH_VERSION = "1.6";
 
-        protected TraceSource trace = new TraceSource(nameof(IntuneServiceLocationProvider));
+        private TraceSource trace = new TraceSource(nameof(IntuneServiceLocationProvider));
 
         /// <summary>
         /// The specific graph service version that we are choosing to make a request to.
         /// </summary>
-        protected string graphApiVersion = null;
+        private string graphApiVersion = null;
 
         /// <summary>
         /// The graph resource URL that we are requesting a token to access from ADAL
         /// </summary>
-        protected string graphResourceUrl = null;
+        private string graphResourceUrl = null;
 
         /// <summary>
         /// The App Identifier of Intune to be used in call to graph for service discovery
         /// </summary>
-        protected string intuneAppId = null;
+        private string intuneAppId = null;
 
         /// <summary>
         /// The tenant identifier i.e. contoso.onmicrosoft.com
         /// </summary>
-        protected string intuneTenant;
+        private string intuneTenant;
         
         /// <summary>
         /// Cached Map of service locations
         /// </summary>
-        protected Dictionary<string, string> serviceMap = new Dictionary<string, string>();
+        private Dictionary<string, string> serviceMap = new Dictionary<string, string>();
 
         // Dependencies
-        protected AdalClient authClient;
-        protected IHttpClient httpClient;
+        private AdalClient authClient;
+        private IHttpClient httpClient;
 
-        public IntuneServiceLocationProvider(string intuneTenant, AdalClient authClient, string graphApiVersion = null, string graphResourceUrl = null, string intuneAppId = null, IHttpClient httpClient = null, TraceSource trace = null)
+        /// <summary>
+        /// Instantiates a new instance.
+        /// </summary>
+        /// <param name="intuneTenant">Tenant name.</param>
+        /// <param name="authClient">Authorization client.</param>
+        /// <param name="graphApiVersion">Specific version of graph to use.</param>
+        /// <param name="graphResourceUrl">Graph resource url to request access to.</param>
+        /// <param name="intuneAppId">Application Id of Intune in graph.</param>
+        /// <param name="httpClient">HttpClient to use for requests.</param>
+        /// <param name="trace">Trace</param>
+        public IntuneServiceLocationProvider(string intuneTenant, AdalClient authClient, string graphApiVersion = DEFAULT_GRAPH_VERSION, string graphResourceUrl = DEFAULT_RESOURCE_URL, string intuneAppId = DEFAULT_INTUNE_APP_ID, IHttpClient httpClient = null, TraceSource trace = null)
         {
             // Required Parameters
             if (string.IsNullOrWhiteSpace(intuneTenant))
@@ -79,18 +89,33 @@ namespace Microsoft.Intune
             }
             this.intuneTenant = intuneTenant;
 
-            // Optional Parameters
-            this.graphApiVersion = string.IsNullOrWhiteSpace(graphApiVersion) ? DEFAULT_GRAPH_VERSION : graphApiVersion;
-            this.graphResourceUrl = string.IsNullOrWhiteSpace(graphResourceUrl) ? DEFAULT_RESOURCE_URL : graphResourceUrl;
-            this.intuneAppId = string.IsNullOrWhiteSpace(intuneAppId) ? DEFAULT_INTUNE_APP_ID : intuneAppId;
+            if(string.IsNullOrWhiteSpace(graphApiVersion))
+            {
+                throw new ArgumentNullException(nameof(graphApiVersion));
+            }
+            this.graphApiVersion = graphApiVersion;
 
+            if (string.IsNullOrWhiteSpace(graphResourceUrl))
+            {
+                throw new ArgumentNullException(nameof(graphResourceUrl));
+            }
+            this.graphResourceUrl = graphResourceUrl;
+
+            if (string.IsNullOrWhiteSpace(intuneAppId))
+            {
+                throw new ArgumentNullException(nameof(intuneAppId));
+            }
+            this.intuneAppId = intuneAppId;
+
+            this.authClient = authClient ?? throw new ArgumentNullException(nameof(authClient));
+
+            // Optional Parameters
             if (trace != null)
             {
                 this.trace = trace;
             }
 
             // Dependencies
-            this.authClient = authClient;
             this.httpClient = httpClient ?? new HttpClient(new System.Net.Http.HttpClient());
         }
 

@@ -33,9 +33,9 @@ namespace Microsoft.Intune
     /// </summary>
     public class AdalClient
     {
-        private const string DEFAULT_AUTHORITY = "https://login.microsoftonline.com/";
+        public const string DEFAULT_AUTHORITY = "https://login.microsoftonline.com/";
 
-        protected TraceSource trace = new TraceSource(nameof(AdalClient));
+        private TraceSource trace = new TraceSource(nameof(AdalClient));
 
         /// <summary>
         /// The authority that we are requesting access from.
@@ -53,9 +53,12 @@ namespace Microsoft.Intune
         /// <summary>
         /// Constructor meant to be used for dependency injection of authContext
         /// </summary>
-        /// <param name="aadTenant">Azure Active Directory tenant</param>
-        /// <param name="authAuthority">If specified authentication will use this Auth Authority.</param> 
-        public AdalClient(string aadTenant, ClientCredential clientCredential, string authAuthority = null, TraceSource trace = null, IAuthenticationContext authContext = null)
+        /// <param name="aadTenant">Azure Active Directory Tenant</param>
+        /// <param name="clientCredential">Client credential to use for authentication.</param>
+        /// <param name="authAuthority">URL of Authorization Authority.</param>
+        /// <param name="trace">Trace</param>
+        /// <param name="authContext">Authorization Context to use to acquire token.</param>
+        public AdalClient(string aadTenant, ClientCredential clientCredential, string authAuthority = DEFAULT_AUTHORITY, TraceSource trace = null, IAuthenticationContext authContext = null)
         {
             // Required Parameters
             if (string.IsNullOrWhiteSpace(aadTenant))
@@ -64,16 +67,21 @@ namespace Microsoft.Intune
             }
             this.clientCredential = clientCredential ?? throw new ArgumentNullException(nameof(clientCredential));
 
-            // Optional Parameters
-            this.authority = string.IsNullOrWhiteSpace(authAuthority) ? DEFAULT_AUTHORITY : authAuthority;
+            if (string.IsNullOrWhiteSpace(authAuthority))
+            {
+                throw new ArgumentNullException(nameof(authAuthority));
+            }
+            this.authority = authAuthority;
 
+            // Optional Parameters
             if(trace != null)
             {
                 this.trace = trace;
             }
 
             // Instantiate Dependencies
-            context = authContext ?? new AuthenticationContextWrapper(new AuthenticationContext(this.authority + aadTenant, false));
+            var adal = new AuthenticationContext(this.authority + aadTenant, false);
+            context = authContext ?? new AuthenticationContextWrapper(adal);
         }
 
         /// <summary>

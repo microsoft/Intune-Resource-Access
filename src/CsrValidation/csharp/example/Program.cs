@@ -18,7 +18,7 @@ namespace Example
 
             var transactionId = Guid.NewGuid(); // A GUID that will uniquley identify the entire transaction to allow for log correlation accross Validate and Notification calls.
 
-            // NOTE: The CSR should be in Base64 encoding format
+            // The CSR should be in Base64 encoding format
             string csr = "";
 
             // This validates the request
