@@ -24,7 +24,6 @@
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -41,12 +40,12 @@ namespace Microsoft.Intune
         public static readonly string NOTIFY_SUCCESS_URL = "ScepActions/successNotification";
         public static readonly string NOTIFY_FAILURE_URL = "ScepActions/failureNotification";
 
-        protected TraceSource trace = new TraceSource(typeof(IntuneScepValidator).Name);
+        protected TraceSource trace = new TraceSource(nameof(IntuneScepValidator));
 
         /// <summary>
         /// The version of the ScepRequestValidationFEService that we are making requests against.
         /// </summary>
-        public string serviceVersion = DEFAULT_SERVICE_VERSION;
+        public string serviceVersion = null;
 
         /// <summary>
         /// The CertificateAuthority Identifier to be used in log correlation on Intune.
@@ -64,15 +63,18 @@ namespace Microsoft.Intune
         public IntuneScepValidator(string providerNameAndVersion, string azureAppId, string azureAppKey, string intuneTenant, string serviceVersion = null, string intuneAppId = null, string intuneResourceUrl = null, string graphApiVersion = null, string graphResourceUrl = null, string authAuthority = null, TraceSource trace = null, IIntuneClient intuneClient = null, IHttpClient httpClient = null)
         {
             // Required Parameters
-            if (string.IsNullOrEmpty(providerNameAndVersion))
+            if (string.IsNullOrWhiteSpace(providerNameAndVersion))
             {
                 throw new ArgumentException(nameof(providerNameAndVersion));
             }
             this.providerNameAndVersion = providerNameAndVersion;
 
             // Optional Parameters
-            this.serviceVersion = serviceVersion ?? this.serviceVersion;
-            this.trace = trace ?? this.trace;
+            this.serviceVersion = string.IsNullOrWhiteSpace(serviceVersion) ? DEFAULT_SERVICE_VERSION : this.serviceVersion;
+            if (trace != null)
+            {
+                this.trace = trace;
+            }
 
             // Dependencies
             httpClient = httpClient ?? new HttpClient(new System.Net.Http.HttpClient());
@@ -122,12 +124,12 @@ namespace Microsoft.Intune
         /// <returns></returns>
         public async Task ValidateRequestAsync(string transactionId, string certificateRequest)
         {
-            if (string.IsNullOrEmpty(transactionId))
+            if (string.IsNullOrWhiteSpace(transactionId))
             {
                 throw new ArgumentException(nameof(transactionId));
             }
 
-            if (string.IsNullOrEmpty(certificateRequest))
+            if (string.IsNullOrWhiteSpace(certificateRequest))
             {
                 throw new ArgumentException(nameof(certificateRequest));
             }
@@ -155,32 +157,32 @@ namespace Microsoft.Intune
         /// <returns></returns>
         public async Task SendSuccessNotificationAsync(string transactionId, string certificateRequest, string certThumbprint, string certSerialNumber, string certExpirationDate, string certIssuingAuthority)
         {
-            if (string.IsNullOrEmpty(transactionId))
+            if (string.IsNullOrWhiteSpace(transactionId))
             {
                 throw new ArgumentException(nameof(transactionId));
             }
 
-            if (string.IsNullOrEmpty(certificateRequest))
+            if (string.IsNullOrWhiteSpace(certificateRequest))
             {
                 throw new ArgumentException(nameof(certificateRequest));
             }
 
-            if (string.IsNullOrEmpty(certThumbprint))
+            if (string.IsNullOrWhiteSpace(certThumbprint))
             {
                 throw new ArgumentException(nameof(certThumbprint));
             }
 
-            if (string.IsNullOrEmpty(certSerialNumber))
+            if (string.IsNullOrWhiteSpace(certSerialNumber))
             {
                 throw new ArgumentException(nameof(certSerialNumber));
             }
 
-            if (string.IsNullOrEmpty(certExpirationDate))
+            if (string.IsNullOrWhiteSpace(certExpirationDate))
             {
                 throw new ArgumentException(nameof(certExpirationDate));
             }
 
-            if (string.IsNullOrEmpty(certIssuingAuthority))
+            if (string.IsNullOrWhiteSpace(certIssuingAuthority))
             {
                 throw new ArgumentException(nameof(certIssuingAuthority));
             }
@@ -212,17 +214,17 @@ namespace Microsoft.Intune
         /// <returns></returns>
         public async Task SendFailureNotificationAsync(string transactionId, string certificateRequest, long hResult, string errorDescription)
         {
-            if (string.IsNullOrEmpty(transactionId))
+            if (string.IsNullOrWhiteSpace(transactionId))
             {
                 throw new ArgumentException(nameof(transactionId));
             }
 
-            if (string.IsNullOrEmpty(certificateRequest))
+            if (string.IsNullOrWhiteSpace(certificateRequest))
             {
                 throw new ArgumentException(nameof(certificateRequest));
             }
 
-            if (string.IsNullOrEmpty(errorDescription))
+            if (string.IsNullOrWhiteSpace(errorDescription))
             {
                 throw new ArgumentException(nameof(errorDescription));
             }

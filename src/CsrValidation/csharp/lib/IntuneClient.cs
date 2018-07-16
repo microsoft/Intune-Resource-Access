@@ -40,12 +40,13 @@ namespace Microsoft.Intune
     /// </summary>
     public class IntuneClient : IIntuneClient
     {
-        protected TraceSource trace = new TraceSource(typeof(IntuneClient).Name);
+        private const string DEFAULT_INTUNE_RESOURCE_URL = "https://api.manage.microsoft.com/";
+        protected TraceSource trace = new TraceSource(nameof(IntuneClient));
 
         /// <summary>
         /// The resource URL of Intune that we are requesting access from ADAL for.
         /// </summary>
-        protected string intuneResourceUrl = "https://api.manage.microsoft.com/";
+        protected string intuneResourceUrl = null;
 
         /// <summary>
         /// The active directory authentication library client to request tokens from
@@ -75,24 +76,28 @@ namespace Microsoft.Intune
         public IntuneClient(string azureAppId, string azureAppKey, string intuneTenant, AdalClient adalClient, IIntuneServiceLocationProvider locationProvider, IHttpClient httpClient = null, string intuneResourceUrl = null, TraceSource trace = null)
         {
             // Required parameters
-            if (string.IsNullOrEmpty(azureAppId))
+            if (string.IsNullOrWhiteSpace(azureAppId))
             {
                 throw new ArgumentException(nameof(azureAppId));
             }
 
-            if (string.IsNullOrEmpty(azureAppKey))
+            if (string.IsNullOrWhiteSpace(azureAppKey))
             {
                 throw new ArgumentException(nameof(azureAppKey));
             }
 
-            if (string.IsNullOrEmpty(intuneTenant))
+            if (string.IsNullOrWhiteSpace(intuneTenant))
             {
                 throw new ArgumentException(nameof(intuneTenant));
             }
 
             // Optional parameters
-            this.intuneResourceUrl = intuneResourceUrl ?? this.intuneResourceUrl;
-            this.trace = trace ?? this.trace;
+            this.intuneResourceUrl = string.IsNullOrWhiteSpace(intuneResourceUrl) ? DEFAULT_INTUNE_RESOURCE_URL : intuneResourceUrl;
+
+            if (trace != null)
+            {
+                this.trace = trace;
+            }
 
             // Instantiate Dependencies
             this.locationProvider = locationProvider;
@@ -112,17 +117,17 @@ namespace Microsoft.Intune
         /// <returns>JSON response from service</returns>
         public async Task<JObject> PostAsync(string serviceName, string urlSuffix, string apiVersion, JObject json, Guid activityId, Dictionary<string, string> additionalHeaders = null)
         {
-            if (string.IsNullOrEmpty(serviceName))
+            if (string.IsNullOrWhiteSpace(serviceName))
             {
                 throw new ArgumentException(nameof(serviceName));
             }
 
-            if (string.IsNullOrEmpty(urlSuffix))
+            if (string.IsNullOrWhiteSpace(urlSuffix))
             {
                 throw new ArgumentException(nameof(urlSuffix));
             }
 
-            if (string.IsNullOrEmpty(apiVersion))
+            if (string.IsNullOrWhiteSpace(apiVersion))
             {
                 throw new ArgumentException(nameof(apiVersion));
             }
@@ -134,7 +139,7 @@ namespace Microsoft.Intune
 
 
             string intuneServiceEndpoint = await this.locationProvider.GetServiceEndpointAsync(serviceName);
-            if (string.IsNullOrEmpty(intuneServiceEndpoint))
+            if (string.IsNullOrWhiteSpace(intuneServiceEndpoint))
             {
                 IntuneServiceNotFoundException ex = new IntuneServiceNotFoundException(serviceName);
                 trace.TraceEvent(TraceEventType.Error, 0, ex.Message);
@@ -145,10 +150,7 @@ namespace Microsoft.Intune
 
             string intuneRequestUrl = intuneServiceEndpoint + "/" + urlSuffix;
 
-            IHttpClient client = null;
-            JObject jsonResponse = new JObject();
-
-            client = this.httpClient;
+            IHttpClient client = this.httpClient;
             client.DefaultRequestHeaders.Clear();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
             client.DefaultRequestHeaders.Add("client-request-id", activityId.ToString());
@@ -174,36 +176,26 @@ namespace Microsoft.Intune
                 this.locationProvider.Clear(); // clear contents in case the service location has changed and we cached the value
                 throw;
             }
-
-            if (response != null && response.IsSuccessStatusCode)
+            finally
             {
-                string result = await response.Content.ReadAsStringAsync();
-                try
+                if (response == null)
                 {
-                    jsonResponse = JObject.Parse(result);
+                    throw new IntuneClientException($"PostAsync failed for an unknown reason");
                 }
-                catch (JsonReaderException e)
-                {
-                    throw new IntuneClientException($"Failed to parse JSON response from Intune. Response {result}", e);
-                }
+            }
 
-            }
-            else if(response == null)
+            response.EnsureSuccessStatusCode();
+            
+            string result = await response.Content.ReadAsStringAsync();
+
+            try
             {
-                string msg = "Request to: " + intuneRequestUrl + " failed for an unknown reason.";
-                IntuneClientException ex = new IntuneClientException(msg);
-                trace.TraceEvent(TraceEventType.Error, 0, ex.Message);
-                throw ex;
+                return JObject.Parse(result);
             }
-            else
+            catch (JsonReaderException e)
             {
-                string msg = "Request to: " + intuneRequestUrl + " returned: " + response.StatusCode.ToString();
-                IntuneClientHttpErrorException ex = new IntuneClientHttpErrorException(response.StatusCode, jsonResponse, activityId);
-                trace.TraceEvent(TraceEventType.Error, 0, ex.Message);
-                throw ex;
+                throw new IntuneClientException($"Failed to parse JSON response from Intune. Response {result}", e);
             }
-   
-            return jsonResponse;
         }
     }
 }

@@ -58,7 +58,6 @@
     <Compile Include="IIntuneServiceLocationProvider.cs" />
     <Compile Include="IntuneClient.cs" />
     <Compile Include="IntuneClientException.cs" />
-    <Compile Include="IntuneClientHttpErrorException.cs" />
     <Compile Include="IntuneScepValidator.cs" />
     <Compile Include="IntuneScepServiceException.cs" />
     <Compile Include="IntuneServiceLocationProvider.cs" />

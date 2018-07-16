@@ -35,12 +35,12 @@ namespace Microsoft.Intune
     {
         private const string DEFAULT_AUTHORITY = "https://login.microsoftonline.com/";
 
-        protected TraceSource trace = new TraceSource(typeof(AdalClient).Name);
+        protected TraceSource trace = new TraceSource(nameof(AdalClient));
 
         /// <summary>
         /// The authority that we are requesting access from.
         /// </summary>
-        private string authority = DEFAULT_AUTHORITY;
+        private string authority = null;
 
         /// <summary>
         /// The credential to be used for authentication.
@@ -55,18 +55,22 @@ namespace Microsoft.Intune
         /// </summary>
         /// <param name="aadTenant">Azure Active Directory tenant</param>
         /// <param name="authAuthority">If specified authentication will use this Auth Authority.</param> 
-        public AdalClient(string aadTenant, ClientCredential clientCredential, string authAuthority = DEFAULT_AUTHORITY, TraceSource trace = null, IAuthenticationContext authContext = null)
+        public AdalClient(string aadTenant, ClientCredential clientCredential, string authAuthority = null, TraceSource trace = null, IAuthenticationContext authContext = null)
         {
             // Required Parameters
-            if (string.IsNullOrEmpty(aadTenant))
+            if (string.IsNullOrWhiteSpace(aadTenant))
             {
                 throw new ArgumentException(nameof(aadTenant));
             }
             this.clientCredential = clientCredential ?? throw new ArgumentNullException(nameof(clientCredential));
 
             // Optional Parameters
-            this.authority = authAuthority ?? this.authority;
-            this.trace = trace ?? this.trace;
+            this.authority = string.IsNullOrWhiteSpace(authAuthority) ? DEFAULT_AUTHORITY : authAuthority;
+
+            if(trace != null)
+            {
+                this.trace = trace;
+            }
 
             // Instantiate Dependencies
             context = authContext ?? new AuthenticationContextWrapper(new AuthenticationContext(this.authority + aadTenant, false));
@@ -80,7 +84,7 @@ namespace Microsoft.Intune
         /// <returns></returns>
         public async Task<AuthenticationResult> AcquireTokenAsync(string resource)
         {
-            if (string.IsNullOrEmpty(resource))
+            if (string.IsNullOrWhiteSpace(resource))
             {
                 throw new ArgumentException(nameof(resource));
             }

@@ -39,22 +39,22 @@ namespace Microsoft.Intune
         private const string DEFAULT_RESOURCE_URL = "https://graph.windows.net/";
         private const string DEFAULT_GRAPH_VERSION = "1.6";
 
-        protected TraceSource trace = new TraceSource(typeof(IntuneServiceLocationProvider).Name);
+        protected TraceSource trace = new TraceSource(nameof(IntuneServiceLocationProvider));
 
         /// <summary>
         /// The specific graph service version that we are choosing to make a request to.
         /// </summary>
-        protected string graphApiVersion = DEFAULT_GRAPH_VERSION;
+        protected string graphApiVersion = null;
 
         /// <summary>
         /// The graph resource URL that we are requesting a token to access from ADAL
         /// </summary>
-        protected string graphResourceUrl = DEFAULT_RESOURCE_URL;
+        protected string graphResourceUrl = null;
 
         /// <summary>
         /// The App Identifier of Intune to be used in call to graph for service discovery
         /// </summary>
-        protected string intuneAppId = DEFAULT_INTUNE_APP_ID;
+        protected string intuneAppId = null;
 
         /// <summary>
         /// The tenant identifier i.e. contoso.onmicrosoft.com
@@ -70,20 +70,24 @@ namespace Microsoft.Intune
         protected AdalClient authClient;
         protected IHttpClient httpClient;
 
-        public IntuneServiceLocationProvider(string intuneTenant, AdalClient authClient, string graphApiVersion = DEFAULT_GRAPH_VERSION, string graphResourceUrl = DEFAULT_RESOURCE_URL, string intuneAppId = DEFAULT_INTUNE_APP_ID, IHttpClient httpClient = null, TraceSource trace = null)
+        public IntuneServiceLocationProvider(string intuneTenant, AdalClient authClient, string graphApiVersion = null, string graphResourceUrl = null, string intuneAppId = null, IHttpClient httpClient = null, TraceSource trace = null)
         {
             // Required Parameters
-            if (string.IsNullOrEmpty(intuneTenant))
+            if (string.IsNullOrWhiteSpace(intuneTenant))
             {
                 throw new ArgumentNullException(nameof(intuneTenant));
             }
             this.intuneTenant = intuneTenant;
 
             // Optional Parameters
-            this.graphApiVersion = string.IsNullOrEmpty(graphApiVersion) ? DEFAULT_GRAPH_VERSION : graphApiVersion;
-            this.graphResourceUrl = string.IsNullOrEmpty(graphResourceUrl) ? DEFAULT_RESOURCE_URL : graphResourceUrl;
-            this.intuneAppId = string.IsNullOrEmpty(intuneAppId) ? DEFAULT_INTUNE_APP_ID : intuneAppId;
-            this.trace = trace ?? this.trace;
+            this.graphApiVersion = string.IsNullOrWhiteSpace(graphApiVersion) ? DEFAULT_GRAPH_VERSION : graphApiVersion;
+            this.graphResourceUrl = string.IsNullOrWhiteSpace(graphResourceUrl) ? DEFAULT_RESOURCE_URL : graphResourceUrl;
+            this.intuneAppId = string.IsNullOrWhiteSpace(intuneAppId) ? DEFAULT_INTUNE_APP_ID : intuneAppId;
+
+            if (trace != null)
+            {
+                this.trace = trace;
+            }
 
             // Dependencies
             this.authClient = authClient;
@@ -97,7 +101,7 @@ namespace Microsoft.Intune
 
         public async Task<string> GetServiceEndpointAsync(string serviceName)
         {
-            if (string.IsNullOrEmpty(serviceName))
+            if (string.IsNullOrWhiteSpace(serviceName))
             {
                 throw new ArgumentException(nameof(serviceName));
             }
@@ -134,62 +138,58 @@ namespace Microsoft.Intune
             string graphRequest = this.graphResourceUrl + intuneTenant + "/servicePrincipalsByAppId/" + this.intuneAppId + "/serviceEndpoints?api-version=" + this.graphApiVersion;
 
             Guid activityId = Guid.NewGuid();
-            IHttpClient client = null;
-            
-            client = this.httpClient;
+
+            IHttpClient client = this.httpClient;
             client.DefaultRequestHeaders.Clear();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
             client.DefaultRequestHeaders.Add("client-request-id", activityId.ToString());
 
             HttpResponseMessage response = null;
-            string result = null;
             try
             {
                 response = await client.GetAsync(graphRequest);
-                result = await response.Content.ReadAsStringAsync();
             }
             catch (HttpRequestException e)
             {
                 trace.TraceEvent(TraceEventType.Error, 0, $"Failed to contact intune service with URL: {graphRequest};\r\n{e.Message}");
                 throw;
             }
-
-            if (response != null && response.IsSuccessStatusCode)
+            finally
             {
-                JObject jsonResponse;
-                try
+                if (response == null)
                 {
-                    jsonResponse = JObject.Parse(result);
-                }
-                catch (JsonReaderException e)
-                {
-                    throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {result}", e);
-                }
-
-                JToken serviceEndpoints = null;
-                if (jsonResponse.TryGetValue("value", out serviceEndpoints))
-                {
-                    serviceMap.Clear(); // clear map now that we ideally have a good response
-
-                    foreach (var service in serviceEndpoints)
-                    {
-                        serviceMap.Add(service["serviceName"].ToString().ToLowerInvariant(), service["uri"].ToString());
-                    }
-                }
-                else
-                {
-                    throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {jsonResponse.ToString()}");
+                    throw new IntuneClientException($"ServiceDiscovery failed for an unknown reason");
                 }
             }
-            else if(response == null)
+
+            response.EnsureSuccessStatusCode();
+
+            string result = await response.Content.ReadAsStringAsync();
+
+            JObject jsonResponse;
+            try
             {
-                throw new IntuneClientException($"ServiceDiscovery failed for an unknown reason");
+                jsonResponse = JObject.Parse(result);
+            }
+            catch (JsonReaderException e)
+            {
+                throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {result}", e);
+            }
+
+            JToken serviceEndpoints = null;
+            if (jsonResponse.TryGetValue("value", out serviceEndpoints))
+            {
+                serviceMap.Clear(); // clear map now that we ideally have a good response
+
+                foreach (var service in serviceEndpoints)
+                {
+                    serviceMap.Add(service["serviceName"].ToString().ToLowerInvariant(), service["uri"].ToString());
+                }
             }
             else
             {
-                throw new IntuneClientException($"ServiceDiscovery returned unsuccesfully with HTTP StatusCode:{response.StatusCode} and Response:{result}");
+                throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {jsonResponse.ToString()}");
             }
-
         }
     }
 }

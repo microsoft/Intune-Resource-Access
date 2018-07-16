@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Intune
 {
-    internal class HttpClient : IHttpClient
+    internal class HttpClient : IHttpClient, IDisposable
     {
         private System.Net.Http.HttpClient httpClient;
 

@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Intune
 {
-    public interface IHttpClient : IDisposable
+    public interface IHttpClient
     {
         /// <summary>
         /// Gets the headers which should be sent with each request.

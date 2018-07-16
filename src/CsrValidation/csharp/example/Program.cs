@@ -2,29 +2,36 @@
 using System.Diagnostics;
 using Microsoft.Intune;
 
-namespace example
+namespace Example
 {
     class Program
     {
         static void Main(string[] args)
         {
-            IntuneScepValidator client = new IntuneScepValidator(
+            var validator = new IntuneScepValidator(
                 providerNameAndVersion: "",   // A string that uniquely identifies your Certificate Authority and any version info for your app.
                 intuneTenant: "",             // Tenant name i.e. contoso.onmicrosoft.com
                 azureAppId: "",               // Application ID of Active Directory application in the tenants azure subscription.
                 azureAppKey: "",              // Application secret to be used for authentication of tenant.
-                trace:new TraceSource("log")
+                trace: new TraceSource("log")
             );
 
-            Guid transactionId = Guid.NewGuid();
+            var transactionId = Guid.NewGuid(); // A GUID that will uniquley identify the entire transaction to allow for log correlation accross Validate and Notification calls.
 
             // NOTE: The CSR should be in Base64 encoding format
-            String csr = "";
+            string csr = "";
 
-            (client.ValidateRequestAsync(transactionId.ToString(), csr)).Wait();
+            // This validates the request
+            (validator.ValidateRequestAsync(transactionId.ToString(), csr)).Wait();
+            Console.WriteLine("No exceptions means CSR was validated!");
 
-            Console.WriteLine("No exceptions mean CSR was validated! Press any key to continue...");
-            Console.ReadKey();
+            // This notification is to be sent on sucesfull issuance of certificate
+            (validator.SendSuccessNotificationAsync(transactionId.ToString(), csr, "certThumbprint", "certSerial", "certExpirationDate", "certIssuingAuthority")).Wait();
+            Console.WriteLine("No exceptions means success notification was recorded succesfully!");
+
+            // This notification is to be sent on failure to issue certificate
+            (validator.SendFailureNotificationAsync(transactionId.ToString(), csr, 0xFFFF, "Short description of error that occurred.")).Wait();
+            Console.WriteLine("No exceptions means failure notification was recorded succesfully!");
         }
     }
 }
