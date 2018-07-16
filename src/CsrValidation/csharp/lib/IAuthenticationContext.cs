@@ -24,7 +24,7 @@
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System.Threading.Tasks;
 
-namespace lib
+namespace Microsoft.Intune
 {
     /// <summary>
     /// Interface to allow dependency injection for UnitTests on ADALClientWrapper

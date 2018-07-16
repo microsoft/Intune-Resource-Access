@@ -32,26 +32,21 @@ using System.Text;
 using System.Diagnostics;
 using Newtonsoft.Json;
 
-namespace lib
+namespace Microsoft.Intune
 {
     /// <summary>
     /// IntuneClient - A client which can be used to make requests to Intune services.
     /// This object uses ADAL libraries and tokens for authentication with Intune.
     /// </summary>
-    public class IntuneClient
+    public class IntuneClient : IIntuneClient
     {
-        protected string intuneAppId = "0000000a-0000-0000-c000-000000000000";
-        protected string intuneResourceUrl = "https://api.manage.microsoft.com/";
-        protected string graphApiVersion = "1.6";
-        protected string graphResourceUrl = "https://graph.windows.net/";
-
-        protected string intuneTenant;
-        protected ClientCredential aadCredential;
-        protected IADALClientWrapper authClient;
-
-        private Dictionary<String, String> serviceMap = new Dictionary<String, String>();
-
         protected TraceSource trace = new TraceSource(typeof(IntuneClient).Name);
+        protected string intuneResourceUrl = "https://api.manage.microsoft.com/";
+
+        // Dependencies
+        protected AdalClient adalClient;
+        protected IHttpClient httpClient;
+        protected IIntuneServiceLocationProvider locationProvider;
 
         /// <summary>
         /// Constructs an IntuneClient object which can be used to make requests to Intune services.
@@ -63,25 +58,9 @@ namespace lib
         /// <param name="intuneResourceUrl"></param>
         /// <param name="graphApiVersion"></param>
         /// <param name="graphResourceUrl"></param>
-        public IntuneClient(string azureAppId, string azureAppKey, string intuneTenant, string intuneAppId = null, string intuneResourceUrl = null, string graphApiVersion = null, string graphResourceUrl = null, string authAuthority = null, IADALClientWrapper authClient = null, TraceSource trace = null)
+        public IntuneClient(string azureAppId, string azureAppKey, string intuneTenant, AdalClient adalClient, IIntuneServiceLocationProvider locationProvider, IHttpClient httpClient = null, string intuneResourceUrl = null, TraceSource trace = null)
         {
-            initialize(azureAppId, azureAppKey, intuneTenant, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl);
-
-            // Instantiate ADAL Client
-            this.aadCredential = new ClientCredential(azureAppId, azureAppKey);
-
-            if (authClient == null)
-            {
-                authClient = new ADALClientWrapper(this.intuneTenant, this.aadCredential, authAuthority: authAuthority, trace:trace);
-            }
-            this.authClient = authClient;
-
-            this.trace = trace ?? this.trace;
-        }
-
-        private void initialize(string azureAppId, string azureAppKey, string intuneTenant, string intuneAppId = null, string intuneResourceUrl = null, string graphApiVersion = null, string graphResourceUrl = null)
-        {
-
+            // Required parameters
             if (string.IsNullOrEmpty(azureAppId))
             {
                 throw new ArgumentException(nameof(azureAppId));
@@ -92,13 +71,19 @@ namespace lib
                 throw new ArgumentException(nameof(azureAppKey));
             }
 
-            this.intuneTenant = string.IsNullOrEmpty(intuneTenant) ? throw new ArgumentException(nameof(intuneTenant)) : intuneTenant;
+            if (string.IsNullOrEmpty(intuneTenant))
+            {
+                throw new ArgumentException(nameof(intuneTenant));
+            }
 
-            // Read optional properties
-            this.intuneAppId = intuneAppId ?? this.intuneAppId;
+            // Optional parameters
             this.intuneResourceUrl = intuneResourceUrl ?? this.intuneResourceUrl;
-            this.graphApiVersion = graphApiVersion ?? this.graphApiVersion;
-            this.graphResourceUrl = graphResourceUrl ?? this.graphResourceUrl;
+            this.trace = trace ?? this.trace;
+
+            // Instantiate Dependencies
+            this.locationProvider = locationProvider;
+            this.adalClient = adalClient;
+            this.httpClient = httpClient ?? new HttpClient(new System.Net.Http.HttpClient());
         }
 
         /// <summary>
@@ -111,7 +96,7 @@ namespace lib
         /// <param name="activityId">Client generated ID for correlation of this activity</param>
         /// <param name="additionalHeaders">key value pairs of additional header values to add to the request</param>
         /// <returns>JSON response from service</returns>
-        public async Task<JObject> PostRequestAsync(String serviceName, String urlSuffix, String apiVersion, JObject json, Guid activityId, Dictionary<String, String> additionalHeaders = null)
+        public async Task<JObject> PostAsync(string serviceName, string urlSuffix, string apiVersion, JObject json, Guid activityId, Dictionary<string, string> additionalHeaders = null)
         {
             if (string.IsNullOrEmpty(serviceName))
             {
@@ -134,7 +119,7 @@ namespace lib
             }
 
 
-            string intuneServiceEndpoint = await GetServiceEndpointAsync(serviceName);
+            string intuneServiceEndpoint = await this.locationProvider.GetServiceEndpointAsync(serviceName);
             if (string.IsNullOrEmpty(intuneServiceEndpoint))
             {
                 IntuneServiceNotFoundException ex = new IntuneServiceNotFoundException(serviceName);
@@ -142,15 +127,16 @@ namespace lib
                 throw ex;
             }
 
-            AuthenticationResult authResult = await authClient.GetAccessTokenFromCredentialAsync(intuneResourceUrl);
+            AuthenticationResult authResult = await adalClient.AcquireTokenAsync(intuneResourceUrl);
 
             string intuneRequestUrl = intuneServiceEndpoint + "/" + urlSuffix;
 
-            HttpClient client = null;
+            IHttpClient client = null;
             JObject jsonResponse = new JObject();
             try
             {
-                client = new HttpClient();
+                client = this.httpClient;
+                client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
                 client.DefaultRequestHeaders.Add("client-request-id", activityId.ToString());
                 client.DefaultRequestHeaders.Add("api-version", apiVersion);
@@ -167,20 +153,20 @@ namespace lib
                 HttpResponseMessage response = await client.PostAsync(intuneRequestUrl, httpContent);
                 if (response.IsSuccessStatusCode)
                 {
-                    string result = response.Content.ReadAsStringAsync().Result;
+                    string result = await response.Content.ReadAsStringAsync();
                     try
                     {
                         jsonResponse = JObject.Parse(result);
                     }
                     catch (JsonReaderException e)
                     {
-                        throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {result}");
+                        throw new IntuneClientException($"Failed to parse JSON response from Intune. Response {result}", e);
                     }
                     
                 }
                 else
                 {
-                    String msg = "Request to: " + intuneRequestUrl + " returned: " + response.StatusCode.ToString();
+                    string msg = "Request to: " + intuneRequestUrl + " returned: " + response.StatusCode.ToString();
                     IntuneClientHttpErrorException ex = new IntuneClientHttpErrorException(response.StatusCode, jsonResponse, activityId);
                     trace.TraceEvent(TraceEventType.Error, 0, ex.Message);
                     throw ex;
@@ -189,109 +175,11 @@ namespace lib
             catch (HttpRequestException e)
             {
                 trace.TraceEvent(TraceEventType.Error, 0, $"Failed to contact intune service with URL: {intuneRequestUrl};\r\n{e.Message}");
-                serviceMap.Clear(); // clear contents in case the service location has changed and we cached the value
+                this.locationProvider.Clear(); // clear contents in case the service location has changed and we cached the value
                 throw e;
-            }
-            finally
-            {
-                if (client != null)
-                    client.Dispose();
             }
 
             return jsonResponse;
-        }
-
-        private async Task<string> GetServiceEndpointAsync(String serviceName)
-        {
-            if (string.IsNullOrEmpty(serviceName))
-            {
-                throw new ArgumentException(nameof(serviceName));
-            }
-
-            String serviceNameLower = serviceName.ToLowerInvariant();
-
-            // Pull down the service map if we haven't populated it OR we are forcing a refresh
-            if (serviceMap.Count <= 0)
-            {
-                trace.TraceEvent(TraceEventType.Information, 0, "Refreshing service map from Microsoft.Graph");
-                await RefreshServiceMapAsync();
-            }
-
-            if (serviceMap.ContainsKey(serviceNameLower))
-            {
-                return serviceMap[serviceNameLower];
-            }
-
-            // LOG Cache contents
-            trace.TraceEvent(TraceEventType.Information, 0, "Could not find endpoint for service '" + serviceName + "'");
-            trace.TraceEvent(TraceEventType.Information, 0, "ServiceMap: ");
-            foreach (KeyValuePair<String, String> entry in serviceMap)
-            {
-                trace.TraceEvent(TraceEventType.Information, 0, $"{entry.Key}:{entry.Value}");
-            }
-
-            return null;
-        }
-
-        private async Task RefreshServiceMapAsync()
-        {
-            AuthenticationResult authResult = await this.authClient.GetAccessTokenFromCredentialAsync(this.graphResourceUrl);
-
-            String graphRequest = this.graphResourceUrl + intuneTenant + "/servicePrincipalsByAppId/" + this.intuneAppId + "/serviceEndpoints?api-version=" + this.graphApiVersion;
-
-            Guid activityId = Guid.NewGuid();
-            HttpClient client = null;
-            try
-            {
-                client = new HttpClient();
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
-                client.DefaultRequestHeaders.Add("client-request-id", activityId.ToString());
-
-                HttpResponseMessage response = await client.GetAsync(graphRequest);
-                String result = response.Content.ReadAsStringAsync().Result;
-
-                if (response.IsSuccessStatusCode)
-                {
-                    JObject jsonResponse;
-                    try
-                    {
-                        jsonResponse = JObject.Parse(result);
-                    }
-                    catch(JsonReaderException e)
-                    {
-                        throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {result}");
-                    }
-
-                    JToken serviceEndpoints = null;
-                    if (jsonResponse.TryGetValue("value", out serviceEndpoints))
-                    {
-                        serviceMap.Clear(); // clear map now that we ideally have a good response
-
-                        foreach (var service in serviceEndpoints)
-                        {
-                            serviceMap.Add(service["serviceName"].ToString().ToLowerInvariant(), service["uri"].ToString());
-                        }
-                    }
-                    else
-                    {
-                        throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {jsonResponse.ToString()}");
-                    }
-                }
-                else
-                {
-                    throw new IntuneClientException($"ServiceDiscovery returned unsuccesfully with HTTP StatusCode:{response.StatusCode} and Response:{result}");
-                }
-            }
-            catch (HttpRequestException e)
-            {
-                trace.TraceEvent(TraceEventType.Error,0,$"Failed to contact intune service with URL: {graphRequest};\r\n{e.Message}");
-                throw e;
-            }
-            finally
-            {
-                if(client != null)
-                    client.Dispose();
-            }
         }
     }
 }

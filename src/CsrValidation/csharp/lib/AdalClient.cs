@@ -26,73 +26,59 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace lib
+namespace Microsoft.Intune
 {
     /**
     * Azure Active Directory Authentication Client
     */
-    public class ADALClientWrapper : IADALClientWrapper
+    public class AdalClient
     {
+        protected TraceSource trace = new TraceSource(typeof(AdalClient).Name);
+        private const string DEFAULT_AUTHORITY = "https://login.microsoftonline.com/";
+        private string authority = DEFAULT_AUTHORITY;
+        private ClientCredential clientCredential = null;
 
-        private string authority = "https://login.microsoftonline.com/";
-        private ClientCredential credential = null;
+        // Dependencies
         private IAuthenticationContext context = null;
 
-        protected TraceSource trace = new TraceSource(typeof(ADALClientWrapper).Name);
+        
 
         /// <summary>
         /// Constructor meant to be used for dependency injection of authContext
         /// </summary>
         /// <param name="aadTenant">Azure Active Directory tenant</param>
-        /// <param name="credential">Credential to use for authentication</param>
         /// <param name="authAuthority">If specified authentication will use this Auth Authority.</param> 
-        public ADALClientWrapper(string aadTenant, ClientCredential credential, string authAuthority = null, TraceSource trace = null)
+        public AdalClient(string aadTenant, ClientCredential clientCredential, string authAuthority = DEFAULT_AUTHORITY, TraceSource trace = null, IAuthenticationContext authContext = null)
         {
-            initialize(aadTenant, credential, authAuthority);
-
-            context = new AuthenticationContextWrapper(new AuthenticationContext(this.authority + aadTenant, false));
-
-            this.trace = trace ?? this.trace;
-        }
-
-        /// <summary>
-        /// Constructor meant to be used for dependency injection of authContext
-        /// </summary>
-        /// <param name="aadTenant">Azure Active Directory tenant</param>
-        /// <param name="credential">Credential to use for authentication</param>
-        /// <param name="authAuthority">If specified authentication will use this Auth Authority.</param>
-        /// <param name="authContext">AuthenticationContext to use.</param>
-        public ADALClientWrapper(string aadTenant, ClientCredential credential, IAuthenticationContext authContext, string authAuthority = null)
-        {
-            initialize(aadTenant, credential, authAuthority);
-            this.context = authContext;
-        }
-
-        private void initialize(string aadTenant, ClientCredential credential, string authAuthority = null)
-        {
+            // Required Parameters
             if (string.IsNullOrEmpty(aadTenant))
             {
                 throw new ArgumentException(nameof(aadTenant));
             }
+            this.clientCredential = clientCredential ?? throw new ArgumentNullException(nameof(clientCredential));
 
+            // Optional Parameters
             this.authority = authAuthority ?? this.authority;
-            this.credential = credential ?? throw new ArgumentException(nameof(credential));
+            this.trace = trace ?? this.trace;
 
+            // Instantiate Dependencies
+            context = authContext ?? new AuthenticationContextWrapper(new AuthenticationContext(this.authority + aadTenant, false));
         }
 
         /// <summary>
         /// Gets an access token from AAD for the specified resource using the ClientCredential passed in.
         /// </summary>
+        /// <param name="clientCredential">Credential to use for authentication.</param>
         /// <param name="resource">Resource to get token for.</param>
         /// <returns></returns>
-        public async Task<AuthenticationResult> GetAccessTokenFromCredentialAsync(String resource)
+        public async Task<AuthenticationResult> AcquireTokenAsync(string resource)
         {
             if (string.IsNullOrEmpty(resource))
             {
                 throw new ArgumentException(nameof(resource));
             }
 
-            AuthenticationResult result = await context.AcquireTokenAsync(resource, credential);
+            AuthenticationResult result = await context.AcquireTokenAsync(resource, clientCredential);
 
             if (result == null)
             {

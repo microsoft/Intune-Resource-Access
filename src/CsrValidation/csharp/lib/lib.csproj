@@ -50,17 +50,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IADALClientWrapper.cs" />
-    <Compile Include="ADALClientWrapper.cs" />
+    <Compile Include="AdalClient.cs" />
     <Compile Include="AuthenticationContextWrapper.cs" />
     <Compile Include="IAuthenticationContext.cs" />
     <Compile Include="IHttpClient.cs" />
+    <Compile Include="IIntuneClient.cs" />
+    <Compile Include="IIntuneServiceLocationProvider.cs" />
     <Compile Include="IntuneClient.cs" />
     <Compile Include="IntuneClientException.cs" />
     <Compile Include="IntuneClientHttpErrorException.cs" />
     <Compile Include="IntuneScepServiceClient.cs" />
     <Compile Include="IntuneScepServiceException.cs" />
+    <Compile Include="IntuneServiceLocationProvider.cs" />
     <Compile Include="IntuneServiceNotFoundException.cs" />
+    <Compile Include="HttpClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -25,7 +25,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Net;
 
-namespace lib
+namespace Microsoft.Intune
 {
 
     public class IntuneClientHttpErrorException : IntuneClientException

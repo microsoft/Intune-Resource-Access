@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // All rights reserved.
 //
 // This code is licensed under the MIT License.
@@ -21,28 +21,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using Newtonsoft.Json.Linq;
 using System;
-using System.Runtime.Serialization;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Microsoft.Intune
 {
-
-    public class IntuneClientException : Exception
+    public interface IIntuneClient
     {
-        public IntuneClientException()
-        {
-        }
-
-        public IntuneClientException(string message) : base(message)
-        {
-        }
-
-        public IntuneClientException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        protected IntuneClientException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        Task<JObject> PostAsync(string serviceName, string urlSuffix, string apiVersion, JObject json, Guid activityId, Dictionary<string, string> additionalHeaders = null);
     }
 }

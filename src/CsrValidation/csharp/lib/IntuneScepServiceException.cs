@@ -25,7 +25,7 @@
 using System;
 using System.Diagnostics;
 
-namespace lib
+namespace Microsoft.Intune
 {
 
     /**
