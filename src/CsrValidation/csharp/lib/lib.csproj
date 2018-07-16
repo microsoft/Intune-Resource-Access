@@ -7,8 +7,8 @@
     <ProjectGuid>{A05830AE-C17F-4D89-9310-A97D1E2AAE2E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>lib</RootNamespace>
-    <AssemblyName>lib</AssemblyName>
+    <RootNamespace>Mirosoft.Intune</RootNamespace>
+    <AssemblyName>Mirosoft.Intune</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
