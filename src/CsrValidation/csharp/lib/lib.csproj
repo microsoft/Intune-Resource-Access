@@ -59,7 +59,7 @@
     <Compile Include="IntuneClient.cs" />
     <Compile Include="IntuneClientException.cs" />
     <Compile Include="IntuneClientHttpErrorException.cs" />
-    <Compile Include="IntuneScepServiceClient.cs" />
+    <Compile Include="IntuneScepValidator.cs" />
     <Compile Include="IntuneScepServiceException.cs" />
     <Compile Include="IntuneServiceLocationProvider.cs" />
     <Compile Include="IntuneServiceNotFoundException.cs" />

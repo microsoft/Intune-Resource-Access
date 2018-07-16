@@ -114,53 +114,61 @@ namespace Microsoft.Intune
 
             Guid activityId = Guid.NewGuid();
             IHttpClient client = null;
+            
+            client = this.httpClient;
+            client.DefaultRequestHeaders.Clear();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
+            client.DefaultRequestHeaders.Add("client-request-id", activityId.ToString());
+
+            HttpResponseMessage response = null;
+            string result = null;
             try
             {
-                client = this.httpClient;
-                client.DefaultRequestHeaders.Clear();
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
-                client.DefaultRequestHeaders.Add("client-request-id", activityId.ToString());
-
-                HttpResponseMessage response = await client.GetAsync(graphRequest);
-                string result = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
-                {
-                    JObject jsonResponse;
-                    try
-                    {
-                        jsonResponse = JObject.Parse(result);
-                    }
-                    catch (JsonReaderException e)
-                    {
-                        throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {result}", e);
-                    }
-
-                    JToken serviceEndpoints = null;
-                    if (jsonResponse.TryGetValue("value", out serviceEndpoints))
-                    {
-                        serviceMap.Clear(); // clear map now that we ideally have a good response
-
-                        foreach (var service in serviceEndpoints)
-                        {
-                            serviceMap.Add(service["serviceName"].ToString().ToLowerInvariant(), service["uri"].ToString());
-                        }
-                    }
-                    else
-                    {
-                        throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {jsonResponse.ToString()}");
-                    }
-                }
-                else
-                {
-                    throw new IntuneClientException($"ServiceDiscovery returned unsuccesfully with HTTP StatusCode:{response.StatusCode} and Response:{result}");
-                }
+                response = await client.GetAsync(graphRequest);
+                result = await response.Content.ReadAsStringAsync();
             }
             catch (HttpRequestException e)
             {
                 trace.TraceEvent(TraceEventType.Error, 0, $"Failed to contact intune service with URL: {graphRequest};\r\n{e.Message}");
                 throw e;
             }
+
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                JObject jsonResponse;
+                try
+                {
+                    jsonResponse = JObject.Parse(result);
+                }
+                catch (JsonReaderException e)
+                {
+                    throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {result}", e);
+                }
+
+                JToken serviceEndpoints = null;
+                if (jsonResponse.TryGetValue("value", out serviceEndpoints))
+                {
+                    serviceMap.Clear(); // clear map now that we ideally have a good response
+
+                    foreach (var service in serviceEndpoints)
+                    {
+                        serviceMap.Add(service["serviceName"].ToString().ToLowerInvariant(), service["uri"].ToString());
+                    }
+                }
+                else
+                {
+                    throw new IntuneClientException($"Failed to parse JSON response during Service Discovery from Graph. Response {jsonResponse.ToString()}");
+                }
+            }
+            else if(response == null)
+            {
+                throw new IntuneClientException($"ServiceDiscovery failed for an unknown reason");
+            }
+            else
+            {
+                throw new IntuneClientException($"ServiceDiscovery returned unsuccesfully with HTTP StatusCode:{response.StatusCode} and Response:{result}");
+            }
+
         }
     }
 }

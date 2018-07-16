@@ -28,9 +28,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Intune
 {
-    /**
-    * Azure Active Directory Authentication Client
-    */
+    /// <summary>
+    /// Azure Active Directory Authentication Client
+    /// </summary>
     public class AdalClient
     {
         protected TraceSource trace = new TraceSource(typeof(AdalClient).Name);

@@ -133,52 +133,62 @@ namespace Microsoft.Intune
 
             IHttpClient client = null;
             JObject jsonResponse = new JObject();
+
+            client = this.httpClient;
+            client.DefaultRequestHeaders.Clear();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
+            client.DefaultRequestHeaders.Add("client-request-id", activityId.ToString());
+            client.DefaultRequestHeaders.Add("api-version", apiVersion);
+            var httpContent = new StringContent(json.ToString(), Encoding.UTF8, "application/json");
+
+            if (additionalHeaders != null)
+            {
+                foreach (KeyValuePair<string, string> entry in additionalHeaders)
+                {
+                    client.DefaultRequestHeaders.Add(entry.Key, entry.Value);
+                }
+            }
+
+            HttpResponseMessage response = null;
             try
             {
-                client = this.httpClient;
-                client.DefaultRequestHeaders.Clear();
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
-                client.DefaultRequestHeaders.Add("client-request-id", activityId.ToString());
-                client.DefaultRequestHeaders.Add("api-version", apiVersion);
-                var httpContent = new StringContent(json.ToString(), Encoding.UTF8, "application/json");
-
-                if (additionalHeaders != null)
-                {
-                    foreach(KeyValuePair<string,string> entry in additionalHeaders)
-                    {
-                        client.DefaultRequestHeaders.Add(entry.Key, entry.Value);
-                    }
-                }
-
-                HttpResponseMessage response = await client.PostAsync(intuneRequestUrl, httpContent);
-                if (response.IsSuccessStatusCode)
-                {
-                    string result = await response.Content.ReadAsStringAsync();
-                    try
-                    {
-                        jsonResponse = JObject.Parse(result);
-                    }
-                    catch (JsonReaderException e)
-                    {
-                        throw new IntuneClientException($"Failed to parse JSON response from Intune. Response {result}", e);
-                    }
-                    
-                }
-                else
-                {
-                    string msg = "Request to: " + intuneRequestUrl + " returned: " + response.StatusCode.ToString();
-                    IntuneClientHttpErrorException ex = new IntuneClientHttpErrorException(response.StatusCode, jsonResponse, activityId);
-                    trace.TraceEvent(TraceEventType.Error, 0, ex.Message);
-                    throw ex;
-                }
+                response = await client.PostAsync(intuneRequestUrl, httpContent);
             }
             catch (HttpRequestException e)
             {
                 trace.TraceEvent(TraceEventType.Error, 0, $"Failed to contact intune service with URL: {intuneRequestUrl};\r\n{e.Message}");
                 this.locationProvider.Clear(); // clear contents in case the service location has changed and we cached the value
-                throw e;
+                throw;
             }
 
+            if (response != null && response.IsSuccessStatusCode)
+            {
+                string result = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    jsonResponse = JObject.Parse(result);
+                }
+                catch (JsonReaderException e)
+                {
+                    throw new IntuneClientException($"Failed to parse JSON response from Intune. Response {result}", e);
+                }
+
+            }
+            else if(response == null)
+            {
+                string msg = "Request to: " + intuneRequestUrl + " failed for an unknown reason.";
+                IntuneClientException ex = new IntuneClientException(msg);
+                trace.TraceEvent(TraceEventType.Error, 0, ex.Message);
+                throw ex;
+            }
+            else
+            {
+                string msg = "Request to: " + intuneRequestUrl + " returned: " + response.StatusCode.ToString();
+                IntuneClientHttpErrorException ex = new IntuneClientHttpErrorException(response.StatusCode, jsonResponse, activityId);
+                trace.TraceEvent(TraceEventType.Error, 0, ex.Message);
+                throw ex;
+            }
+   
             return jsonResponse;
         }
     }
