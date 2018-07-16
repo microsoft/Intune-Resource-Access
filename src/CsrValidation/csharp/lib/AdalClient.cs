@@ -33,15 +33,22 @@ namespace Microsoft.Intune
     /// </summary>
     public class AdalClient
     {
-        protected TraceSource trace = new TraceSource(typeof(AdalClient).Name);
         private const string DEFAULT_AUTHORITY = "https://login.microsoftonline.com/";
+
+        protected TraceSource trace = new TraceSource(typeof(AdalClient).Name);
+
+        /// <summary>
+        /// The authority that we are requesting access from.
+        /// </summary>
         private string authority = DEFAULT_AUTHORITY;
+
+        /// <summary>
+        /// The credential to be used for authentication.
+        /// </summary>
         private ClientCredential clientCredential = null;
 
         // Dependencies
         private IAuthenticationContext context = null;
-
-        
 
         /// <summary>
         /// Constructor meant to be used for dependency injection of authContext

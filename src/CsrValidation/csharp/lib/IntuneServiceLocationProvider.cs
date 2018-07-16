@@ -38,11 +38,32 @@ namespace Microsoft.Intune
         private const string DEFAULT_INTUNE_APP_ID = "0000000a-0000-0000-c000-000000000000";
         private const string DEFAULT_RESOURCE_URL = "https://graph.windows.net/";
         private const string DEFAULT_GRAPH_VERSION = "1.6";
+
         protected TraceSource trace = new TraceSource(typeof(IntuneServiceLocationProvider).Name);
+
+        /// <summary>
+        /// The specific graph service version that we are choosing to make a request to.
+        /// </summary>
         protected string graphApiVersion = DEFAULT_GRAPH_VERSION;
+
+        /// <summary>
+        /// The graph resource URL that we are requesting a token to access from ADAL
+        /// </summary>
         protected string graphResourceUrl = DEFAULT_RESOURCE_URL;
+
+        /// <summary>
+        /// The App Identifier of Intune to be used in call to graph for service discovery
+        /// </summary>
         protected string intuneAppId = DEFAULT_INTUNE_APP_ID;
+
+        /// <summary>
+        /// The tenant identifier i.e. contoso.onmicrosoft.com
+        /// </summary>
         protected string intuneTenant;
+        
+        /// <summary>
+        /// Cached Map of service locations
+        /// </summary>
         protected Dictionary<string, string> serviceMap = new Dictionary<string, string>();
 
         // Dependencies
@@ -130,7 +151,7 @@ namespace Microsoft.Intune
             catch (HttpRequestException e)
             {
                 trace.TraceEvent(TraceEventType.Error, 0, $"Failed to contact intune service with URL: {graphRequest};\r\n{e.Message}");
-                throw e;
+                throw;
             }
 
             if (response != null && response.IsSuccessStatusCode)

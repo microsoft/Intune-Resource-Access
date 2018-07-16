@@ -35,17 +35,28 @@ namespace Microsoft.Intune
     /// </summary>
     public class IntuneScepValidator
     {
-        public static readonly string serviceVersion = "2018-02-20";
+        public static readonly string DEFAULT_SERVICE_VERSION = "2018-02-20";
         public static readonly string VALIDATION_SERVICE_NAME = "ScepRequestValidationFEService";
         public static readonly string VALIDATION_URL = "ScepActions/validateRequest";
         public static readonly string NOTIFY_SUCCESS_URL = "ScepActions/successNotification";
         public static readonly string NOTIFY_FAILURE_URL = "ScepActions/failureNotification";
 
-        private string providerNameAndVersion = null;
-        private Dictionary<string, string> additionalHeaders = new Dictionary<string, string>();
-        private IIntuneClient intuneClient = null;
-
         protected TraceSource trace = new TraceSource(typeof(IntuneScepValidator).Name);
+
+        /// <summary>
+        /// The version of the ScepRequestValidationFEService that we are making requests against.
+        /// </summary>
+        public string serviceVersion = DEFAULT_SERVICE_VERSION;
+
+        /// <summary>
+        /// The CertificateAuthority Identifier to be used in log correlation on Intune.
+        /// </summary>
+        private string providerNameAndVersion = null;
+
+        /// <summary>
+        /// The Intune client to use to make requests to Intune services.
+        /// </summary>
+        private IIntuneClient intuneClient = null;
 
         /// <summary>
         /// IntuneScepValidator constructor
@@ -57,11 +68,10 @@ namespace Microsoft.Intune
             {
                 throw new ArgumentException(nameof(providerNameAndVersion));
             }
-            additionalHeaders.Add("UserAgent", providerNameAndVersion);
             this.providerNameAndVersion = providerNameAndVersion;
 
             // Optional Parameters
-            serviceVersion = serviceVersion ?? serviceVersion;
+            this.serviceVersion = serviceVersion ?? this.serviceVersion;
             this.trace = trace ?? this.trace;
 
             // Dependencies
@@ -231,39 +241,23 @@ namespace Microsoft.Intune
         private async Task PostAsync(JObject requestBody, string urlSuffix, string transactionId)
         {
             Guid activityId = Guid.NewGuid();
+            JObject result = await intuneClient.PostAsync(VALIDATION_SERVICE_NAME,
+                        urlSuffix,
+                        serviceVersion,
+                        requestBody,
+                        activityId);
 
-            try
+            trace.TraceEvent(TraceEventType.Information, 0, "Activity " + activityId + " has completed.");
+            trace.TraceEvent(TraceEventType.Information, 0, result.ToString());
+
+            string code = (string)result["code"];
+            string errorDescription = (string)result["errorDescription"];
+
+            IntuneScepServiceException e = new IntuneScepServiceException(code, errorDescription, transactionId, activityId, trace);
+
+            if (e.getParsedErrorCode() != IntuneScepServiceException.ErrorCode.Success)
             {
-                JObject result = await intuneClient.PostAsync(VALIDATION_SERVICE_NAME,
-                         urlSuffix,
-                         serviceVersion,
-                         requestBody,
-                         activityId,
-                         additionalHeaders);
-
-                trace.TraceEvent(TraceEventType.Information, 0, "Activity " + activityId + " has completed.");
-                trace.TraceEvent(TraceEventType.Information, 0, result.ToString());
-
-                string code = (string)result["code"];
-                string errorDescription = (string)result["errorDescription"];
-
-                IntuneScepServiceException e = new IntuneScepServiceException(code, errorDescription, transactionId, activityId, trace);
-
-                if (e.getParsedErrorCode() != IntuneScepServiceException.ErrorCode.Success)
-                {
-                    trace.TraceEvent(TraceEventType.Warning, 0, e.Message);
-                    throw e;
-                }
-            }
-            catch (Exception e)
-            {
-                if (!(e is IntuneScepServiceException))
-                {
-                    trace.TraceEvent(TraceEventType.Error, 0,
-                        "ActivityId:" + activityId + "," +
-                        "TransactionId:" + transactionId + "," +
-                        "ExceptionMessage:" + e.Message);
-                }
+                trace.TraceEvent(TraceEventType.Warning, 0, e.Message);
                 throw e;
             }
         }

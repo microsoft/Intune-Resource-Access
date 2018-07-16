@@ -23,7 +23,7 @@ namespace UnitTests
             mock.Setup(foo => foo.PostAsync(
                 IntuneScepValidator.VALIDATION_SERVICE_NAME, 
                 IntuneScepValidator.VALIDATION_URL, 
-                IntuneScepValidator.serviceVersion, 
+                IntuneScepValidator.DEFAULT_SERVICE_VERSION, 
                 It.IsAny<JObject>(), 
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string,string>>())
@@ -51,7 +51,7 @@ namespace UnitTests
             mock.Setup(foo => foo.PostAsync(
                 IntuneScepValidator.VALIDATION_SERVICE_NAME,
                 IntuneScepValidator.VALIDATION_URL,
-                IntuneScepValidator.serviceVersion,
+                IntuneScepValidator.DEFAULT_SERVICE_VERSION,
                 It.IsAny<JObject>(),
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string, string>>())
@@ -78,7 +78,7 @@ namespace UnitTests
             mock.Setup(foo => foo.PostAsync(
                 IntuneScepValidator.VALIDATION_SERVICE_NAME,
                 IntuneScepValidator.NOTIFY_SUCCESS_URL,
-                IntuneScepValidator.serviceVersion,
+                IntuneScepValidator.DEFAULT_SERVICE_VERSION,
                 It.IsAny<JObject>(),
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string, string>>())
@@ -106,7 +106,7 @@ namespace UnitTests
             mock.Setup(foo => foo.PostAsync(
                 IntuneScepValidator.VALIDATION_SERVICE_NAME,
                 IntuneScepValidator.NOTIFY_SUCCESS_URL,
-                IntuneScepValidator.serviceVersion,
+                IntuneScepValidator.DEFAULT_SERVICE_VERSION,
                 It.IsAny<JObject>(),
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string, string>>())
@@ -133,7 +133,7 @@ namespace UnitTests
             mock.Setup(foo => foo.PostAsync(
                 IntuneScepValidator.VALIDATION_SERVICE_NAME,
                 IntuneScepValidator.NOTIFY_FAILURE_URL,
-                IntuneScepValidator.serviceVersion,
+                IntuneScepValidator.DEFAULT_SERVICE_VERSION,
                 It.IsAny<JObject>(),
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string, string>>())
@@ -161,7 +161,7 @@ namespace UnitTests
             mock.Setup(foo => foo.PostAsync(
                 IntuneScepValidator.VALIDATION_SERVICE_NAME,
                 IntuneScepValidator.NOTIFY_FAILURE_URL,
-                IntuneScepValidator.serviceVersion,
+                IntuneScepValidator.DEFAULT_SERVICE_VERSION,
                 It.IsAny<JObject>(),
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string, string>>())

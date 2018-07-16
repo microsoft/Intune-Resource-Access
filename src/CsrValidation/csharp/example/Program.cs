@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using lib;
+using Microsoft.Intune;
 
 namespace example
 {
@@ -12,15 +8,17 @@ namespace example
     {
         static void Main(string[] args)
         {
-            IntuneScepServiceClient client = new IntuneScepServiceClient(
-                providerNameAndVersion: "",
-                intuneTenant: "",
-                azureAppId: "",
-                azureAppKey: "",
+            IntuneScepValidator client = new IntuneScepValidator(
+                providerNameAndVersion: "",   // A string that uniquely identifies your Certificate Authority and any version info for your app.
+                intuneTenant: "",             // Tenant name i.e. contoso.onmicrosoft.com
+                azureAppId: "",               // Application ID of Active Directory application in the tenants azure subscription.
+                azureAppKey: "",              // Application secret to be used for authentication of tenant.
                 trace:new TraceSource("log")
             );
 
             Guid transactionId = Guid.NewGuid();
+
+            // NOTE: The CSR should be in Base64 encoding format
             String csr = "";
 
             (client.ValidateRequestAsync(transactionId.ToString(), csr)).Wait();

@@ -41,11 +41,25 @@ namespace Microsoft.Intune
     public class IntuneClient : IIntuneClient
     {
         protected TraceSource trace = new TraceSource(typeof(IntuneClient).Name);
+
+        /// <summary>
+        /// The resource URL of Intune that we are requesting access from ADAL for.
+        /// </summary>
         protected string intuneResourceUrl = "https://api.manage.microsoft.com/";
 
-        // Dependencies
+        /// <summary>
+        /// The active directory authentication library client to request tokens from
+        /// </summary>
         protected AdalClient adalClient;
+
+        /// <summary>
+        /// HttpClient to utilize when making requests to Intune
+        /// </summary>
         protected IHttpClient httpClient;
+
+        /// <summary>
+        /// The API that provides ocations for services in Intune.
+        /// </summary>
         protected IIntuneServiceLocationProvider locationProvider;
 
         /// <summary>
