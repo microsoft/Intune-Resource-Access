@@ -10,7 +10,7 @@ namespace Example
     {
         static void Main(string[] args)
         {
-            // If scenario requires the use of a proxy with authentication then you need to supply your own HttpClient like the following.
+            // If scenario requires the use of a proxy with authentication then you need to supply your own WebProxy like the following.
             string proxyHost = "http://localhost";
             string proxyPort = "8888";
             string proxyUser = "proxyuser";
