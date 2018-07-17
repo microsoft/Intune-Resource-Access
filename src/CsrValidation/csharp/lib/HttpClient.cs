@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // All rights reserved.
 //
 // This code is licensed under the MIT License.
@@ -22,27 +22,36 @@
 // THE SOFTWARE.
 
 using System;
-using System.Runtime.Serialization;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace Microsoft.Intune
 {
-
-    public class IntuneClientException : Exception
+    internal class HttpClient : IHttpClient, IDisposable
     {
-        public IntuneClientException()
+        private System.Net.Http.HttpClient httpClient;
+
+        public HttpClient(System.Net.Http.HttpClient httpClient)
         {
+            this.httpClient = httpClient;
         }
 
-        public IntuneClientException(string message) : base(message)
+        public HttpRequestHeaders DefaultRequestHeaders => this.httpClient.DefaultRequestHeaders;
+
+        public void Dispose()
         {
+            this.httpClient.Dispose();
         }
 
-        public IntuneClientException(string message, Exception innerException) : base(message, innerException)
+        public Task<HttpResponseMessage> GetAsync(string requestUri)
         {
+            return this.httpClient.GetAsync(requestUri);
         }
 
-        protected IntuneClientException(SerializationInfo info, StreamingContext context) : base(info, context)
+        public Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
         {
+            return this.httpClient.PostAsync(requestUri, content);
         }
     }
 }

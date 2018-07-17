@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // All rights reserved.
 //
 // This code is licensed under the MIT License.
@@ -21,34 +21,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using Newtonsoft.Json.Linq;
-using System;
-using System.Net;
+using System.Threading.Tasks;
 
-namespace lib
+namespace Microsoft.Intune
 {
-
-    public class IntuneClientHttpErrorException : IntuneClientException
+    public interface IIntuneServiceLocationProvider
     {
-        private Guid activityId = Guid.Empty;
-        public HttpStatusCode StatusCode { get; set; }
-        private JObject response = null;
-
-        public JObject getResponse()
-        {
-            return this.response;
-        }
-
-        public Guid getActivityId()
-        {
-            return this.activityId;
-        }
-
-        public IntuneClientHttpErrorException(HttpStatusCode statusCode, JObject response, Guid activityId) : base(response.ToString())
-        {
-            this.activityId = activityId;
-            this.StatusCode = statusCode;
-            this.response = response;
-        }
+        void Clear();
+        Task<string> GetServiceEndpointAsync(string serviceName);
     }
 }

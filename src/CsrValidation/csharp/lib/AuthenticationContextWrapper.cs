@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // All rights reserved.
 //
 // This code is licensed under the MIT License.
@@ -21,27 +21,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System.Threading.Tasks;
-using System;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
-namespace lib
+namespace Microsoft.Intune
 {
-    /// <summary>
-    /// Interface to allow dependency injection for UnitTests on ADALClientWrapper
-    /// </summary>
-    public class AuthenticationContextWrapper : IAuthenticationContext
+    internal class AuthenticationContextWrapper : IAuthenticationContext
     {
-        private AuthenticationContext context = null;
+        private AuthenticationContext authenticationContext;
 
-        public AuthenticationContextWrapper(AuthenticationContext context)
+        public AuthenticationContextWrapper(AuthenticationContext authenticationContext)
         {
-            this.context = context ?? throw new ArgumentException(nameof(context));
+            this.authenticationContext = authenticationContext;
         }
 
         public Task<AuthenticationResult> AcquireTokenAsync(string resource, ClientCredential clientCredential)
         {
-            return context.AcquireTokenAsync(resource, clientCredential);
+            return this.authenticationContext.AcquireTokenAsync(resource, clientCredential);
         }
     }
 }
