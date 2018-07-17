@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
 using Microsoft.Intune;
 
 namespace Example
@@ -8,6 +10,26 @@ namespace Example
     {
         static void Main(string[] args)
         {
+            // If scenario requires the use of a proxy with authentication then you need to supply your own HttpClient like the following.
+            string proxyHost = "http://localhost";
+            string proxyPort = "8888";
+            string proxyUser = "proxyuser";
+            string proxyPass = "proxypass";
+
+            var proxy = new WebProxy()
+            {
+                Address = new Uri($"{proxyHost}:{proxyPort}"),
+                UseDefaultCredentials = false,
+
+                // *** These creds are given to the proxy server, not the web server ***
+                Credentials = new NetworkCredential(
+                    userName: proxyUser,
+                    password: proxyPass)
+            };
+
+            // Uncomment the following line to use a proxy
+            //System.Net.WebRequest.DefaultWebProxy = proxy;
+
             var validator = new IntuneScepValidator(
                 providerNameAndVersion: "",   // A string that uniquely identifies your Certificate Authority and any version info for your app.
                 intuneTenant: "",             // Tenant name i.e. contoso.onmicrosoft.com
