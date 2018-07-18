@@ -35,7 +35,7 @@ namespace Microsoft.Intune
         /// Post a Request to an Intune rest service.
         /// </summary>
         /// <param name="serviceName">The name of the service to post to.</param>
-        /// <param name="urlSuffix">The end of the url to tack onto the request.</param>
+        /// <param name="urlSuffix">The end of the url to append onto the request.</param>
         /// <param name="apiVersion">API Version of service to use.</param>
         /// <param name="json">The body of the request.</param>
         /// <param name="activityId">Client generated ID for correlation of this activity</param>
