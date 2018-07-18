@@ -28,9 +28,9 @@ using System.Diagnostics;
 namespace Microsoft.Intune
 {
 
-    /**
-     * Exception thrown when the SCEP Service returns an error.
-     */
+    /// <summary>
+    /// Exception thrown when the SCEP Service returns an error.
+    /// </summary>
     public class IntuneScepServiceException : IntuneClientException
     {
         private Guid activityId = Guid.Empty;
@@ -68,45 +68,35 @@ namespace Microsoft.Intune
             BadUserIdInChallenge
         };
 
-        /**
-         * The Unique code that describes the reason for the failure as returned from the server.
-         */
-        public string getOriginalErrorCode()
-        {
-            return this.errorCode;
-        }
+        /// <summary>
+        /// The Unique code that describes the reason for the failure as returned from the server.
+        /// </summary>
+        /// <returns></returns>
+        public string OriginalErrorCode => this.errorCode;
 
-        /**
-         * The Unique code that describes the reason for the failure parsed from what the server returned.
-         */
-        public ErrorCode getParsedErrorCode()
-        {
-            return parsedErrorCode;
-        }
+        /// <summary>
+        /// The Unique code that describes the reason for the failure parsed from what the server returned.
+        /// </summary>
+        /// <returns></returns>
+        public ErrorCode ParsedErrorCode => parsedErrorCode;
 
-        /**
-         * A short description for the error the service returned.
-         */
-        public string getErrorDescription()
-        {
-            return this.errorDescription;
-        }
+        /// <summary>
+        /// A short description for the error the service returned.
+        /// </summary>
+        /// <returns></returns>
+        public string ErrorDescription => this.errorDescription;
 
-        /**
-         * The transaction Id used for to correlate all SCEP service parts of the service call.
-         */
-        public string getTransactionId()
-        {
-            return this.transactionId;
-        }
+        /// <summary>
+        /// The transaction Id used for to correlate all SCEP service parts of the service call.
+        /// </summary>
+        /// <returns></returns>
+        public string TransactionId => this.transactionId;
 
-        /**
-         * The ID that is provided to Intune to correlate all parts of the service call. 
-         */
-        public Guid getActivityId()
-        {
-            return this.activityId;
-        }
+        /// <summary>
+        /// The ID that is provided to Intune to correlate all parts of the service call. 
+        /// </summary>
+        /// <returns></returns>
+        public Guid GetActivityId => this.activityId;
 
         public IntuneScepServiceException(string errorCode, string errorDescription, string transactionId, Guid activityId, TraceSource trace) : base(
             "ActivityId:" + activityId + "," +
@@ -117,6 +107,7 @@ namespace Microsoft.Intune
             this.activityId = activityId;
             this.transactionId = transactionId;
             this.errorCode = errorCode;
+            this.errorDescription = errorDescription;
 
             try
             {

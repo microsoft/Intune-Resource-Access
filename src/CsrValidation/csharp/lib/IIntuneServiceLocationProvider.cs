@@ -27,7 +27,16 @@ namespace Microsoft.Intune
 {
     public interface IIntuneServiceLocationProvider
     {
+        /// <summary>
+        /// Clears the contents of any cached contents.
+        /// </summary>
         void Clear();
+
+        /// <summary>
+        /// Get service endpoint by service name.
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <returns></returns>
         Task<string> GetServiceEndpointAsync(string serviceName);
     }
 }

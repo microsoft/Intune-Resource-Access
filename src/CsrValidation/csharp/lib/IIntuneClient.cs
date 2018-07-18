@@ -30,6 +30,17 @@ namespace Microsoft.Intune
 {
     public interface IIntuneClient
     {
+
+        /// <summary>
+        /// Post a Request to an Intune rest service.
+        /// </summary>
+        /// <param name="serviceName">The name of the service to post to.</param>
+        /// <param name="urlSuffix">The end of the url to append onto the request.</param>
+        /// <param name="apiVersion">API Version of service to use.</param>
+        /// <param name="json">The body of the request.</param>
+        /// <param name="activityId">Client generated ID for correlation of this activity</param>
+        /// <param name="additionalHeaders">key value pairs of additional header values to add to the request</param>
+        /// <returns>JSON response from service</returns>
         Task<JObject> PostAsync(string serviceName, string urlSuffix, string apiVersion, JObject json, Guid activityId, Dictionary<string, string> additionalHeaders = null);
     }
 }
