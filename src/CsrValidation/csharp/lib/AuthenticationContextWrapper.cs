@@ -26,15 +26,17 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace Microsoft.Intune
 {
-    internal class AuthenticationContextWrapper : IAuthenticationContext
+    public class AuthenticationContextWrapper : IAuthenticationContext
     {
         private AuthenticationContext authenticationContext;
 
+        /// <inheritdoc />
         public AuthenticationContextWrapper(AuthenticationContext authenticationContext)
         {
             this.authenticationContext = authenticationContext;
         }
 
+        /// <inheritdoc />
         public Task<AuthenticationResult> AcquireTokenAsync(string resource, ClientCredential clientCredential)
         {
             return this.authenticationContext.AcquireTokenAsync(resource, clientCredential);

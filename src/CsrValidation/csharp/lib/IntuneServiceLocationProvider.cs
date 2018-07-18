@@ -89,7 +89,7 @@ namespace Microsoft.Intune
             }
             this.intuneTenant = intuneTenant;
 
-            if(string.IsNullOrWhiteSpace(graphApiVersion))
+            if (string.IsNullOrWhiteSpace(graphApiVersion))
             {
                 throw new ArgumentNullException(nameof(graphApiVersion));
             }
@@ -128,7 +128,7 @@ namespace Microsoft.Intune
         {
             if (string.IsNullOrWhiteSpace(serviceName))
             {
-                throw new ArgumentException(nameof(serviceName));
+                throw new ArgumentNullException(nameof(serviceName));
             }
 
             string serviceNameLower = serviceName.ToLowerInvariant();
@@ -173,21 +173,13 @@ namespace Microsoft.Intune
             try
             {
                 response = await client.GetAsync(graphRequest);
+                response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException e)
             {
                 trace.TraceEvent(TraceEventType.Error, 0, $"Failed to contact intune service with URL: {graphRequest};\r\n{e.Message}");
                 throw;
             }
-            finally
-            {
-                if (response == null)
-                {
-                    throw new IntuneClientException($"ServiceDiscovery failed for an unknown reason");
-                }
-            }
-
-            response.EnsureSuccessStatusCode();
 
             string result = await response.Content.ReadAsStringAsync();
 

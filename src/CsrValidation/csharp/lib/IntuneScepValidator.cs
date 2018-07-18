@@ -74,28 +74,27 @@ namespace Microsoft.Intune
         /// <param name="intuneClient">IntuneClient to use to make requests to intune.</param>
         /// <param name="httpClient">HttpClient to use to make any http requests.</param>
         public IntuneScepValidator(
-            string providerNameAndVersion, 
-            string azureAppId, 
-            string azureAppKey, 
-            string intuneTenant, 
-            string serviceVersion = DEFAULT_SERVICE_VERSION, 
-            string intuneAppId = null, 
-            string intuneResourceUrl = null, 
-            string graphApiVersion = null, 
-            string graphResourceUrl = null, 
-            string authAuthority = null, 
-            TraceSource trace = null, 
-            IIntuneClient intuneClient = null, 
-            IHttpClient httpClient = null)
+            string providerNameAndVersion,
+            string azureAppId,
+            string azureAppKey,
+            string intuneTenant,
+            string serviceVersion = DEFAULT_SERVICE_VERSION,
+            string intuneAppId = IntuneServiceLocationProvider.DEFAULT_INTUNE_APP_ID,
+            string intuneResourceUrl = IntuneClient.DEFAULT_INTUNE_RESOURCE_URL,
+            string graphApiVersion = IntuneServiceLocationProvider.DEFAULT_GRAPH_VERSION,
+            string graphResourceUrl = IntuneServiceLocationProvider.DEFAULT_RESOURCE_URL,
+            string authAuthority = AdalClient.DEFAULT_AUTHORITY,
+            TraceSource trace = null,
+            IIntuneClient intuneClient = null)
         {
             // Required Parameters
             if (string.IsNullOrWhiteSpace(providerNameAndVersion))
             {
-                throw new ArgumentException(nameof(providerNameAndVersion));
+                throw new ArgumentNullException(nameof(providerNameAndVersion));
             }
             this.providerNameAndVersion = providerNameAndVersion;
 
-            if(string.IsNullOrWhiteSpace(serviceVersion))
+            if (string.IsNullOrWhiteSpace(serviceVersion))
             {
                 throw new ArgumentNullException(nameof(serviceVersion));
             }
@@ -108,7 +107,6 @@ namespace Microsoft.Intune
             }
 
             // Dependencies
-            var client = httpClient ?? new HttpClient(new System.Net.Http.HttpClient());
             var adalClient = new AdalClient(
                         // Required
                         aadTenant: intuneTenant,
@@ -116,26 +114,25 @@ namespace Microsoft.Intune
                         // Overrides
                         trace: trace,
                         // Dependencies
-                        authAuthority: authAuthority ?? AdalClient.DEFAULT_AUTHORITY
+                        authAuthority: authAuthority
                         );
+
             this.intuneClient = intuneClient ?? new IntuneClient(
                     // Overrides
-                    intuneResourceUrl: intuneResourceUrl ?? IntuneClient.DEFAULT_INTUNE_RESOURCE_URL,
+                    intuneResourceUrl: intuneResourceUrl,
                     trace: trace,
                     // Dependencies
                     adalClient: adalClient,
-                    httpClient: client,
                     locationProvider: new IntuneServiceLocationProvider(
                         // Required
                         intuneTenant: intuneTenant,
                         // Overrides
-                        graphApiVersion: graphApiVersion ?? IntuneServiceLocationProvider.DEFAULT_GRAPH_VERSION, 
-                        graphResourceUrl: graphResourceUrl ?? IntuneServiceLocationProvider.DEFAULT_RESOURCE_URL,
-                        intuneAppId: intuneAppId ?? IntuneServiceLocationProvider.DEFAULT_INTUNE_APP_ID,
+                        graphApiVersion: graphApiVersion,
+                        graphResourceUrl: graphResourceUrl,
+                        intuneAppId: intuneAppId,
                         trace: trace,
                         // Dependencies
-                        authClient: adalClient,
-                        httpClient: client
+                        authClient: adalClient
                         )
                     );
         }
@@ -153,12 +150,12 @@ namespace Microsoft.Intune
         {
             if (string.IsNullOrWhiteSpace(transactionId))
             {
-                throw new ArgumentException(nameof(transactionId));
+                throw new ArgumentNullException(nameof(transactionId));
             }
 
             if (string.IsNullOrWhiteSpace(certificateRequest))
             {
-                throw new ArgumentException(nameof(certificateRequest));
+                throw new ArgumentNullException(nameof(certificateRequest));
             }
 
             JObject requestBody = new JObject(
@@ -186,32 +183,32 @@ namespace Microsoft.Intune
         {
             if (string.IsNullOrWhiteSpace(transactionId))
             {
-                throw new ArgumentException(nameof(transactionId));
+                throw new ArgumentNullException(nameof(transactionId));
             }
 
             if (string.IsNullOrWhiteSpace(certificateRequest))
             {
-                throw new ArgumentException(nameof(certificateRequest));
+                throw new ArgumentNullException(nameof(certificateRequest));
             }
 
             if (string.IsNullOrWhiteSpace(certThumbprint))
             {
-                throw new ArgumentException(nameof(certThumbprint));
+                throw new ArgumentNullException(nameof(certThumbprint));
             }
 
             if (string.IsNullOrWhiteSpace(certSerialNumber))
             {
-                throw new ArgumentException(nameof(certSerialNumber));
+                throw new ArgumentNullException(nameof(certSerialNumber));
             }
 
             if (string.IsNullOrWhiteSpace(certExpirationDate))
             {
-                throw new ArgumentException(nameof(certExpirationDate));
+                throw new ArgumentNullException(nameof(certExpirationDate));
             }
 
             if (string.IsNullOrWhiteSpace(certIssuingAuthority))
             {
-                throw new ArgumentException(nameof(certIssuingAuthority));
+                throw new ArgumentNullException(nameof(certIssuingAuthority));
             }
 
             JObject requestBody = new JObject(
@@ -243,17 +240,17 @@ namespace Microsoft.Intune
         {
             if (string.IsNullOrWhiteSpace(transactionId))
             {
-                throw new ArgumentException(nameof(transactionId));
+                throw new ArgumentNullException(nameof(transactionId));
             }
 
             if (string.IsNullOrWhiteSpace(certificateRequest))
             {
-                throw new ArgumentException(nameof(certificateRequest));
+                throw new ArgumentNullException(nameof(certificateRequest));
             }
 
             if (string.IsNullOrWhiteSpace(errorDescription))
             {
-                throw new ArgumentException(nameof(errorDescription));
+                throw new ArgumentNullException(nameof(errorDescription));
             }
 
             JObject requestBody = new JObject(
@@ -284,7 +281,7 @@ namespace Microsoft.Intune
 
             IntuneScepServiceException e = new IntuneScepServiceException(code, errorDescription, transactionId, activityId, trace);
 
-            if (e.getParsedErrorCode() != IntuneScepServiceException.ErrorCode.Success)
+            if (e.ParsedErrorCode != IntuneScepServiceException.ErrorCode.Success)
             {
                 trace.TraceEvent(TraceEventType.Warning, 0, e.Message);
                 throw e;

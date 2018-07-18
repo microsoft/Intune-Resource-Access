@@ -32,23 +32,31 @@ namespace Microsoft.Intune
     {
         private System.Net.Http.HttpClient httpClient;
 
+        /// <summary>
+        /// Instantiates an instance
+        /// </summary>
+        /// <param name="httpClient"></param>
         public HttpClient(System.Net.Http.HttpClient httpClient)
         {
             this.httpClient = httpClient;
         }
 
+        /// <inheritdoc />
         public HttpRequestHeaders DefaultRequestHeaders => this.httpClient.DefaultRequestHeaders;
 
+        /// <inheritdoc />
         public void Dispose()
         {
             this.httpClient.Dispose();
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseMessage> GetAsync(string requestUri)
         {
             return this.httpClient.GetAsync(requestUri);
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
         {
             return this.httpClient.PostAsync(requestUri, content);

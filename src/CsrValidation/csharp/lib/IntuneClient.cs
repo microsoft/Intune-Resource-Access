@@ -85,51 +85,40 @@ namespace Microsoft.Intune
                 this.trace = trace;
             }
 
-            // Instantiate Dependencies
-            this.locationProvider = locationProvider;
-            this.adalClient = adalClient;
+            this.locationProvider = locationProvider ?? throw new ArgumentNullException(nameof(locationProvider));
+            this.adalClient = adalClient ?? throw new ArgumentNullException(nameof(adalClient));
             this.httpClient = httpClient ?? new HttpClient(new System.Net.Http.HttpClient());
         }
 
-        /// <summary>
-        /// Post a Request to an Intune rest service.
-        /// </summary>
-        /// <param name="serviceName">The name of the service to post to.</param>
-        /// <param name="urlSuffix">The end of the url to tack onto the request.</param>
-        /// <param name="apiVersion">API Version of service to use.</param>
-        /// <param name="json">The body of the request.</param>
-        /// <param name="activityId">Client generated ID for correlation of this activity</param>
-        /// <param name="additionalHeaders">key value pairs of additional header values to add to the request</param>
-        /// <returns>JSON response from service</returns>
+        /// <inheritdoc />
         public async Task<JObject> PostAsync(string serviceName, string urlSuffix, string apiVersion, JObject json, Guid activityId, Dictionary<string, string> additionalHeaders = null)
         {
             if (string.IsNullOrWhiteSpace(serviceName))
             {
-                throw new ArgumentException(nameof(serviceName));
+                throw new ArgumentNullException(nameof(serviceName));
             }
 
             if (string.IsNullOrWhiteSpace(urlSuffix))
             {
-                throw new ArgumentException(nameof(urlSuffix));
+                throw new ArgumentNullException(nameof(urlSuffix));
             }
 
             if (string.IsNullOrWhiteSpace(apiVersion))
             {
-                throw new ArgumentException(nameof(apiVersion));
+                throw new ArgumentNullException(nameof(apiVersion));
             }
 
             if (json == null)
             {
-                throw new ArgumentException(nameof(json));
+                throw new ArgumentNullException(nameof(json));
             }
-
 
             string intuneServiceEndpoint = await this.locationProvider.GetServiceEndpointAsync(serviceName);
             if (string.IsNullOrWhiteSpace(intuneServiceEndpoint))
             {
-                IntuneServiceNotFoundException ex = new IntuneServiceNotFoundException(serviceName);
-                trace.TraceEvent(TraceEventType.Error, 0, ex.Message);
-                throw ex;
+                IntuneServiceNotFoundException exception = new IntuneServiceNotFoundException(serviceName);
+                trace.TraceEvent(TraceEventType.Error, 0, exception.Message);
+                throw exception;
             }
 
             AuthenticationResult authResult = await adalClient.AcquireTokenAsync(intuneResourceUrl);
@@ -155,6 +144,7 @@ namespace Microsoft.Intune
             try
             {
                 response = await client.PostAsync(intuneRequestUrl, httpContent);
+                response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException e)
             {
@@ -162,15 +152,6 @@ namespace Microsoft.Intune
                 this.locationProvider.Clear(); // clear contents in case the service location has changed and we cached the value
                 throw;
             }
-            finally
-            {
-                if (response == null)
-                {
-                    throw new IntuneClientException($"PostAsync failed for an unknown reason");
-                }
-            }
-
-            response.EnsureSuccessStatusCode();
             
             string result = await response.Content.ReadAsStringAsync();
 

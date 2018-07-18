@@ -63,7 +63,7 @@ namespace Microsoft.Intune
             // Required Parameters
             if (string.IsNullOrWhiteSpace(aadTenant))
             {
-                throw new ArgumentException(nameof(aadTenant));
+                throw new ArgumentNullException(nameof(aadTenant));
             }
             this.clientCredential = clientCredential ?? throw new ArgumentNullException(nameof(clientCredential));
 
@@ -80,8 +80,7 @@ namespace Microsoft.Intune
             }
 
             // Instantiate Dependencies
-            var adal = new AuthenticationContext(this.authority + aadTenant, false);
-            context = authContext ?? new AuthenticationContextWrapper(adal);
+            context = authContext ?? new AuthenticationContextWrapper(new AuthenticationContext(this.authority + aadTenant, false));
         }
 
         /// <summary>
@@ -94,7 +93,7 @@ namespace Microsoft.Intune
         {
             if (string.IsNullOrWhiteSpace(resource))
             {
-                throw new ArgumentException(nameof(resource));
+                throw new ArgumentNullException(nameof(resource));
             }
 
             AuthenticationResult result = await context.AcquireTokenAsync(resource, clientCredential);
