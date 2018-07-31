@@ -1,6 +1,6 @@
 # PFXImport Powershell Project
 
-*This project is in currently in pre-release. Not all features may be functional.*
+*This project is currently in pre-release. Not all features may be functional.*
 
 This project consists of helper Powershell Commandlets for importing PFX certificates to Microsoft Intune.
 
