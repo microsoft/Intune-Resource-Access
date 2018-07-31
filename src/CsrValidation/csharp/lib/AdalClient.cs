@@ -23,6 +23,7 @@
 
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -53,25 +54,42 @@ namespace Microsoft.Intune
         /// <summary>
         /// Constructor meant to be used for dependency injection of authContext
         /// </summary>
+        /// <param name="configProperties">Configuration properties for this class.</param>
         /// <param name="aadTenant">Azure Active Directory Tenant</param>
         /// <param name="clientCredential">Client credential to use for authentication.</param>
         /// <param name="authAuthority">URL of Authorization Authority.</param>
         /// <param name="trace">Trace</param>
         /// <param name="authContext">Authorization Context to use to acquire token.</param>
-        public AdalClient(string aadTenant, ClientCredential clientCredential, string authAuthority = DEFAULT_AUTHORITY, TraceSource trace = null, IAuthenticationContext authContext = null)
+        public AdalClient(Dictionary<string,string> configProperties, TraceSource trace = null, IAuthenticationContext authContext = null)
         {
             // Required Parameters
-            if (string.IsNullOrWhiteSpace(aadTenant))
+            if (configProperties == null)
             {
-                throw new ArgumentNullException(nameof(aadTenant));
+                throw new ArgumentNullException(nameof(configProperties));
             }
-            this.clientCredential = clientCredential ?? throw new ArgumentNullException(nameof(clientCredential));
 
-            if (string.IsNullOrWhiteSpace(authAuthority))
+            string tenant = null;
+            configProperties.TryGetValue("TENANT", out tenant);
+            if (string.IsNullOrWhiteSpace(tenant))
             {
-                throw new ArgumentNullException(nameof(authAuthority));
+                throw new ArgumentNullException(nameof(tenant));
             }
-            this.authority = authAuthority;
+
+            string azureAppId = null;
+            configProperties.TryGetValue("AAD_APP_ID", out azureAppId);
+            if (string.IsNullOrWhiteSpace(azureAppId))
+            {
+                throw new ArgumentNullException(nameof(azureAppId));
+            }
+
+            string azureAppKey = null;
+            configProperties.TryGetValue("AAD_APP_KEY", out azureAppKey);
+            if (string.IsNullOrWhiteSpace(azureAppKey))
+            {
+                throw new ArgumentNullException(nameof(azureAppKey));
+            }
+
+            clientCredential = new ClientCredential(azureAppId, azureAppKey);
 
             // Optional Parameters
             if(trace != null)
@@ -79,8 +97,15 @@ namespace Microsoft.Intune
                 this.trace = trace;
             }
 
+            configProperties.TryGetValue("AUTH_AUTHORITY", out authority);
+            if(authority == null)
+            {
+                authority = DEFAULT_AUTHORITY;
+            }
+            
+
             // Instantiate Dependencies
-            context = authContext ?? new AuthenticationContextWrapper(new AuthenticationContext(this.authority + aadTenant, false));
+            context = authContext ?? new AuthenticationContextWrapper(new AuthenticationContext(authority + tenant, false));
         }
 
         /// <summary>

@@ -59,7 +59,7 @@ namespace Microsoft.Intune
         /// <summary>
         /// The tenant identifier i.e. contoso.onmicrosoft.com
         /// </summary>
-        private string intuneTenant;
+        private string tenant;
         
         /// <summary>
         /// Cached Map of service locations
@@ -73,39 +73,23 @@ namespace Microsoft.Intune
         /// <summary>
         /// Instantiates a new instance.
         /// </summary>
-        /// <param name="intuneTenant">Tenant name.</param>
+        /// <param name="configProperties">Configuration properties for this class.</param>
         /// <param name="authClient">Authorization client.</param>
-        /// <param name="graphApiVersion">Specific version of graph to use.</param>
-        /// <param name="graphResourceUrl">Graph resource url to request access to.</param>
-        /// <param name="intuneAppId">Application Id of Intune in graph.</param>
         /// <param name="httpClient">HttpClient to use for requests.</param>
         /// <param name="trace">Trace</param>
-        public IntuneServiceLocationProvider(string intuneTenant, AdalClient authClient, string graphApiVersion = DEFAULT_GRAPH_VERSION, string graphResourceUrl = DEFAULT_RESOURCE_URL, string intuneAppId = DEFAULT_INTUNE_APP_ID, IHttpClient httpClient = null, TraceSource trace = null)
+        public IntuneServiceLocationProvider(Dictionary<string,string> configProperties, AdalClient authClient, IHttpClient httpClient = null, TraceSource trace = null)
         {
             // Required Parameters
-            if (string.IsNullOrWhiteSpace(intuneTenant))
+            if (configProperties == null)
             {
-                throw new ArgumentNullException(nameof(intuneTenant));
+                throw new ArgumentNullException(nameof(configProperties));
             }
-            this.intuneTenant = intuneTenant;
 
-            if (string.IsNullOrWhiteSpace(graphApiVersion))
+            configProperties.TryGetValue("TENANT", out tenant);
+            if (string.IsNullOrWhiteSpace(tenant))
             {
-                throw new ArgumentNullException(nameof(graphApiVersion));
+                throw new ArgumentNullException(nameof(tenant));
             }
-            this.graphApiVersion = graphApiVersion;
-
-            if (string.IsNullOrWhiteSpace(graphResourceUrl))
-            {
-                throw new ArgumentNullException(nameof(graphResourceUrl));
-            }
-            this.graphResourceUrl = graphResourceUrl;
-
-            if (string.IsNullOrWhiteSpace(intuneAppId))
-            {
-                throw new ArgumentNullException(nameof(intuneAppId));
-            }
-            this.intuneAppId = intuneAppId;
 
             this.authClient = authClient ?? throw new ArgumentNullException(nameof(authClient));
 
@@ -113,6 +97,25 @@ namespace Microsoft.Intune
             if (trace != null)
             {
                 this.trace = trace;
+            }
+
+            configProperties.TryGetValue("GRAPH_API_VERSION", out graphApiVersion);
+            if (string.IsNullOrWhiteSpace(graphApiVersion))
+            {
+                graphApiVersion = DEFAULT_GRAPH_VERSION;
+            }
+            
+
+            configProperties.TryGetValue("GRAPH_RESOURCE_URL", out graphResourceUrl);
+            if (string.IsNullOrWhiteSpace(graphResourceUrl))
+            {
+                graphResourceUrl = DEFAULT_RESOURCE_URL;
+            }
+
+            configProperties.TryGetValue("INTUNE_APP_ID", out intuneAppId);
+            if (string.IsNullOrWhiteSpace(intuneAppId))
+            {
+                intuneAppId = DEFAULT_INTUNE_APP_ID;
             }
 
             // Dependencies
@@ -160,7 +163,7 @@ namespace Microsoft.Intune
         {
             AuthenticationResult authResult = await this.authClient.AcquireTokenAsync(this.graphResourceUrl);
 
-            string graphRequest = this.graphResourceUrl + intuneTenant + "/servicePrincipalsByAppId/" + this.intuneAppId + "/serviceEndpoints?api-version=" + this.graphApiVersion;
+            string graphRequest = this.graphResourceUrl + tenant + "/servicePrincipalsByAppId/" + this.intuneAppId + "/serviceEndpoints?api-version=" + this.graphApiVersion;
 
             Guid activityId = Guid.NewGuid();
 

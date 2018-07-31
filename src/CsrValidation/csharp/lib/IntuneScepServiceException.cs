@@ -33,12 +33,6 @@ namespace Microsoft.Intune
     /// </summary>
     public class IntuneScepServiceException : IntuneClientException
     {
-        private Guid activityId = Guid.Empty;
-        private string errorCode = null;
-        private string errorDescription = null;
-        private ErrorCode parsedErrorCode = ErrorCode.Unknown;
-        private string transactionId = null;
-
         public enum ErrorCode
         {
             Unknown,
@@ -72,31 +66,31 @@ namespace Microsoft.Intune
         /// The Unique code that describes the reason for the failure as returned from the server.
         /// </summary>
         /// <returns></returns>
-        public string OriginalErrorCode => this.errorCode;
+        public string OriginalErrorCode { get; } = null;
 
         /// <summary>
         /// The Unique code that describes the reason for the failure parsed from what the server returned.
         /// </summary>
         /// <returns></returns>
-        public ErrorCode ParsedErrorCode => parsedErrorCode;
+        public ErrorCode ParsedErrorCode { get; } = ErrorCode.Unknown;
 
         /// <summary>
         /// A short description for the error the service returned.
         /// </summary>
         /// <returns></returns>
-        public string ErrorDescription => this.errorDescription;
+        public string ErrorDescription { get; } = null;
 
         /// <summary>
         /// The transaction Id used for to correlate all SCEP service parts of the service call.
         /// </summary>
         /// <returns></returns>
-        public string TransactionId => this.transactionId;
+        public string TransactionId { get; } = null;
 
         /// <summary>
         /// The ID that is provided to Intune to correlate all parts of the service call. 
         /// </summary>
         /// <returns></returns>
-        public Guid GetActivityId => this.activityId;
+        public Guid ActivityId { get; } = Guid.Empty;
 
         public IntuneScepServiceException(string errorCode, string errorDescription, string transactionId, Guid activityId, TraceSource trace) : base(
             "ActivityId:" + activityId + "," +
@@ -104,18 +98,18 @@ namespace Microsoft.Intune
             "ErrorCode:" + errorCode + "," +
             "ErrorDescription:" + errorDescription)
         {
-            this.activityId = activityId;
-            this.transactionId = transactionId;
-            this.errorCode = errorCode;
-            this.errorDescription = errorDescription;
+            this.ActivityId = activityId;
+            this.TransactionId = transactionId;
+            this.OriginalErrorCode = errorCode;
+            this.ErrorDescription = errorDescription;
 
             try
             {
-                parsedErrorCode = (ErrorCode)Enum.Parse(typeof(ErrorCode), this.errorCode);
+                ParsedErrorCode = (ErrorCode)Enum.Parse(typeof(ErrorCode), this.OriginalErrorCode);
             }
             catch(ArgumentException)
             {
-                trace.TraceEvent(TraceEventType.Error, 0, $"Error Code value not expected: {this.errorCode}");
+                trace.TraceEvent(TraceEventType.Error, 0, $"Error Code value not expected: {this.OriginalErrorCode}");
                 throw;
             }
         }
