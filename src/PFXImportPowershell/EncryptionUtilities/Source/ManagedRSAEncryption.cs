@@ -25,9 +25,11 @@ namespace Microsoft.Intune.EncryptionUtilities
 {
     using System;
     using System.Runtime.InteropServices;
+    using System.Security.AccessControl;
     using System.Security.Cryptography;
     using System.Security.Cryptography.Pkcs;
     using System.Security.Cryptography.X509Certificates;
+    using System.Security.Principal;
 
     public class ManagedRSAEncryption : ICNGLocalKeyCrypto
     {
@@ -53,10 +55,17 @@ namespace Microsoft.Intune.EncryptionUtilities
             CngProvider provider = new CngProvider(providerName);
             bool keyExists = false;
             byte[] encryptedData = null;
+            CngKeyOpenOptions cngOp = CngKeyOpenOptions.MachineKey;
 
             try
             {
                 keyExists = CngKey.Exists(keyName, provider);
+                if (!keyExists)
+                {
+                    //Look for User key
+                    cngOp = CngKeyOpenOptions.UserKey;
+                    keyExists = CngKey.Exists(keyName, provider, cngOp);
+                }
             }
             catch (CryptographicException e)
             {
@@ -68,7 +77,7 @@ namespace Microsoft.Intune.EncryptionUtilities
             {
                 throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for encryption", keyName));
             }
-            using (CngKey key = CngKey.Open(keyName, provider))
+            using (CngKey key = CngKey.Open(keyName, provider, cngOp))
             {
                 using (RSACng rsa = new RSACng(key))
                 {
@@ -94,10 +103,17 @@ namespace Microsoft.Intune.EncryptionUtilities
             CngProvider provider = new CngProvider(providerName);
             bool keyExists = false;
             byte[] decrypted;
+            CngKeyOpenOptions cngOp = CngKeyOpenOptions.MachineKey;
 
             try
             {
                 keyExists = CngKey.Exists(keyName, provider);
+                if (!keyExists)
+                {
+                    //Look for user key
+                    cngOp = CngKeyOpenOptions.UserKey;
+                    keyExists = CngKey.Exists(keyName, provider, cngOp);
+                }
             }
             catch (CryptographicException e)
             {
@@ -110,7 +126,7 @@ namespace Microsoft.Intune.EncryptionUtilities
                 throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for decryption", keyName));
             }
 
-            using (CngKey key = CngKey.Open(keyName, provider))
+            using (CngKey key = CngKey.Open(keyName, provider,cngOp))
             {
                 using (RSACng rsa = new RSACng(key))
                 {
@@ -132,18 +148,42 @@ namespace Microsoft.Intune.EncryptionUtilities
         {
             CngProvider provider = new CngProvider(providerName);
 
-            if (CngKey.Exists(keyName, provider))
+            if (CngKey.Exists(keyName, provider, CngKeyOpenOptions.MachineKey))
             {
                 return false;
             }
+            CryptoKeySecurity sec = new CryptoKeySecurity();
+
+            sec.AddAccessRule(
+                new CryptoKeyAccessRule(
+                    new SecurityIdentifier(sidType: WellKnownSidType.BuiltinAdministratorsSid, domainSid: null),
+                    cryptoKeyRights: CryptoKeyRights.FullControl,
+                    type: AccessControlType.Allow));
+
+            sec.AddAccessRule(
+                new CryptoKeyAccessRule(
+                    new SecurityIdentifier(sidType: WellKnownSidType.BuiltinSystemOperatorsSid, domainSid: null),
+                    cryptoKeyRights: CryptoKeyRights.GenericRead,
+                    type: AccessControlType.Allow));
+
+            const string NCRYPT_SECURITY_DESCR_PROPERTY = "Security Descr";
+            const CngPropertyOptions DACL_SECURITY_INFORMATION = (CngPropertyOptions)4;
+
+            CngProperty permissions = new CngProperty(
+                NCRYPT_SECURITY_DESCR_PROPERTY,
+                sec.GetSecurityDescriptorBinaryForm(),
+                CngPropertyOptions.Persist | DACL_SECURITY_INFORMATION);
             CngKeyCreationParameters keyParams = new CngKeyCreationParameters()
             {
                 ExportPolicy = CngExportPolicies.None,
                 Provider = provider,
-                Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None) }
+                Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None),
+                            permissions},
+                KeyCreationOptions = CngKeyCreationOptions.MachineKey
             };
 
-            using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams)) {
+            using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams))
+            {
                 // nothing to do inside here, except to return without throwing an exception
                 return true;
             }
@@ -157,13 +197,19 @@ namespace Microsoft.Intune.EncryptionUtilities
         public void DestroyLocalRSAKey(string providerName, string keyName)
         {
             CngProvider provider = new CngProvider(providerName);
+            CngKeyOpenOptions cngOp = CngKeyOpenOptions.MachineKey;
 
-            if (CngKey.Exists(keyName, provider))
+            if (!CngKey.Exists(keyName, provider))
             {
-                using (CngKey key = CngKey.Open(keyName, provider))
+                cngOp = CngKeyOpenOptions.UserKey;
+                if (!CngKey.Exists(keyName, provider, cngOp))
                 {
-                    key.Delete();
+                    return;
                 }
+            }
+            using (CngKey key = CngKey.Open(keyName, provider, cngOp))
+            {
+                key.Delete();
             }
         }
 
