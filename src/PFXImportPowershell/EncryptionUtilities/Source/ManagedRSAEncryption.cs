@@ -59,7 +59,7 @@ namespace Microsoft.Intune.EncryptionUtilities
 
             try
             {
-                keyExists = CngKey.Exists(keyName, provider);
+                keyExists = CngKey.Exists(keyName, provider, cngOp);
                 if (!keyExists)
                 {
                     //Look for User key
@@ -107,7 +107,7 @@ namespace Microsoft.Intune.EncryptionUtilities
 
             try
             {
-                keyExists = CngKey.Exists(keyName, provider);
+                keyExists = CngKey.Exists(keyName, provider, cngOp);
                 if (!keyExists)
                 {
                     //Look for user key
