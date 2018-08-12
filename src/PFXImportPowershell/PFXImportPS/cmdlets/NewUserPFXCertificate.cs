@@ -69,10 +69,10 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         public string KeyName { get; set; }
 
         [Parameter(Position = 6)]
-        public UserPfxIntendedPurpose? IntendedPurpose { get; set; }
+        public UserPfxIntendedPurpose? IntendedPurpose { get; set; } = UserPfxIntendedPurpose.Unassigned;
 
         [Parameter(Position = 7)]
-        public UserPfxPaddingScheme? PaddingScheme { get; set; }
+        public UserPfxPaddingScheme? PaddingScheme { get; set; } = UserPfxPaddingScheme.OaepSha512;
 
         protected override void ProcessRecord()
         {
@@ -153,6 +153,8 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                         paddingFlags = PaddingFlags.OAEPPadding;
                         break;
                     case UserPfxPaddingScheme.None:
+                        PaddingScheme = UserPfxPaddingScheme.OaepSha512;
+                        goto default;   // Since C# doesn't allow switch-case fall-through!
                     case UserPfxPaddingScheme.OaepSha512:
                     default:
                         hashAlgorithm = PaddingHashAlgorithmNames.SHA512;
