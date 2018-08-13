@@ -14,6 +14,12 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 	# 1. Setup Key (if you don't have a dedicated provider, you can use "Microsoft Software Key Storage Provider")
 	Add-IntuneKspKey "<ProviderName>" "<KeyAlgoritm>" "<KeyName>"
 	
+## Authenticate to Intune
+    # 1. Optionally, create a secure string representing the account administrator password.
+    $secureAdminPassword = ConvertTo-SecureString -String "<admin password>" -AsPlainText -Force
+    # 2. Authenticate as the account administrator (using the admin UPN) to Intune.
+    $authResult = Get-IntuneAuthenticationToken -AdminUserName "<Admin-UPN>" [-AdminPassword $secureAdminPassword]
+
 ## Set up userPFXCertifcate object (including encrypting password)
 
 	# 1. Setup Secure File Password
