@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Intune;
@@ -30,11 +33,12 @@ namespace Example
             // Uncomment the following line to use a proxy
             //System.Net.WebRequest.DefaultWebProxy = proxy;
 
+            // Populate properties dictionary with properties needed for API.  
+            // This example uses a simple Java like properties file to pass in the settings to maintain consistency.
+            var configProperties = SimpleIniParser.Parse("com.microsoft.intune.props");
+            
             var validator = new IntuneScepValidator(
-                providerNameAndVersion: "",   // A string that uniquely identifies your Certificate Authority and any version info for your app.
-                intuneTenant: "",             // Tenant name i.e. contoso.onmicrosoft.com
-                azureAppId: "",               // Application ID of Active Directory application in the tenants azure subscription.
-                azureAppKey: "",              // Application secret to be used for authentication of tenant.
+                configProperties,
                 trace: new TraceSource("log")
             );
 
