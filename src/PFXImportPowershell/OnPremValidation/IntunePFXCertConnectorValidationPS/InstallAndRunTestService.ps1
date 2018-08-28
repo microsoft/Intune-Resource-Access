@@ -1,13 +1,13 @@
 param(
 	[string] $serviceDirectory,
 	[string] $testResultsFileName = "PFXImportTestResultsMarker.txt",
-	[string] $serviceName = "DecryptTest",
+	[string] $serviceName = "PFXImportDecryptTest",
 	[string] $serviceDescription = "Tests if the system account can decrpyt with a key in a service"
 	
 )
 
 $serviceUserName = "NT AUTHORITY\SYSTEM"
-$serviceUserPassword = "" | ConvertTo-SecureString -AsPlainText -Force
+$serviceUserPassword = "EmptyString" | ConvertTo-SecureString -AsPlainText -Force
 $credentials = New-Object System.Management.Automation.PSCredential ($serviceUserName, $serviceUserPassword)
 
 
