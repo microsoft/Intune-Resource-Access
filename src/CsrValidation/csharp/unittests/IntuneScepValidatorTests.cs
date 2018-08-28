@@ -13,6 +13,14 @@ namespace UnitTests
     [TestClass]
     public class IntuneScepValidatorTests
     {
+        Dictionary<string, string> configProperties = new Dictionary<string, string>()
+        {
+            {"AAD_APP_ID","appId"},
+            {"AAD_APP_KEY","appKey"},
+            {"TENANT","tenant"},
+            {"PROVIDER_NAME_AND_VERSION","providerName"}
+        };
+
         [TestMethod]
         public async Task TestValidationSucceedsAsync()
         {
@@ -32,7 +40,7 @@ namespace UnitTests
                 Task.FromResult<JObject>(validResponse)
             );
 
-            Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator("test", "test", "test", "test", intuneClient: mock.Object);
+            Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: mock.Object);
 
             Guid transactionId = Guid.NewGuid();
             string csr = "testing";
@@ -60,7 +68,7 @@ namespace UnitTests
                 Task.FromResult<JObject>(invalidResponse)
             );
 
-            Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator("test", "test", "test", "test", intuneClient: mock.Object);
+            Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: mock.Object);
 
             Guid transactionId = Guid.NewGuid();
             string csr = "testing";
@@ -87,7 +95,7 @@ namespace UnitTests
                 Task.FromResult<JObject>(validResponse)
             );
 
-            Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator("test", "test", "test", "test", intuneClient: mock.Object);
+            Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: mock.Object);
 
             Guid transactionId = Guid.NewGuid();
             string csr = "testing";
@@ -115,7 +123,7 @@ namespace UnitTests
                 Task.FromResult<JObject>(invalidResponse)
             );
 
-            Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator("test", "test", "test", "test", intuneClient: mock.Object);
+            Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: mock.Object);
 
             Guid transactionId = Guid.NewGuid();
             string csr = "testing";
@@ -142,7 +150,7 @@ namespace UnitTests
                 Task.FromResult<JObject>(validResponse)
             );
 
-            Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator("test", "test", "test", "test", intuneClient: mock.Object);
+            Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: mock.Object);
 
             Guid transactionId = Guid.NewGuid();
             string csr = "testing";
@@ -170,7 +178,7 @@ namespace UnitTests
                 Task.FromResult<JObject>(invalidResponse)
             );
 
-            Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator("test", "test", "test", "test", intuneClient: mock.Object);
+            Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: mock.Object);
 
             Guid transactionId = Guid.NewGuid();
             string csr = "testing";
@@ -198,9 +206,9 @@ namespace UnitTests
                 .Returns(Task.FromResult<string>(@"http://localhost/"));
 
 
-            var adalClient = new AdalClient("test", new ClientCredential("test", "test"));
-            var intuneClient = new IntuneClient(adalClient: adalClient, locationProvider: locationProviderMock.Object);
-            var scepClient = new Microsoft.Intune.IntuneScepValidator("test", "test", "test", "test", intuneClient: intuneClient);
+            var adalClient = new AdalClient(configProperties);
+            var intuneClient = new IntuneClient(configProperties, adalClient: adalClient, locationProvider: locationProviderMock.Object);
+            var scepClient = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: intuneClient);
 
             Guid transactionId = Guid.NewGuid();
             string csr = "testing";
@@ -231,9 +239,9 @@ namespace UnitTests
             httpClientMock.Setup(foo => foo.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>()))
                 .Throws(new HttpRequestException());
 
-            var adalClient = new AdalClient("test", new ClientCredential("test", "test"));
-            var intuneClient = new IntuneClient(adalClient: adalClient, locationProvider: locationProviderMock.Object, httpClient:httpClientMock.Object);
-            var scepClient = new Microsoft.Intune.IntuneScepValidator("test", "test", "test", "test", intuneClient: intuneClient);
+            var adalClient = new AdalClient(configProperties);
+            var intuneClient = new IntuneClient(configProperties, adalClient: adalClient, locationProvider: locationProviderMock.Object, httpClient:httpClientMock.Object);
+            var scepClient = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: intuneClient);
 
             Guid transactionId = Guid.NewGuid();
             string csr = "testing";
@@ -245,7 +253,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void TestConstructorParameterNulls()
+        public void TestConstructorParameters()
         {
             string providerNameAndVersion = "non-empty";
             string azureAppId = "non-empty";
@@ -258,23 +266,56 @@ namespace UnitTests
             string graphResourceUrl = "non-empty";
             string authAuthority = "https://www.localhost.com/path";
 
-            ConstructorNullThrows(null, azureAppId, azureAppKey, intuneTenant, serviceVersion, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl, authAuthority);
-            ConstructorNullThrows(providerNameAndVersion, null, azureAppKey, intuneTenant, serviceVersion, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl, authAuthority);
-            ConstructorNullThrows(providerNameAndVersion, azureAppId, null, intuneTenant, serviceVersion, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl, authAuthority);
-            ConstructorNullThrows(providerNameAndVersion, azureAppId, azureAppKey, null, serviceVersion, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl, authAuthority);
-            ConstructorNullThrows(providerNameAndVersion, azureAppId, azureAppKey, intuneTenant, null, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl, authAuthority);
-            ConstructorNullThrows(providerNameAndVersion, azureAppId, azureAppKey, intuneTenant, serviceVersion, null, intuneResourceUrl, graphApiVersion, graphResourceUrl, authAuthority);
-            ConstructorNullThrows(providerNameAndVersion, azureAppId, azureAppKey, intuneTenant, serviceVersion, intuneAppId, null, graphApiVersion, graphResourceUrl, authAuthority);
-            ConstructorNullThrows(providerNameAndVersion, azureAppId, azureAppKey, intuneTenant, serviceVersion, intuneAppId, intuneResourceUrl, null, graphResourceUrl, authAuthority);
-            ConstructorNullThrows(providerNameAndVersion, azureAppId, azureAppKey, intuneTenant, serviceVersion, intuneAppId, intuneResourceUrl, graphApiVersion, null, authAuthority);
-            ConstructorNullThrows(providerNameAndVersion, azureAppId, azureAppKey, intuneTenant, serviceVersion, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl, null);
+            ConstructorNullThrows(null, azureAppId, azureAppKey, intuneTenant);
+            ConstructorNullThrows(providerNameAndVersion, null, azureAppKey, intuneTenant);
+            ConstructorNullThrows(providerNameAndVersion, azureAppId, null, intuneTenant);
+            ConstructorNullThrows(providerNameAndVersion, azureAppId, azureAppKey, null);
+
+            ConstructorNotPresentThrows(null, azureAppId, azureAppKey, intuneTenant);
+            ConstructorNotPresentThrows(providerNameAndVersion, null, azureAppKey, intuneTenant);
+            ConstructorNotPresentThrows(providerNameAndVersion, azureAppId, null, intuneTenant);
+            ConstructorNotPresentThrows(providerNameAndVersion, azureAppId, azureAppKey, null);
+
+            ConstructorNullDoesntThrow(null, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl, authAuthority);
+            ConstructorNullDoesntThrow(serviceVersion, null, intuneResourceUrl, graphApiVersion, graphResourceUrl, authAuthority);
+            ConstructorNullDoesntThrow(serviceVersion, intuneAppId, null, graphApiVersion, graphResourceUrl, authAuthority);
+            ConstructorNullDoesntThrow(serviceVersion, intuneAppId, intuneResourceUrl, null, graphResourceUrl, authAuthority);
+            ConstructorNullDoesntThrow(serviceVersion, intuneAppId, intuneResourceUrl, graphApiVersion, null, authAuthority);
+            ConstructorNullDoesntThrow(serviceVersion, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl, null);
+
+            ConstructorNotPresentDoesntThrow(null, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl, authAuthority);
+            ConstructorNotPresentDoesntThrow(serviceVersion, null, intuneResourceUrl, graphApiVersion, graphResourceUrl, authAuthority);
+            ConstructorNotPresentDoesntThrow(serviceVersion, intuneAppId, null, graphApiVersion, graphResourceUrl, authAuthority);
+            ConstructorNotPresentDoesntThrow(serviceVersion, intuneAppId, intuneResourceUrl, null, graphResourceUrl, authAuthority);
+            ConstructorNotPresentDoesntThrow(serviceVersion, intuneAppId, intuneResourceUrl, graphApiVersion, null, authAuthority);
+            ConstructorNotPresentDoesntThrow(serviceVersion, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl, null);
         }
 
         private void ConstructorNullThrows(
             string providerNameAndVersion,
             string azureAppId,
             string azureAppKey,
-            string intuneTenant,
+            string intuneTenant)
+        {
+            Dictionary<string, string> props = new Dictionary<string, string>()
+            {
+                {"PROVIDER_NAME_AND_VERSION",providerNameAndVersion},
+                {"AAD_APP_ID",azureAppId},
+                {"AAD_APP_KEY",azureAppKey},
+                {"TENANT",intuneTenant}
+            };
+            try
+            {
+                new IntuneScepValidator(props);
+            }
+            catch(ArgumentNullException)
+            {
+                return;
+            }
+            throw new Exception("Failed to catch argument Null exception");
+        }
+
+        private void ConstructorNullDoesntThrow(
             string serviceVersion,
             string intuneAppId,
             string intuneResourceUrl,
@@ -282,15 +323,111 @@ namespace UnitTests
             string graphResourceUrl,
             string authAuthority)
         {
+            Dictionary<string, string> props = new Dictionary<string, string>()
+            {
+                {"PROVIDER_NAME_AND_VERSION","test"},
+                {"AAD_APP_ID","test"},
+                {"AAD_APP_KEY","test"},
+                {"TENANT","test"},
+                {"ScepRequestValidationFEServiceVersion",serviceVersion},
+                {"INTUNE_APP_ID",intuneAppId},
+                {"INTUNE_RESOURCE_URL",intuneResourceUrl},
+                {"GRAPH_API_VERSION",graphApiVersion},
+                {"GRAPH_RESOURCE_URL",graphResourceUrl},
+                {"AUTH_AUTHORITY",authAuthority},
+            };
+
+            new IntuneScepValidator(props);
+        }
+
+        private void ConstructorNotPresentThrows(
+            string providerNameAndVersion,
+            string azureAppId,
+            string azureAppKey,
+            string intuneTenant)
+            
+        {
+            Dictionary<string, string> props = new Dictionary<string, string>();
+
+            if(providerNameAndVersion != null)
+            {
+                props.Add("PROVIDER_NAME_AND_VERSION", providerNameAndVersion);
+            }
+
+            if (azureAppId != null)
+            {
+                props.Add("AAD_AAP_ID", azureAppId);
+            }
+
+            if (azureAppKey != null)
+            {
+                props.Add("AAD_APP_KEY", azureAppKey);
+            }
+
+            if (intuneTenant != null)
+            {
+                props.Add("TENANT", intuneTenant);
+            }
+
             try
             {
-                new IntuneScepValidator(providerNameAndVersion, azureAppId, azureAppKey, intuneTenant, serviceVersion, intuneAppId, intuneResourceUrl, graphApiVersion, graphResourceUrl, authAuthority);
+                new IntuneScepValidator(props);
             }
-            catch(ArgumentNullException)
+            catch (ArgumentNullException)
             {
                 return;
             }
             throw new Exception("Failed to catch argument Null exception");
+        }
+
+
+        private void ConstructorNotPresentDoesntThrow(
+            string serviceVersion,
+            string intuneAppId,
+            string intuneResourceUrl,
+            string graphApiVersion,
+            string graphResourceUrl,
+            string authAuthority)
+        {
+            Dictionary<string, string> props = new Dictionary<string, string>()
+            {
+                {"PROVIDER_NAME_AND_VERSION","test"},
+                {"AAD_APP_ID","test"},
+                {"AAD_APP_KEY","test"},
+                {"TENANT","test"},
+            };
+
+            if (serviceVersion != null)
+            {
+                props.Add("ScepRequestValidationFEServiceVersion", serviceVersion);
+            }
+
+            if (intuneAppId != null)
+            {
+                props.Add("INTUNE_APP_ID", intuneAppId);
+            }
+
+            if (intuneResourceUrl != null)
+            {
+                props.Add("INTUNE_RESOURCE_URL", intuneResourceUrl);
+            }
+
+            if (graphApiVersion != null)
+            {
+                props.Add("GRAPH_API_VERSION", graphApiVersion);
+            }
+
+            if (graphResourceUrl != null)
+            {
+                props.Add("GRAPH_RESOURCE_URL", graphResourceUrl);
+            }
+
+            if (authAuthority != null)
+            {
+                props.Add("AUTH_AUTHORITY", authAuthority);
+            }
+            
+            new IntuneScepValidator(props);
         }
 
 
