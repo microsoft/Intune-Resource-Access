@@ -66,27 +66,34 @@ namespace Microsoft.Intune
         /// <summary>
         /// Constructs an IntuneClient object which can be used to make requests to Intune services.
         /// </summary>
+        /// <param name="configProperties">Configuration properties for this class.</param>
         /// <param name="adalClient">Authorization Client.</param>
         /// <param name="locationProvider">Service Location provider to be used for service discovery.</param>
         /// <param name="httpClient">HttpClient to use for all requests.</param>
-        /// <param name="intuneResourceUrl">URL of Intune resource to request access to.</param>
         /// <param name="trace">Trace</param>
-        public IntuneClient(AdalClient adalClient, IIntuneServiceLocationProvider locationProvider, IHttpClient httpClient = null, string intuneResourceUrl = DEFAULT_INTUNE_RESOURCE_URL, TraceSource trace = null)
+        public IntuneClient(Dictionary<string, string> configProperties, AdalClient adalClient, IIntuneServiceLocationProvider locationProvider, IHttpClient httpClient = null, TraceSource trace = null)
         {
-            // Required parameters
-            if(string.IsNullOrWhiteSpace(intuneResourceUrl))
+            // Required Parameters/Dependencies
+            if (configProperties == null)
             {
-                throw new ArgumentNullException(nameof(intuneResourceUrl));
+                throw new ArgumentNullException(nameof(configProperties));
             }
-            this.intuneResourceUrl = intuneResourceUrl;
+
+            this.locationProvider = locationProvider ?? throw new ArgumentNullException(nameof(locationProvider));
+            this.adalClient = adalClient ?? throw new ArgumentNullException(nameof(adalClient));
+
+            // Optional Prameters/Dependencies
+            configProperties.TryGetValue("INTUNE_RESOURCE_URL", out intuneResourceUrl);
+            if (string.IsNullOrWhiteSpace(intuneResourceUrl))
+            {
+                intuneResourceUrl = DEFAULT_INTUNE_RESOURCE_URL;
+            }
 
             if (trace != null)
             {
                 this.trace = trace;
             }
 
-            this.locationProvider = locationProvider ?? throw new ArgumentNullException(nameof(locationProvider));
-            this.adalClient = adalClient ?? throw new ArgumentNullException(nameof(adalClient));
             this.httpClient = httpClient ?? new HttpClient(new System.Net.Http.HttpClient());
         }
 
@@ -141,19 +148,22 @@ namespace Microsoft.Intune
             }
 
             HttpResponseMessage response = null;
+            string result = null;
             try
             {
                 response = await client.PostAsync(intuneRequestUrl, httpContent);
+                result = await response.Content.ReadAsStringAsync();
                 response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException e)
             {
                 trace.TraceEvent(TraceEventType.Error, 0, $"Failed to contact intune service with URL: {intuneRequestUrl};\r\n{e.Message}");
+                trace.TraceEvent(TraceEventType.Error, 0, result);
                 this.locationProvider.Clear(); // clear contents in case the service location has changed and we cached the value
                 throw;
             }
             
-            string result = await response.Content.ReadAsStringAsync();
+            
 
             try
             {

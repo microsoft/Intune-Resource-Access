@@ -24,6 +24,7 @@
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -74,31 +75,21 @@ namespace Microsoft.Intune
         /// <param name="intuneClient">IntuneClient to use to make requests to intune.</param>
         /// <param name="httpClient">HttpClient to use to make any http requests.</param>
         public IntuneScepValidator(
-            string providerNameAndVersion,
-            string azureAppId,
-            string azureAppKey,
-            string intuneTenant,
-            string serviceVersion = DEFAULT_SERVICE_VERSION,
-            string intuneAppId = IntuneServiceLocationProvider.DEFAULT_INTUNE_APP_ID,
-            string intuneResourceUrl = IntuneClient.DEFAULT_INTUNE_RESOURCE_URL,
-            string graphApiVersion = IntuneServiceLocationProvider.DEFAULT_GRAPH_VERSION,
-            string graphResourceUrl = IntuneServiceLocationProvider.DEFAULT_RESOURCE_URL,
-            string authAuthority = AdalClient.DEFAULT_AUTHORITY,
+            Dictionary<string,string> configProperties,
             TraceSource trace = null,
             IIntuneClient intuneClient = null)
         {
             // Required Parameters
+            if (configProperties == null)
+            {
+                throw new ArgumentNullException(nameof(configProperties));
+            }
+
+            configProperties.TryGetValue("PROVIDER_NAME_AND_VERSION", out this.providerNameAndVersion);
             if (string.IsNullOrWhiteSpace(providerNameAndVersion))
             {
                 throw new ArgumentNullException(nameof(providerNameAndVersion));
             }
-            this.providerNameAndVersion = providerNameAndVersion;
-
-            if (string.IsNullOrWhiteSpace(serviceVersion))
-            {
-                throw new ArgumentNullException(nameof(serviceVersion));
-            }
-            this.serviceVersion = serviceVersion;
 
             // Optional Parameters
             if (trace != null)
@@ -106,30 +97,28 @@ namespace Microsoft.Intune
                 this.trace = trace;
             }
 
+            configProperties.TryGetValue("ScepRequestValidationFEServiceVersion", out this.serviceVersion);
+            serviceVersion = serviceVersion ?? DEFAULT_SERVICE_VERSION;
+
             // Dependencies
             var adalClient = new AdalClient(
                         // Required
-                        aadTenant: intuneTenant,
-                        clientCredential: new ClientCredential(azureAppId, azureAppKey),
+                        configProperties,
                         // Overrides
-                        trace: trace,
-                        // Dependencies
-                        authAuthority: authAuthority
+                        trace: trace
                         );
 
             this.intuneClient = intuneClient ?? new IntuneClient(
+                    // Required    
+                    configProperties,
                     // Overrides
-                    intuneResourceUrl: intuneResourceUrl,
                     trace: trace,
                     // Dependencies
                     adalClient: adalClient,
                     locationProvider: new IntuneServiceLocationProvider(
                         // Required
-                        intuneTenant: intuneTenant,
+                        configProperties,
                         // Overrides
-                        graphApiVersion: graphApiVersion,
-                        graphResourceUrl: graphResourceUrl,
-                        intuneAppId: intuneAppId,
                         trace: trace,
                         // Dependencies
                         authClient: adalClient
