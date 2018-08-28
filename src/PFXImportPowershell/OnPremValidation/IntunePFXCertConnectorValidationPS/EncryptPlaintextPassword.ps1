@@ -12,7 +12,7 @@ param(
 $encoder = [system.Text.Encoding]::UTF8
 $plainSecretBytes = $encoder.GetBytes($plainSecret)
 
-Add-Type -Path "$($serviceDirectory)Microsoft.Intune.EncryptionUtilities.dll"
+Add-Type -Path (Join-Path $serviceDirectory "Microsoft.Intune.EncryptionUtilities.dll")
 
 [Microsoft.Intune.EncryptionUtilities.ManagedRSAEncryption] $manRSAObj = [Microsoft.Intune.EncryptionUtilities.ManagedRSAEncryption]::new()
 
