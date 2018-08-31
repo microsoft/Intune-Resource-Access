@@ -39,13 +39,9 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         public string ProviderName { get; set; }
 
         [Parameter(Position = 2, Mandatory = true)]
-        [ValidateSetAttribute(new string[] { "3DES", "3DES_112", "AES", "AES-CMAC", "AES-GMAC", "CAPI_KDF", "DES", "DESX", "DH", "DSA", "ECDH_P256", "ECDH_P384", "ECDH_P521", "ECDSA_P256", "ECDSA_P384", "ECDSA_P521", "MD2", "MD4", "MD5", "RC2", "RC4", "RNG", "DUALECRNG", "FIPS186DSARNG", "RSA", "RSA_SIGN", "SHA1", "SHA256", "SHA384", "SHA512", "SP800_108_CTR_HMAC", "SP800_56A_CONCAT", "PBKDF2", "ECDSA", "ECDH", "XTS-AES" })]
-        public string AlgorithmName { get; set; }
-
-        [Parameter(Position = 3, Mandatory = true)]
         public string KeyName { get; set; }
 
-        [Parameter(Position = 4)]
+        [Parameter(Position = 3)]
         public int KeyLength
         {
             get

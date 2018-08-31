@@ -12,7 +12,7 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 ## Create initial Key Example
 
 	# 1. Setup Key (if you don't have a dedicated provider, you can use "Microsoft Software Key Storage Provider")
-	Add-IntuneKspKey "<ProviderName>" "<KeyAlgoritm>" "<KeyName>"
+	Add-IntuneKspKey "<ProviderName>" "<KeyName>"
 	
 ## Authenticate to Intune
     # 1. Optionally, create a secure string representing the account administrator password.
@@ -74,8 +74,9 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 		"userPrincipalName": "User1@contoso.onmicrosoft.com",
 		"startDateTime": "2016-12-31T23:58:46.7156189-07:00",
 		"expirationDateTime": "2016-12-31T23:57:57.2481234-07:00",
-		"providerName": "Provider Name value",
-		"keyName": "Key Name value",
+		"providerName": "Microsoft Software Key Storage Provider",
+		"keyName": "KeyNameValue",
+		"paddingScheme": "oaepSha512",
 		"encryptedPfxBlob": "{Base64Encrypted Blob}",
 		"encryptedPfxPassword": "{Base64Encrypted Blob}",
 		"createdDateTime": "2017-01-01T00:02:43.5775965-07:00",
