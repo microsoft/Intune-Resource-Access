@@ -2,9 +2,9 @@ This part of the project is to verify that your on prem infrastucture properly i
 
 The PFXCertificateConnector runs on the server as a System Account, but needs access to the Keys that were used to encrypt PFXCertificates.  These tests verify that, once installed, the PFXCertificateConnector will be able to do that.  The tests consist of three steps:
 
-# 1. Creating a key and encrypting some test data
-# 2. Dropping the encrypted data and what was used to encrypt
-# 3. Installing and running the service, verifying that the service can correctly decrypt the data
+1. Creating a key and encrypting some test data
+2. Dropping the encrypted data and what was used to encrypt
+3. Installing and running the service, verifying that the service can correctly decrypt the data
 
 
 There are two ways to handle encrypting the data.  If using our scripts, we've provided a helper script below (please note this script deletes any previous keys with the given name!)
