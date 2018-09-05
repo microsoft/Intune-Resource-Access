@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Intune;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Intune;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json.Linq;
-using System.Net.Http;
 
 namespace UnitTests
 {
