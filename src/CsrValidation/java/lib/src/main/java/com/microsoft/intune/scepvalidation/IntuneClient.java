@@ -62,7 +62,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.ProxyAuthenticationStrategy;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
@@ -93,7 +92,7 @@ class IntuneClient
     protected HttpClientBuilder httpClientBuilder = null;
     
     protected String proxyHost = null;
-    protected String proxyPort = null;
+    protected Integer proxyPort = null;
     protected String proxyUser = null;
     protected String proxyPass = null;
     
@@ -157,13 +156,26 @@ class IntuneClient
         this.httpClientBuilder = httpClientBuilder == null ? this.httpClientBuilder : httpClientBuilder;
         
         proxyHost = configProperties.getProperty("PROXY_HOST");
-        proxyPort = configProperties.getProperty("PROXY_PORT");
+        try
+        {
+            proxyPort = Integer.parseInt(configProperties.getProperty("PROXY_PORT"));
+        }
+        catch(NumberFormatException e)
+        {
+            throw new IllegalArgumentException("'PROXY_PORT' must be a value that can be converted to an integer.", e);
+        }
+        
+        if(!(proxyPort >= 0 && proxyPort <= 65535))
+        {
+            throw new IllegalArgumentException("'PROXY_PORT' must be in the range of available ports 0-65535");
+        }
+        
         if((this.proxyHost != null && !this.proxyHost.isEmpty()) && 
-           (this.proxyPort == null || this.proxyPort.isEmpty()))
+           (this.proxyPort == null))
         {
             throw new IllegalArgumentException("If the argument 'PROXY_HOST' is set then 'PROXY_PORT' must also be set.");
         }
-        if((this.proxyPort != null && !this.proxyPort.isEmpty()) && 
+        if((this.proxyPort != null) && 
            (this.proxyHost == null || this.proxyHost.isEmpty()))
         {
             throw new IllegalArgumentException("If the argument 'PROXY_PORT' is set then 'PROXY_HOST' must also be set.");
@@ -462,34 +474,37 @@ class IntuneClient
     private void setProxy()
     {
         if(proxyHost != null && !proxyHost.isEmpty() &&
-           proxyPort != null && !proxyPort.isEmpty())
+           proxyPort != null)
          {
-             this.authClient.SetProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, Integer.parseInt(proxyPort))));
+            this.log.info("Setting IntuneClient ProxyHost:" + proxyHost + " ProxyPort:" + proxyPort);
+            this.authClient.SetProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort)));
 
-             this.log.info("Setting IntuneClient ProxyHost:" + proxyHost + " ProxyPort:" + proxyPort);
-             this.httpClientBuilder = HttpClients.custom().setProxy(new HttpHost(proxyHost, Integer.parseInt(proxyPort)));
+            if(this.httpClientBuilder == null)
+            {
+                this.httpClientBuilder = HttpClients.custom();
+            }
+            this.log.info("Setting IntuneClient ProxyHost:" + proxyHost + " ProxyPort:" + proxyPort);
+            this.httpClientBuilder.setProxy(new HttpHost(proxyHost, proxyPort));
              
-             if(proxyUser != null && !proxyUser.isEmpty() &&
-                proxyPass != null && !proxyPass.isEmpty())
-              {
-                 this.log.info("Setting IntuneClient Proxy to use Basic Authentication.");
+            if(proxyUser != null && !proxyUser.isEmpty() &&
+               proxyPass != null && !proxyPass.isEmpty())
+            {
+               this.log.info("Setting IntuneClient Proxy to use Basic Authentication.");
                  
-                 Credentials credentials = new UsernamePasswordCredentials(proxyUser, proxyPass);
-                 CredentialsProvider credsProvider = new BasicCredentialsProvider();
-                 credsProvider.setCredentials( new AuthScope(proxyHost,Integer.parseInt(proxyPort)), credentials);
+               Credentials credentials = new UsernamePasswordCredentials(proxyUser, proxyPass);
+               CredentialsProvider credsProvider = new BasicCredentialsProvider();
+               credsProvider.setCredentials( new AuthScope(proxyHost, proxyPort), credentials);
                  
-                 httpClientBuilder.useSystemProperties();
-                 httpClientBuilder.setDefaultCredentialsProvider(credsProvider);
-                 httpClientBuilder.setProxyAuthenticationStrategy(new ProxyAuthenticationStrategy());
+               httpClientBuilder.setDefaultCredentialsProvider(credsProvider);
                  
-                  System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
-                  Authenticator.setDefault(new Authenticator() {
-                      @Override
-                      protected PasswordAuthentication getPasswordAuthentication() {
-                          return new PasswordAuthentication(proxyUser, proxyPass.toCharArray());
-                      }
-                  });
-              }
+                System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
+                Authenticator.setDefault(new Authenticator() {
+                    @Override
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(proxyUser, proxyPass.toCharArray());
+                    }
+                });
+            }
          }
     }
 }
