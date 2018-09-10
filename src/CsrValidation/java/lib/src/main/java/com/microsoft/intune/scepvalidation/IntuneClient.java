@@ -158,8 +158,29 @@ class IntuneClient
         
         proxyHost = configProperties.getProperty("PROXY_HOST");
         proxyPort = configProperties.getProperty("PROXY_PORT");
+        if((this.proxyHost != null && !this.proxyHost.isEmpty()) && 
+           (this.proxyPort == null || this.proxyPort.isEmpty()))
+        {
+            throw new IllegalArgumentException("If the argument 'PROXY_HOST' is set then 'PROXY_PORT' must also be set.");
+        }
+        if((this.proxyPort != null && !this.proxyPort.isEmpty()) && 
+           (this.proxyHost == null || this.proxyHost.isEmpty()))
+        {
+            throw new IllegalArgumentException("If the argument 'PROXY_PORT' is set then 'PROXY_HOST' must also be set.");
+        }
+        
         proxyUser = configProperties.getProperty("PROXY_USER");
         proxyPass = configProperties.getProperty("PROXY_PASS");
+        if((this.proxyUser != null && !this.proxyUser.isEmpty()) && 
+           (this.proxyPass == null || this.proxyPass.isEmpty()))
+        {
+            throw new IllegalArgumentException("If the argument 'PROXY_USER' is set then 'PROXY_PASS' must also be set.");
+        }
+        if((this.proxyPass != null && !this.proxyPass.isEmpty()) && 
+           (this.proxyUser == null || this.proxyUser.isEmpty()))
+        {
+            throw new IllegalArgumentException("If the argument 'PROXY_PASS' is set then 'PROXY_USER' must also be set.");
+        }
         
         setProxy();
     }
