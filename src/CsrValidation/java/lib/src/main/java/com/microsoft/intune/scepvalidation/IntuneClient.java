@@ -24,6 +24,10 @@
 package com.microsoft.intune.scepvalidation;
 
 import java.io.IOException;
+import java.net.Authenticator;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,8 +40,13 @@ import javax.naming.ServiceUnavailableException;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -49,9 +58,11 @@ import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.ProxyAuthenticationStrategy;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
@@ -82,7 +93,7 @@ class IntuneClient
     protected HttpClientBuilder httpClientBuilder = null;
     
     protected String proxyHost = null;
-    protected Integer proxyPort = null;
+    protected String proxyPort = null;
     protected String proxyUser = null;
     protected String proxyPass = null;
     
@@ -144,6 +155,13 @@ class IntuneClient
         
         this.authClient = authClient == null ? new ADALClientWrapper(this.intuneTenant, this.aadCredential, configProperties) : authClient;
         this.httpClientBuilder = httpClientBuilder == null ? this.httpClientBuilder : httpClientBuilder;
+        
+        proxyHost = configProperties.getProperty("PROXY_HOST");
+        proxyPort = configProperties.getProperty("PROXY_PORT");
+        proxyUser = configProperties.getProperty("PROXY_USER");
+        proxyPass = configProperties.getProperty("PROXY_PASS");
+        
+        setProxy();
     }
     
     /**
@@ -166,6 +184,8 @@ class IntuneClient
         this.httpClientBuilder = HttpClientBuilder.create();
         SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(this.sslSocketFactory, new String[] { "TLSv1.2" }, null, new DefaultHostnameVerifier());
         this.httpClientBuilder.setSSLSocketFactory(sslConnectionFactory);
+        
+        setProxy();
         
         Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("https", sslConnectionFactory)
@@ -416,5 +436,39 @@ class IntuneClient
         }
 
         return this.httpClientBuilder.build();
+    }
+    
+    private void setProxy()
+    {
+        if(proxyHost != null && !proxyHost.isEmpty() &&
+           proxyPort != null && !proxyPort.isEmpty())
+         {
+             this.authClient.SetProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, Integer.parseInt(proxyPort))));
+
+             this.log.info("Setting IntuneClient ProxyHost:" + proxyHost + " ProxyPort:" + proxyPort);
+             this.httpClientBuilder = HttpClients.custom().setProxy(new HttpHost(proxyHost, Integer.parseInt(proxyPort)));
+             
+             if(proxyUser != null && !proxyUser.isEmpty() &&
+                proxyPass != null && !proxyPass.isEmpty())
+              {
+                 this.log.info("Setting IntuneClient Proxy to use Basic Authentication.");
+                 
+                 Credentials credentials = new UsernamePasswordCredentials(proxyUser, proxyPass);
+                 CredentialsProvider credsProvider = new BasicCredentialsProvider();
+                 credsProvider.setCredentials( new AuthScope(proxyHost,Integer.parseInt(proxyPort)), credentials);
+                 
+                 httpClientBuilder.useSystemProperties();
+                 httpClientBuilder.setDefaultCredentialsProvider(credsProvider);
+                 httpClientBuilder.setProxyAuthenticationStrategy(new ProxyAuthenticationStrategy());
+                 
+                  System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
+                  Authenticator.setDefault(new Authenticator() {
+                      @Override
+                      protected PasswordAuthentication getPasswordAuthentication() {
+                          return new PasswordAuthentication(proxyUser, proxyPass.toCharArray());
+                      }
+                  });
+              }
+         }
     }
 }
