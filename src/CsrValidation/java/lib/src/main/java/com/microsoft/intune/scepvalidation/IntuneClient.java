@@ -486,8 +486,11 @@ class IntuneClient
                credsProvider.setCredentials(new AuthScope(proxyHost, proxyPort), credentials);
                httpClientBuilder.setDefaultCredentialsProvider(credsProvider);
                  
-               // Setting proxy auth for Auth HttpClient
+               
+               // By default Java disables basic authentication, so we are enabling that so Authenticator will work
                System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
+               
+               // Setting proxy auth for Auth HttpClient
                Authenticator.setDefault(new Authenticator() {
                    @Override
                    protected PasswordAuthentication getPasswordAuthentication() {
