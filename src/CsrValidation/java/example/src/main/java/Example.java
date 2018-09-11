@@ -44,12 +44,6 @@ public class Example
         
         IntuneScepServiceClient client = new IntuneScepServiceClient(props);
         
-        // ** IMPORTANT ***: If the customer's environment goes through a proxy you will need to provide a custom socket factory
-        //                   Below is an example of a factory which handles proxy with or without authentication.
-        //SSLTunnelSocketFactory sslFactory = new SSLTunnelSocketFactory("127.0.0.1", new Integer(8888).toString(), "proxyUser", "proxyPass");
-        //SSLTunnelSocketFactory sslFactory = new SSLTunnelSocketFactory("127.0.0.1", new Integer(8888).toString());
-        //client.SetSslSocketFactory(sslFactory);
-        
         try 
         {
             client.ValidateRequest(transactionId.toString(), csr);

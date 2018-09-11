@@ -24,6 +24,10 @@
 package com.microsoft.intune.scepvalidation;
 
 import java.io.IOException;
+import java.net.Authenticator;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,8 +40,13 @@ import javax.naming.ServiceUnavailableException;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -49,6 +58,7 @@ import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -144,6 +154,36 @@ class IntuneClient
         
         this.authClient = authClient == null ? new ADALClientWrapper(this.intuneTenant, this.aadCredential, configProperties) : authClient;
         this.httpClientBuilder = httpClientBuilder == null ? this.httpClientBuilder : httpClientBuilder;
+        
+        proxyHost = configProperties.getProperty("PROXY_HOST");
+        if(this.proxyHost != null && !this.proxyHost.isEmpty())
+        {
+            try
+            {
+                proxyPort = Integer.parseInt(configProperties.getProperty("PROXY_PORT"));
+            }
+            catch(NumberFormatException e)
+            {
+                throw new IllegalArgumentException("'PROXY_PORT' is required and must be a value that can be converted to an integer.", e);
+            }
+            
+            if(!(proxyPort >= 0 && proxyPort <= 65535))
+            {
+                throw new IllegalArgumentException("'PROXY_PORT' must be in the range of available ports 0-65535");
+            }
+            
+            proxyUser = configProperties.getProperty("PROXY_USER");
+            if(this.proxyUser != null && !this.proxyUser.isEmpty())
+            {
+                proxyPass = configProperties.getProperty("PROXY_PASS");
+                if(this.proxyPass == null || this.proxyPass.isEmpty())
+                {
+                    throw new IllegalArgumentException("If the argument 'PROXY_USER' is set then 'PROXY_PASS' must also be set.");
+                }
+            }
+        }
+        
+        setProxy();
     }
     
     /**
@@ -166,6 +206,8 @@ class IntuneClient
         this.httpClientBuilder = HttpClientBuilder.create();
         SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(this.sslSocketFactory, new String[] { "TLSv1.2" }, null, new DefaultHostnameVerifier());
         this.httpClientBuilder.setSSLSocketFactory(sslConnectionFactory);
+        
+        setProxy();
         
         Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("https", sslConnectionFactory)
@@ -416,5 +458,46 @@ class IntuneClient
         }
 
         return this.httpClientBuilder.build();
+    }
+    
+    private void setProxy()
+    {
+        if(proxyHost != null && !proxyHost.isEmpty() &&
+           proxyPort != null)
+         {
+            this.log.info("Setting AuthClient ProxyHost:" + proxyHost + " ProxyPort:" + proxyPort);
+            this.authClient.SetProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort)));
+
+            if(this.httpClientBuilder == null)
+            {
+                this.httpClientBuilder = HttpClients.custom();
+            }
+            this.log.info("Setting IntuneClient ProxyHost:" + proxyHost + " ProxyPort:" + proxyPort);
+            this.httpClientBuilder.setProxy(new HttpHost(proxyHost, proxyPort));
+             
+            if(proxyUser != null && !proxyUser.isEmpty() &&
+               proxyPass != null && !proxyPass.isEmpty())
+            {
+               this.log.info("Setting Proxy to use Basic Authentication.");
+               
+               // Setting proxy auth for Intune HttpClient
+               Credentials credentials = new UsernamePasswordCredentials(proxyUser, proxyPass);
+               CredentialsProvider credsProvider = new BasicCredentialsProvider();
+               credsProvider.setCredentials(new AuthScope(proxyHost, proxyPort), credentials);
+               httpClientBuilder.setDefaultCredentialsProvider(credsProvider);
+                 
+               
+               // By default Java disables basic authentication, so we are enabling that so Authenticator will work
+               System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
+               
+               // Setting proxy auth for Auth HttpClient
+               Authenticator.setDefault(new Authenticator() {
+                   @Override
+                   protected PasswordAuthentication getPasswordAuthentication() {
+                       return new PasswordAuthentication(proxyUser, proxyPass.toCharArray());
+                   }
+               });
+            }
+         }
     }
 }

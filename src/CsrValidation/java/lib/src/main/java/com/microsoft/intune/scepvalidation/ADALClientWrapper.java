@@ -24,6 +24,7 @@
 package com.microsoft.intune.scepvalidation;
 
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -96,6 +97,15 @@ public class ADALClientWrapper
         }
         
         this.context.setSslSocketFactory(factory);
+    }
+    
+    /**
+     * Sets the proxy to be used by the ADAL library for any HTTP or HTTPS calls
+     * @param proxy
+     */
+    public void SetProxy(Proxy proxy)
+    {
+        this.context.setProxy(proxy);
     }
     
     /**
