@@ -7,7 +7,7 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 # Example Powershell Usage
 
 ## Prerequisite:
-	Import-Module IntunePfxImport.psd1
+	Import-Module .\IntunePfxImport.psd1
 
 ## Create initial Key Example
 
