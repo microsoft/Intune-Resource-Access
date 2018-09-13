@@ -180,7 +180,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             string encryptedPasswordString = Convert.ToBase64String(encryptedPassword);
 
             UserPFXCertificate userPfxCertifiate = new UserPFXCertificate();
-            userPfxCertifiate.Thumbprint = pfxCert.Thumbprint;
+            userPfxCertifiate.Thumbprint = pfxCert.Thumbprint.ToLowerInvariant();
             userPfxCertifiate.IntendedPurpose = (UserPfxIntendedPurpose)IntendedPurpose;
             userPfxCertifiate.PaddingScheme = (UserPfxPaddingScheme)PaddingScheme;
             userPfxCertifiate.KeyName = KeyName;
