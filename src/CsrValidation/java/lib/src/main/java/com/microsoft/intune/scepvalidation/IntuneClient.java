@@ -325,6 +325,8 @@ class IntuneClient
         }
         finally 
         {    
+            if(httpclient != null)
+                httpclient.close();
             if(intuneResponse != null)
                 intuneResponse.close();
         }
@@ -389,6 +391,8 @@ class IntuneClient
         } 
         finally 
         {
+            if(httpclient != null)
+                httpclient.close();
             if(graphResponse != null)
                 graphResponse.close();
         }
