@@ -24,6 +24,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Intune
 {
@@ -118,6 +119,20 @@ namespace Microsoft.Intune
                 trace.TraceEvent(TraceEventType.Error, 0, $"Error Code value not expected: {this.OriginalErrorCode}");
                 throw;
             }
+        }
+
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            if (info == null)
+            {
+                throw new System.ArgumentNullException(nameof(info));
+            }
+
+            info.AddValue(nameof(ActivityId), ActivityId);
+            info.AddValue(nameof(TransactionId), TransactionId);
+            info.AddValue(nameof(ParsedErrorCode), ParsedErrorCode);
+            info.AddValue(nameof(ErrorDescription), ErrorDescription);
+            base.GetObjectData(info, context);
         }
     }
 }
