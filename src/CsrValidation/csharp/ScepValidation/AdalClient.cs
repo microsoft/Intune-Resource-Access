@@ -25,6 +25,7 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Microsoft.Intune
@@ -60,6 +61,7 @@ namespace Microsoft.Intune
         /// <param name="authAuthority">URL of Authorization Authority.</param>
         /// <param name="trace">Trace</param>
         /// <param name="authContext">Authorization Context to use to acquire token.</param>
+        [SuppressMessage("Microsoft.Usage", "CA2208", Justification = "Using a parameter coming from an object.")]
         public AdalClient(Dictionary<string,string> configProperties, TraceSource trace = null, IAuthenticationContext authContext = null)
         {
             // Required Parameters

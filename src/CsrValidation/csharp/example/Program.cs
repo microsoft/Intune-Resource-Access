@@ -52,7 +52,7 @@ namespace Example
             Console.WriteLine("No exceptions means CSR was validated!");
 
             // This notification is to be sent on sucesfull issuance of certificate
-            (validator.SendSuccessNotificationAsync(transactionId.ToString(), csr, "certThumbprint", "certSerial", "certExpirationDate", "certIssuingAuthority")).Wait();
+            (validator.SendSuccessNotificationAsync(transactionId.ToString(), csr, "certThumbprint", "certSerial", (DateTime.Now + TimeSpan.FromDays(365)).ToLongDateString(), "certIssuingAuthority")).Wait();
             Console.WriteLine("No exceptions means success notification was recorded succesfully!");
 
             // This notification is to be sent on failure to issue certificate

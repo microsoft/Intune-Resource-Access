@@ -26,7 +26,7 @@ using System.Runtime.Serialization;
 
 namespace Microsoft.Intune
 {
-
+    [Serializable]
     public class IntuneClientException : Exception
     {
         public IntuneClientException()
