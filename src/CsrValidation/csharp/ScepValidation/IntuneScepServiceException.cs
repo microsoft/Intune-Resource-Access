@@ -31,6 +31,7 @@ namespace Microsoft.Intune
     /// <summary>
     /// Exception thrown when the SCEP Service returns an error.
     /// </summary>
+    [Serializable]
     public class IntuneScepServiceException : IntuneClientException
     {
         public enum ErrorCode
