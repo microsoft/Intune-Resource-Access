@@ -22,6 +22,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Intune
 {
@@ -30,6 +31,10 @@ namespace Microsoft.Intune
     {
         public IntuneServiceNotFoundException(string serviceName) : base("Did not find service named '" + serviceName + "' listed in Microsoft.Graph discovery service list.")
         {
+        }
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            base.GetObjectData(info, context);
         }
     }
 }
