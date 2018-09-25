@@ -79,8 +79,16 @@ namespace Microsoft.Intune
                 throw new ArgumentNullException(nameof(configProperties));
             }
 
-            this.locationProvider = locationProvider ?? throw new ArgumentNullException(nameof(locationProvider));
-            this.adalClient = adalClient ?? throw new ArgumentNullException(nameof(adalClient));
+            if(locationProvider == null)
+            {
+                throw new ArgumentNullException(nameof(locationProvider));
+            }
+            this.locationProvider = locationProvider;
+            if(adalClient == null)
+            {
+                throw new ArgumentNullException(nameof(adalClient));
+            }
+            this.adalClient = adalClient;
 
             // Optional Prameters/Dependencies
             configProperties.TryGetValue("INTUNE_RESOURCE_URL", out intuneResourceUrl);

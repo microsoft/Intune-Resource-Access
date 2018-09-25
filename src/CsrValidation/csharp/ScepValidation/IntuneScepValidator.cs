@@ -26,6 +26,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Microsoft.Intune
@@ -74,6 +75,7 @@ namespace Microsoft.Intune
         /// <param name="trace">Trace</param>
         /// <param name="intuneClient">IntuneClient to use to make requests to intune.</param>
         /// <param name="httpClient">HttpClient to use to make any http requests.</param>
+        [SuppressMessage("Microsoft.Usage", "CA2208", Justification = "Using a parameter coming from an object.")]
         public IntuneScepValidator(
             Dictionary<string,string> configProperties,
             TraceSource trace = null,

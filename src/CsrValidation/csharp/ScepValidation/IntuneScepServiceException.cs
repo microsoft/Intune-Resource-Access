@@ -98,6 +98,11 @@ namespace Microsoft.Intune
             "ErrorCode:" + errorCode + "," +
             "ErrorDescription:" + errorDescription)
         {
+            if(trace == null)
+            {
+                throw new ArgumentNullException(nameof(trace));
+            }
+
             this.ActivityId = activityId;
             this.TransactionId = transactionId;
             this.OriginalErrorCode = errorCode;

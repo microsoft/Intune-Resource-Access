@@ -27,6 +27,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -77,6 +78,7 @@ namespace Microsoft.Intune
         /// <param name="authClient">Authorization client.</param>
         /// <param name="httpClient">HttpClient to use for requests.</param>
         /// <param name="trace">Trace</param>
+        [SuppressMessage("Microsoft.Usage", "CA2208", Justification = "Using a parameter coming from an object.")]
         public IntuneServiceLocationProvider(Dictionary<string,string> configProperties, AdalClient authClient, IHttpClient httpClient = null, TraceSource trace = null)
         {
             // Required Parameters
@@ -91,7 +93,11 @@ namespace Microsoft.Intune
                 throw new ArgumentNullException(nameof(tenant));
             }
 
-            this.authClient = authClient ?? throw new ArgumentNullException(nameof(authClient));
+            if(authClient == null)
+            {
+                throw new ArgumentNullException(nameof(authClient));
+            }
+            this.authClient = authClient;
 
             // Optional Parameters
             if (trace != null)
