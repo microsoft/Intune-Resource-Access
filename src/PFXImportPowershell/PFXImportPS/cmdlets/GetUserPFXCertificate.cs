@@ -183,7 +183,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 foreach (string user in UserList)
                 {
-                    string url = string.Format("{0}?$filter=userPrincipalName eq '{1}'", urlbase, user);
+                    string url = string.Format("{0}?$filter=tolower(userPrincipalName) eq '{1}'", urlbase, user.ToLowerInvariant());
                     HttpWebRequest request;
                     try
                     {
