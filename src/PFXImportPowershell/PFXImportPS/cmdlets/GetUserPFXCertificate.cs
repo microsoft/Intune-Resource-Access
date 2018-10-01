@@ -162,9 +162,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 foreach (UserThumbprint userthumbprint in UserThumbprintList)
                 {
-                    string userid = GetUserIdFromUpn(userthumbprint.User, graphURI, schemaVersion, AuthenticationResult);
-
-                    string url = string.Format("{0}/{1}-{2}", urlbase, userid, userthumbprint.Thumbprint);
+                    string url = string.Format("{0}?$filter=tolower(userPrincipalName) eq '{1}' and tolower(thumbprint) eq '{2}'", urlbase, userthumbprint.User.ToLowerInvariant(), userthumbprint.Thumbprint.ToLowerInvariant());
                     HttpWebRequest request;
                     try
                     {
@@ -288,8 +286,12 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                             responseMessage = rs.ReadToEnd();
                         }
 
-                        UserPFXCertificate cert = SerializationHelpers.DeserializeUserPFXCertificate(responseMessage);
-                        this.WriteObject(cert);
+                        List<UserPFXCertificate> certList = SerializationHelpers.DeserializeUserPFXCertificateList(responseMessage);
+                        if (certList.Count != 1)
+                        {
+                            this.WriteError(new ErrorRecord(new InvalidOperationException("Multiple records returned"), certList.Count.ToString(), ErrorCategory.InvalidResult, filter));
+                        }
+                        this.WriteObject(certList[0]);
                     }
                     else
                     {
