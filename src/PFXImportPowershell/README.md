@@ -27,7 +27,7 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 	# 2. Get Base64 String Certificate
 	$Base64Certificate =ConvertTo-IntuneBase64EncodedPfxCertificate -CertificatePath "<FullPathPFXToCert>"
 	# 3. Base64 String
-	$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "IntendedPurpose" "PaddingScheme"
+	$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>"
 	
 
 ## Import Example
