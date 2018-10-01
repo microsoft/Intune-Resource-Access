@@ -128,7 +128,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                     }
 
                     User userObj = SerializationHelpers.DeserializeUser(responseMessage);
-                    return userObj.Id;
+                    return userObj.Id.Replace("-", string.Empty);
                 }
                 else
                 {
