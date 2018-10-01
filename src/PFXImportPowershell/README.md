@@ -35,7 +35,7 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 	# 1. Import User PFX
 	Import-IntuneUserPfxCertificate -AuthenticationResult $authResult -CertificateList $userPFXObject
 	
-## Get PFX Certificate By Thumbprint Example
+## Get PFX Certificate Example
 
 	# 1. Get-PfxCertificates (Specific records)
 	Get-IntuneUserPfxCertificate -AuthenticationResult $authResult -UserThumbprintList <UserThumbprintObjs>
@@ -45,7 +45,7 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 	Get-IntuneUserPfxCertificate -AuthenticationResult $authResult
 
 
-## Remove PFX Certificate By Thumbprint Example
+## Remove PFX Certificate Example
 
 	# 1. Remove-PfxCertificates (Specific records)
 	Remove-IntuneUserPfxCertificate -AuthenticationResult $authResult -UserThumbprintList <UserThumbprintObjs>
@@ -58,7 +58,7 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 
 ## GET
 	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{Userid}-{Thumbprint}')  --A specific record
-	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates/?$filter=userPrincipalName eq '{UPN}' –-A specific User
+	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates/?$filter=tolower(userPrincipalName) eq '{lowercase UPN}' –-A specific User
 	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates --All records
 
 ## POST
@@ -96,6 +96,6 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 
 ## Lookup up user id from UPN
 	GET
-	https://graph.microsoft.com/test_intune_1806/users?$filter=userPrincipalName eq '{UPN}'
+	https://graph.microsoft.com/beta/users?$filter=userPrincipalName eq '{UPN}'
 
 	The user id is found in the id value of the returned object.
