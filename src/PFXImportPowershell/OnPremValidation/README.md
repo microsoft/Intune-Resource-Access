@@ -6,6 +6,7 @@ The PFX Certificate Connector runs on the server as a System Account, but needs 
 2. Dropping the encrypted data and what was used to encrypt
 3. Installing and running the service, verifying that the service can correctly decrypt the data
 
+Before running the script you will need to build the test executables and libraries used for the test. This can be done by opening the PFXImportOnPremValidation.sln solution with Visual Studio found in the PFXImportPowershell parent folder and buiding it.
 
 There are two ways to handle encrypting the data.  If using our scripts, we've provided a helper script below (please note this script deletes any previous keys with the given name!)
 ```powershell
