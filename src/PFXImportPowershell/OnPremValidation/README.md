@@ -1,6 +1,6 @@
 This part of the project is to verify that your on prem infrastucture properly interfaces with our service.  Note that these tests require installing a service as well as running scripts as admin, so make sure to verify their contents before building and running them.
 
-The PFXCertificateConnector runs on the server as a System Account, but needs access to the Keys that were used to encrypt PFXCertificates.  These tests verify that, once installed, the PFXCertificateConnector will be able to do that.  The tests consist of three steps:
+The PFX Certificate Connector runs on the server as a System Account, but needs access to the Keys that were used to encrypt PFX Certificates.  These tests verify that, once installed, the PFX Certificate Connector will be able to do that.  The tests consist of three steps:
 
 1. Creating a key and encrypting some test data
 2. Dropping the encrypted data and what was used to encrypt
@@ -18,7 +18,7 @@ $secretAsPlain = $encryptedPasswordResults[0] #This is the password that was enc
 $secretAsEncrypted = $encryptedPasswordResults[1] #This is the password after encryption as a Base64 encoded string
 ```
 
-If you're using a different method to encrypt for PFXImport, use your own scripts and keep track of all the options used so they can be passed to the service in the test file.  Make sure the encrypted password is in Base64 format.
+If you're using a different method to encrypt for PFX Import, use your own scripts and keep track of all the options used so they can be passed to the service in the test file.  Make sure the encrypted password is in Base64 format.
 
 To write the encrypted data to a test value the service can check, run:
 ```powershell
