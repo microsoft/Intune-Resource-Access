@@ -269,7 +269,16 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                     var resp = new StreamReader(we.Response.GetResponseStream()).ReadToEnd();
 
                     dynamic obj = JsonConvert.DeserializeObject(resp);
-                    var messageFromServer = obj.error.message;
+
+                    string messageFromServer;
+                    if (obj.error != null)
+                    {
+                        messageFromServer = obj.error.message.ToString();
+                    }
+                    else
+                    {
+                        messageFromServer = String.Format("Failed to deserialize response {0}", resp);
+                    }
 
                     this.WriteDebug(string.Format("Error Message: {0}", messageFromServer));
 
