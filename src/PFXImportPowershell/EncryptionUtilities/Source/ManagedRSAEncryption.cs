@@ -70,7 +70,7 @@ namespace Microsoft.Intune.EncryptionUtilities
             catch (CryptographicException e)
             {
                 // This happens if the provider isn't a valid one, but we want the exception to have better info
-                throw new CryptographicException(string.Format("The provider {0} does not exist", providerName), e);
+                throw new CryptographicException(string.Format("The provider {0} may not exist. Exception thrown:{1}", providerName, e.Message), e);
             }
 
             if (!keyExists)
@@ -199,7 +199,7 @@ namespace Microsoft.Intune.EncryptionUtilities
             CngProvider provider = new CngProvider(providerName);
             CngKeyOpenOptions cngOp = CngKeyOpenOptions.MachineKey;
 
-            if (!CngKey.Exists(keyName, provider))
+            if (!CngKey.Exists(keyName, provider, cngOp))
             {
                 cngOp = CngKeyOpenOptions.UserKey;
                 if (!CngKey.Exists(keyName, provider, cngOp))
