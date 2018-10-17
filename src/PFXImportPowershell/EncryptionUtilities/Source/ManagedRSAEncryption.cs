@@ -53,31 +53,15 @@ namespace Microsoft.Intune.EncryptionUtilities
         public byte[] EncryptWithLocalKey(string providerName, string keyName, byte[] toEncrypt, string hashAlgorithm = PaddingHashAlgorithmNames.SHA512, int paddingFlags = PaddingFlags.OAEPPadding)
         {
             CngProvider provider = new CngProvider(providerName);
-            bool keyExists = false;
             byte[] encryptedData = null;
             CngKeyOpenOptions cngOp = CngKeyOpenOptions.MachineKey;
-
-            try
-            {
-                keyExists = CngKey.Exists(keyName, provider, cngOp);
-                if (!keyExists)
-                {
-                    //Look for User key
-                    cngOp = CngKeyOpenOptions.UserKey;
-                    keyExists = CngKey.Exists(keyName, provider, cngOp);
-                }
-            }
-            catch (CryptographicException e)
-            {
-                // This happens if the provider isn't a valid one, but we want the exception to have better info
-                throw new CryptographicException(string.Format("The provider {0} may not exist. Exception thrown:{1}", providerName, e.Message), e);
-            }
+            bool keyExists = doesKeyExists(provider, keyName, out cngOp);
 
             if (!keyExists)
             {
                 throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for encryption", keyName));
             }
-            using (CngKey key = CngKey.Open(keyName, provider, cngOp))
+            using (CngKey key = cngOp == CngKeyOpenOptions.None ? CngKey.Open(keyName, provider) : CngKey.Open(keyName, provider, cngOp))
             {
                 using (RSACng rsa = new RSACng(key))
                 {
@@ -101,32 +85,16 @@ namespace Microsoft.Intune.EncryptionUtilities
         public byte[] DecryptWithLocalKey(string providerName, string keyName, byte[] toDecrypt, string hashAlgorithm = PaddingHashAlgorithmNames.SHA512, int paddingFlags = PaddingFlags.OAEPPadding)
         {
             CngProvider provider = new CngProvider(providerName);
-            bool keyExists = false;
             byte[] decrypted;
             CngKeyOpenOptions cngOp = CngKeyOpenOptions.MachineKey;
-
-            try
-            {
-                keyExists = CngKey.Exists(keyName, provider, cngOp);
-                if (!keyExists)
-                {
-                    //Look for user key
-                    cngOp = CngKeyOpenOptions.UserKey;
-                    keyExists = CngKey.Exists(keyName, provider, cngOp);
-                }
-            }
-            catch (CryptographicException e)
-            {
-                // This happens if the provider isn't a valid one, but we want the exception to have better info
-                throw new CryptographicException(string.Format("The provider {0} does not exist", providerName), e);
-            }
+            bool keyExists = doesKeyExists(provider, keyName, out cngOp);
 
             if (!keyExists)
             {
                 throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for decryption", keyName));
             }
 
-            using (CngKey key = CngKey.Open(keyName, provider,cngOp))
+            using (CngKey key = cngOp == CngKeyOpenOptions.None ? CngKey.Open(keyName, provider) : CngKey.Open(keyName, provider, cngOp))
             {
                 using (RSACng rsa = new RSACng(key))
                 {
@@ -148,44 +116,72 @@ namespace Microsoft.Intune.EncryptionUtilities
         {
             CngProvider provider = new CngProvider(providerName);
 
-            if (CngKey.Exists(keyName, provider, CngKeyOpenOptions.MachineKey))
+            bool keyExists = doesKeyExists(provider, keyName, out CngKeyOpenOptions throwAwayOpt); //Won't set the Options variable correctly in our case.
+
+            if (keyExists)
             {
+                //Key already exists. Can't create it.
                 return false;
             }
+
             CryptoKeySecurity sec = new CryptoKeySecurity();
+            CngKeyCreationParameters keyParams = null;
 
-            sec.AddAccessRule(
-                new CryptoKeyAccessRule(
-                    new SecurityIdentifier(sidType: WellKnownSidType.BuiltinAdministratorsSid, domainSid: null),
-                    cryptoKeyRights: CryptoKeyRights.FullControl,
-                    type: AccessControlType.Allow));
+            try { 
+                sec.AddAccessRule(
+                    new CryptoKeyAccessRule(
+                        new SecurityIdentifier(sidType: WellKnownSidType.BuiltinAdministratorsSid, domainSid: null),
+                        cryptoKeyRights: CryptoKeyRights.FullControl,
+                        type: AccessControlType.Allow));
 
-            sec.AddAccessRule(
-                new CryptoKeyAccessRule(
-                    new SecurityIdentifier(sidType: WellKnownSidType.BuiltinSystemOperatorsSid, domainSid: null),
-                    cryptoKeyRights: CryptoKeyRights.GenericRead,
-                    type: AccessControlType.Allow));
+                sec.AddAccessRule(
+                    new CryptoKeyAccessRule(
+                        new SecurityIdentifier(sidType: WellKnownSidType.BuiltinSystemOperatorsSid, domainSid: null),
+                        cryptoKeyRights: CryptoKeyRights.GenericRead,
+                        type: AccessControlType.Allow));
 
-            const string NCRYPT_SECURITY_DESCR_PROPERTY = "Security Descr";
-            const CngPropertyOptions DACL_SECURITY_INFORMATION = (CngPropertyOptions)4;
+                const string NCRYPT_SECURITY_DESCR_PROPERTY = "Security Descr";
+                const CngPropertyOptions DACL_SECURITY_INFORMATION = (CngPropertyOptions)4;
 
-            CngProperty permissions = new CngProperty(
-                NCRYPT_SECURITY_DESCR_PROPERTY,
-                sec.GetSecurityDescriptorBinaryForm(),
-                CngPropertyOptions.Persist | DACL_SECURITY_INFORMATION);
-            CngKeyCreationParameters keyParams = new CngKeyCreationParameters()
+                CngProperty permissions = new CngProperty(
+                    NCRYPT_SECURITY_DESCR_PROPERTY,
+                    sec.GetSecurityDescriptorBinaryForm(),
+                    CngPropertyOptions.Persist | DACL_SECURITY_INFORMATION);
+                keyParams = new CngKeyCreationParameters()
+                {
+                    ExportPolicy = CngExportPolicies.None,
+                    Provider = provider,
+                    Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None),
+                                permissions},
+                    KeyCreationOptions = CngKeyCreationOptions.MachineKey
+                };
+                using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams))
+                {
+                    if(key == null)
+                    {
+                        throw new Exception("Could not create machine key");
+                    }
+                    // nothing to do inside here, except to return without throwing an exception
+                    return true;
+                }
+            }
+            catch(Exception)
             {
-                ExportPolicy = CngExportPolicies.None,
-                Provider = provider,
-                Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None),
-                            permissions},
-                KeyCreationOptions = CngKeyCreationOptions.MachineKey
-            };
-
-            using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams))
-            {
-                // nothing to do inside here, except to return without throwing an exception
-                return true;
+                keyParams = new CngKeyCreationParameters()
+                {
+                    ExportPolicy = CngExportPolicies.None,
+                    Provider = provider,
+                    Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None) }
+                };
+                using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams))
+                {
+                    if(key == null)
+                    {
+                        return false;
+                    }
+                    // nothing to do inside here, except to return without throwing an exception
+                    return true;
+                }
             }
         }
 
@@ -198,19 +194,48 @@ namespace Microsoft.Intune.EncryptionUtilities
         {
             CngProvider provider = new CngProvider(providerName);
             CngKeyOpenOptions cngOp = CngKeyOpenOptions.MachineKey;
+            bool keyExists = doesKeyExists(provider, keyName, out cngOp);
 
-            if (!CngKey.Exists(keyName, provider, cngOp))
-            {
-                cngOp = CngKeyOpenOptions.UserKey;
-                if (!CngKey.Exists(keyName, provider, cngOp))
-                {
-                    return;
-                }
-            }
-            using (CngKey key = CngKey.Open(keyName, provider, cngOp))
+            using (CngKey key = cngOp == CngKeyOpenOptions.None ? CngKey.Open(keyName, provider) : CngKey.Open(keyName, provider, cngOp))
             {
                 key.Delete();
             }
+        }
+
+        /// <summary>
+        /// Check for the existence of a key and set the Options accordingly.
+        /// </summary>
+        /// <param name="provider">Provider Object</param>
+        /// <param name="keyName">Name of the key to destroy</param>
+        /// <param name="cngKeyOpts">MachineKey or None depending on where it found the key.</param>
+        /// <returns></returns>
+        private bool doesKeyExists(CngProvider provider, string keyName, out CngKeyOpenOptions cngKeyOpts)
+        {
+            bool keyExists = false;
+            cngKeyOpts = CngKeyOpenOptions.MachineKey;
+
+            try
+            {
+                keyExists = CngKey.Exists(keyName, provider, cngKeyOpts);
+            }
+            catch (Exception)
+            {
+                //Probably not the microsoft software provider. Try without the MachineKey option.
+            }
+            if (!keyExists)
+            {
+                cngKeyOpts = CngKeyOpenOptions.None;
+
+                try
+                {
+                    keyExists = CngKey.Exists(keyName, provider);
+                }
+                catch (CryptographicException e)
+                {
+                    throw new CryptographicException(string.Format("The provider {0} may not exist. Exception thrown:{1}", provider.ToString(), e.Message), e);
+                }
+            }
+            return keyExists;
         }
 
         /// <summary>
