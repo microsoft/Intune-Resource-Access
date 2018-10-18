@@ -196,6 +196,12 @@ namespace Microsoft.Intune.EncryptionUtilities
             CngKeyOpenOptions cngOp = CngKeyOpenOptions.MachineKey;
             bool keyExists = doesKeyExists(provider, keyName, out cngOp);
 
+            if(!keyExists)
+            {
+                //Nothing to destroy
+                return;
+            }
+
             using (CngKey key = cngOp == CngKeyOpenOptions.None ? CngKey.Open(keyName, provider) : CngKey.Open(keyName, provider, cngOp))
             {
                 key.Delete();
