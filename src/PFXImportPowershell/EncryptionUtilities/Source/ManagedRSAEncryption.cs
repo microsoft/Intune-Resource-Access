@@ -54,7 +54,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         {
             CngProvider provider = new CngProvider(providerName);
             byte[] encryptedData = null;
-            CngKeyOpenOptions cngOp = CngKeyOpenOptions.MachineKey;
+            CngKeyOpenOptions cngOp;
             bool keyExists = doesKeyExists(provider, keyName, out cngOp);
 
             if (!keyExists)
@@ -86,7 +86,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         {
             CngProvider provider = new CngProvider(providerName);
             byte[] decrypted;
-            CngKeyOpenOptions cngOp = CngKeyOpenOptions.MachineKey;
+            CngKeyOpenOptions cngOp;
             bool keyExists = doesKeyExists(provider, keyName, out cngOp);
 
             if (!keyExists)
@@ -193,7 +193,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         public void DestroyLocalRSAKey(string providerName, string keyName)
         {
             CngProvider provider = new CngProvider(providerName);
-            CngKeyOpenOptions cngOp = CngKeyOpenOptions.MachineKey;
+            CngKeyOpenOptions cngOp;
             bool keyExists = doesKeyExists(provider, keyName, out cngOp);
 
             if(!keyExists)
