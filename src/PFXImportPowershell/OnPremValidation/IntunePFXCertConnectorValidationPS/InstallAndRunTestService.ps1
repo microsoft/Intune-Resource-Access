@@ -12,7 +12,7 @@ $credentials = New-Object System.Management.Automation.PSCredential ($serviceUse
 
 
 
-$binaryPath = "$($serviceDirectory)TestWindowsService.exe"
+$binaryPath = "$($serviceDirectory)\Microsoft.Management.PFXImport.IIntunePFXCertConnectorTestService.exe"
 
 # Creating Service
 Write-Host "Installing service: $serviceName"
@@ -28,12 +28,12 @@ Write-Host "Starting Service: $serviceName"
 
 #Wait for service to run
 Start-Sleep -s 10
-while (!(Test-Path "$($serviceDirectory)$($testResultsFileName)")) 
+while (!(Test-Path "$($serviceDirectory)\$($testResultsFileName)")) 
 { 
     Write-Host "Waiting for the service to start and run...It can take a few minutes"
     Start-Sleep 10 
 }
 
 #Output the results
-$result = Get-Content -Path "$($serviceDirectory)$($testResultsFileName)"
+$result = Get-Content -Path "$($serviceDirectory)\$($testResultsFileName)"
 Write-Host $result -ForegroundColor Yellow
