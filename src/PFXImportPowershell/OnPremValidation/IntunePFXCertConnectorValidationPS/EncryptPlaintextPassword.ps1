@@ -16,9 +16,6 @@ Add-Type -Path (Join-Path $serviceDirectory "Microsoft.Intune.EncryptionUtilitie
 
 [Microsoft.Intune.EncryptionUtilities.ManagedRSAEncryption] $manRSAObj = [Microsoft.Intune.EncryptionUtilities.ManagedRSAEncryption]::new()
 
-#Clean up key from old runs
-$manRSAObj.DestroyLocalRSAKey($provider, $keyName)
-
 try {
 	#Generate the key.
 	if(!$manRSAObj.TryGenerateLocalRSAKey($provider, $keyName, $keylength))
