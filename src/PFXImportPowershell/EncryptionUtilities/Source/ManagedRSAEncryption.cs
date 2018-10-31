@@ -54,14 +54,13 @@ namespace Microsoft.Intune.EncryptionUtilities
         {
             CngProvider provider = new CngProvider(providerName);
             byte[] encryptedData = null;
-            CngKeyOpenOptions cngOp;
-            bool keyExists = doesKeyExists(provider, keyName, out cngOp);
+            bool keyExists = doesKeyExists(provider, keyName);
 
             if (!keyExists)
             {
                 throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for encryption", keyName));
             }
-            using (CngKey key = cngOp == CngKeyOpenOptions.None ? CngKey.Open(keyName, provider) : CngKey.Open(keyName, provider, cngOp))
+            using (CngKey key = IsMicrosoftSoftwareKSP(provider) ? CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey) : CngKey.Open(keyName, provider))
             {
                 using (RSACng rsa = new RSACng(key))
                 {
@@ -86,15 +85,14 @@ namespace Microsoft.Intune.EncryptionUtilities
         {
             CngProvider provider = new CngProvider(providerName);
             byte[] decrypted;
-            CngKeyOpenOptions cngOp;
-            bool keyExists = doesKeyExists(provider, keyName, out cngOp);
+            bool keyExists = doesKeyExists(provider, keyName);
 
             if (!keyExists)
             {
                 throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for decryption", keyName));
             }
 
-            using (CngKey key = cngOp == CngKeyOpenOptions.None ? CngKey.Open(keyName, provider) : CngKey.Open(keyName, provider, cngOp))
+            using (CngKey key = IsMicrosoftSoftwareKSP(provider) ? CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey) : CngKey.Open(keyName, provider))
             {
                 using (RSACng rsa = new RSACng(key))
                 {
@@ -116,7 +114,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         {
             CngProvider provider = new CngProvider(providerName);
 
-            bool keyExists = doesKeyExists(provider, keyName, out CngKeyOpenOptions throwAwayOpt); //Won't set the Options variable correctly in our case.
+            bool keyExists = doesKeyExists(provider, keyName);
 
             if (keyExists)
             {
@@ -127,7 +125,8 @@ namespace Microsoft.Intune.EncryptionUtilities
             CryptoKeySecurity sec = new CryptoKeySecurity();
             CngKeyCreationParameters keyParams = null;
 
-            try { 
+            if(IsMicrosoftSoftwareKSP(provider))
+            { 
                 sec.AddAccessRule(
                     new CryptoKeyAccessRule(
                         new SecurityIdentifier(sidType: WellKnownSidType.BuiltinAdministratorsSid, domainSid: null),
@@ -153,20 +152,19 @@ namespace Microsoft.Intune.EncryptionUtilities
                     Provider = provider,
                     Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None),
                                 permissions},
-                    KeyCreationOptions = CngKeyCreationOptions.MachineKey
+                    KeyCreationOptions = IsMicrosoftSoftwareKSP(provider)?CngKeyCreationOptions.MachineKey:0
                 };
                 using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams))
                 {
-                    if(key == null)
+                    if (key == null)
                     {
-                        throw new Exception("Could not create machine key");
+                        return false;
                     }
-                    // nothing to do inside here, except to return without throwing an exception
                     return true;
                 }
             }
-            catch(Exception)
-            {
+            else
+            { 
                 keyParams = new CngKeyCreationParameters()
                 {
                     ExportPolicy = CngExportPolicies.None,
@@ -175,7 +173,7 @@ namespace Microsoft.Intune.EncryptionUtilities
                 };
                 using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams))
                 {
-                    if(key == null)
+                    if (key == null)
                     {
                         return false;
                     }
@@ -193,8 +191,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         public void DestroyLocalRSAKey(string providerName, string keyName)
         {
             CngProvider provider = new CngProvider(providerName);
-            CngKeyOpenOptions cngOp;
-            bool keyExists = doesKeyExists(provider, keyName, out cngOp);
+            bool keyExists = doesKeyExists(provider, keyName);
 
             if(!keyExists)
             {
@@ -202,7 +199,7 @@ namespace Microsoft.Intune.EncryptionUtilities
                 return;
             }
 
-            using (CngKey key = cngOp == CngKeyOpenOptions.None ? CngKey.Open(keyName, provider) : CngKey.Open(keyName, provider, cngOp))
+            using (CngKey key = IsMicrosoftSoftwareKSP(provider) ? CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey) : CngKey.Open(keyName, provider))
             {
                 key.Delete();
             }
@@ -215,33 +212,31 @@ namespace Microsoft.Intune.EncryptionUtilities
         /// <param name="keyName">Name of the key to destroy</param>
         /// <param name="cngKeyOpts">MachineKey or None depending on where it found the key.</param>
         /// <returns></returns>
-        private bool doesKeyExists(CngProvider provider, string keyName, out CngKeyOpenOptions cngKeyOpts)
+        private bool doesKeyExists(CngProvider provider, string keyName)
         {
             bool keyExists = false;
-            cngKeyOpts = CngKeyOpenOptions.MachineKey;
-
             try
             {
-                keyExists = CngKey.Exists(keyName, provider, cngKeyOpts);
+                keyExists = IsMicrosoftSoftwareKSP(provider)? CngKey.Exists(keyName, provider, CngKeyOpenOptions.MachineKey) : CngKey.Exists(keyName, provider);
             }
-            catch (Exception)
+            catch (CryptographicException e)
             {
-                //Probably not the microsoft software provider. Try without the MachineKey option.
-            }
-            if (!keyExists)
-            {
-                cngKeyOpts = CngKeyOpenOptions.None;
-
-                try
-                {
-                    keyExists = CngKey.Exists(keyName, provider);
-                }
-                catch (CryptographicException e)
-                {
-                    throw new CryptographicException(string.Format("The provider {0} may not exist. Exception thrown:{1}", provider.ToString(), e.Message), e);
-                }
+                throw new CryptographicException(string.Format("There was an error contacting provider {0}. It may not exist or may be configured incorrectly. Error Code:0x{1:X8}  Exception thrown:{2}\nStack Trace:{3}\n", 
+                    provider.ToString(), e.HResult, e.Message, e.StackTrace), e);
             }
             return keyExists;
+        }
+
+        private bool IsMicrosoftSoftwareKSP(CngProvider provider)
+        {
+            if (provider == CngProvider.MicrosoftSoftwareKeyStorageProvider)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
