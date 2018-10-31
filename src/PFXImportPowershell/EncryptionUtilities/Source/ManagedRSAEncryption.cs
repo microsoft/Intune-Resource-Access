@@ -152,7 +152,7 @@ namespace Microsoft.Intune.EncryptionUtilities
                     Provider = provider,
                     Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None),
                                 permissions},
-                    KeyCreationOptions = IsMicrosoftSoftwareKSP(provider)?CngKeyCreationOptions.MachineKey:0
+                    KeyCreationOptions = CngKeyCreationOptions.MachineKey
                 };
                 using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams))
                 {
