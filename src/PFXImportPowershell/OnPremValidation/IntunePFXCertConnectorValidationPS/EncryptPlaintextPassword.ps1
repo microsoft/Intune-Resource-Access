@@ -1,5 +1,5 @@
 param(
-	[string] $serviceDirectory,
+	[string] $serviceDirectory = "..\IntunePFXCertConnectorValidationService\bin\x64\Debug\",
 	[int] $keyLength = 2048,
 	[string] $keyName = "PfxImportRecryptionTestValidationKey",
 	[string] $hashAlgorithm = "SHA512",
@@ -20,14 +20,21 @@ try {
 	#Generate the key.
 	if(!$manRSAObj.TryGenerateLocalRSAKey($provider, $keyName, $keylength))
 	{
-		Write-Error "Key Creation failed, it likely already exists"
+		Write-Warning "Key Creation failed, it likely already exists"
 	}
 }
 catch {
-    Write-Warning $_ 
+    Write-Warning $_
+    Write-Warning $StackTrace
 }
 
-$encryptedSecret = $manRSAObj.EncryptWithLocalKey($provider, $keyName, $plainSecretBytes, $hashAlgorithm, $paddingFlags)
+try {
+	$encryptedSecret = $manRSAObj.EncryptWithLocalKey($provider, $keyName, $plainSecretBytes, $hashAlgorithm, $paddingFlags)
+}
+catch {
+	Write-Warning $_
+	Write-Warning $StackTrace
+}
 $encryptedSecretb64 = [System.Convert]::ToBase64String($encryptedSecret)
 
 return $plainSecret,$encryptedSecretb64

@@ -1,5 +1,5 @@
 param(
-	[string] $serviceDirectory,
+	[string] $serviceDirectory = "..\IntunePFXCertConnectorValidationService\bin\x64\Debug\",
 	[string] $testResultsFileName = "PFXImportTestResultsMarker.txt",
 	[string] $serviceName = "PFXImportDecryptTest",
 	[string] $serviceDescription = "Tests if the system account can decrpyt with a key in a service"

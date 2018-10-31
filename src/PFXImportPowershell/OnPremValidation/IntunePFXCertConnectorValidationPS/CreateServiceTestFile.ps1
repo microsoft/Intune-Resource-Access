@@ -1,5 +1,5 @@
 param(
-	[string] $serviceDirectory,
+	[string] $serviceDirectory = "..\IntunePFXCertConnectorValidationService\bin\x64\Debug\",
 	[string] $plainSecret,
 	[string] $encryptedSecretBase64,
 	[int] $keyLength = 2048,
