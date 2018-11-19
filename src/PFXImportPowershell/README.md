@@ -31,70 +31,69 @@ Visual Studio 2015 (or above)
 # Example Powershell Usage
 
 ## Prerequisite:
-	Import-Module .\IntunePfxImport.psd1
+```
+Import-Module .\IntunePfxImport.psd1
+```
 
 ## Create initial Key Example
-
-1. Setup Key (if you don't have a dedicated provider, you can use "Microsoft Software Key Storage Provider")
-
-	Add-IntuneKspKey "<ProviderName>" "<KeyName>"
+1. Setup Key -- if you don't have a dedicated provider, you can use "Microsoft Software Key Storage Provider"
+```
+Add-IntuneKspKey "<ProviderName>" "<KeyName>"
+```
 	
 ## Authenticate to Intune
 1. Optionally, create a secure string representing the account administrator password.
-
-	$secureAdminPassword = ConvertTo-SecureString -String "<admin password>" -AsPlainText -Force
-
+```
+$secureAdminPassword = ConvertTo-SecureString -String "<admin password>" -AsPlainText -Force
+```
 2. Authenticate as the account administrator (using the admin UPN) to Intune.
-
-	$authResult = Get-IntuneAuthenticationToken -AdminUserName "<Admin-UPN>" [-AdminPassword $secureAdminPassword]
+```
+$authResult = Get-IntuneAuthenticationToken -AdminUserName "<Admin-UPN>" [-AdminPassword $secureAdminPassword]
+```
 
 ## Set up userPFXCertifcate object (including encrypting password)
-
 1. Setup Secure File Password
-	
-	$SecureFilePassword = ConvertTo-SecureString -String "<PFXPassword>" -AsPlainText -Force
-
+```
+$SecureFilePassword = ConvertTo-SecureString -String "<PFXPassword>" -AsPlainText -Force
+```
 2. Get Base64 String Certificate
-
-	$Base64Certificate =ConvertTo-IntuneBase64EncodedPfxCertificate -CertificatePath "<FullPathPFXToCert>"
-
+```
+$Base64Certificate =ConvertTo-IntuneBase64EncodedPfxCertificate -CertificatePath "<FullPathPFXToCert>"
+```
 3. Base64 String
-
-	$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>"
-	
+```
+$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>"
+```
 
 ## Import Example
-
 1. Import User PFX
-	
-	Import-IntuneUserPfxCertificate -AuthenticationResult $authResult -CertificateList $userPFXObject
-	
+```
+Import-IntuneUserPfxCertificate -AuthenticationResult $authResult -CertificateList $userPFXObject
+```
+
 ## Get PFX Certificate Example
-
 1. Get-PfxCertificates (Specific records)
-	
-	Get-IntuneUserPfxCertificate -AuthenticationResult $authResult -UserThumbprintList <UserThumbprintObjs>
-
+```
+Get-IntuneUserPfxCertificate -AuthenticationResult $authResult -UserThumbprintList <UserThumbprintObjs>
+```
 2. Get-PfxCertificates (Specific users)
-	
-	Get-IntuneUserPfxCertificate -AuthenticationResult $authResult -UsertList "<UserUPN>"
-
+```
+Get-IntuneUserPfxCertificate -AuthenticationResult $authResult -UsertList "<UserUPN>"
+```
 3. Get-PfxCertificates (All records)
-	
-	Get-IntuneUserPfxCertificate -AuthenticationResult $authResult
-
+```
+Get-IntuneUserPfxCertificate -AuthenticationResult $authResult
+```
 
 ## Remove PFX Certificate Example
-
 1. Remove-PfxCertificates (Specific records)
-	
-	Remove-IntuneUserPfxCertificate -AuthenticationResult $authResult -UserThumbprintList <UserThumbprintObjs>
-
+```
+Remove-IntuneUserPfxCertificate -AuthenticationResult $authResult -UserThumbprintList <UserThumbprintObjs>
+```
 2. Remove-PfxCertificates (Specific users)
-
-	Remove-IntuneUserPfxCertificate -AuthenticationResult $authResult -UsertList "<UserUPN>"
-
-
+```
+Remove-IntuneUserPfxCertificate -AuthenticationResult $authResult -UsertList "<UserUPN>"
+```
 
 # Graph Usage
 
