@@ -98,13 +98,18 @@ Remove-IntuneUserPfxCertificate -AuthenticationResult $authResult -UsertList "<U
 # Graph Usage
 
 ## GET
-
-	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{Userid}-{Thumbprint}')  --A specific record
-	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates/?$filter=tolower(userPrincipalName) eq '{lowercase UPN}' 
-
-–-A specific User
-
-	https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates --All records
+A specific record
+```
+https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates('{Userid}-{Thumbprint}')  
+```
+A specific User
+```
+https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates/?$filter=tolower(userPrincipalName) eq '{lowercase UPN}'
+```
+All records
+```
+https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates
+```
 
 ## POST
 	
