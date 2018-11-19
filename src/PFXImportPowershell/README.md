@@ -7,6 +7,21 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 # Building the Commandlets
 ## Prerequisite
 	Visual Studio 2015 (or above)
+	
+	[Graph Permissions](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) required:
+	1. DeviceManagementServiceConfig.ReadWrite.All
+	2. DeviceManagementServiceConfig.Read.All
+	3. DeviceManagementConfiguration.ReadWrite.All
+	4. DeviceManagementConfiguration.Read.All
+	5. DeviceManagementApps.ReadWrite.All
+	6. DeviceManagementApps.Read.All
+	7. DeviceManagementRBAC.ReadWrite.All
+	8. DeviceManagementRBAC.Read.All
+	9. DeviceManagementManagedDevices.PriviligedOperation.All
+	10. DeviceManagementManagedDevices.ReadWrite.All
+	11. DeviceManagementManagedDevices.Read.All
+
+
 ## Building
 	1. Load .\PFXImportPS.sln in Visual Studio
 	2. Select the appropriate build configuration (Debug or Release)
