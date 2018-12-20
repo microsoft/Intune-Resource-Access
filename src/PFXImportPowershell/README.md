@@ -170,7 +170,7 @@ For payload, see above example.
 			"lastModifiedDateTime": "2017-01-01T00:00:35.1329464-07:0"
 		}
 
-- The public key used for encryption's equvalent private key must be accessible to the account that is running the "PFX Certificate Connector for Microsoft Intune" service for decryption to work. This is normally the "NT AUTHORITY\System" account. See the [OnPremValidation project](OnPremValidation) for testing access.
+- The public key used for encryption's equivalent private key must be accessible to the account that is running the "PFX Certificate Connector for Microsoft Intune" service for decryption to work. This is normally the "NT AUTHORITY\System" account. See the [OnPremValidation project](OnPremValidation) for testing access.
 
 # Other Useful graph examples
 
