@@ -1,7 +1,5 @@
 # PFXImport Powershell Project
 
-*This project is currently in pre-release. Not all features may be functional.*
-
 This project consists of helper Powershell Commandlets for importing PFX certificates to Microsoft Intune.
 
 # Building the Commandlets
@@ -104,6 +102,6 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 
 ## Lookup up user id from UPN
 	GET
-	https://graph.microsoft.com/beta/users?$filter=userPrincipalName eq '{UPN}'
+	https://graph.microsoft.com/test_intune_1806/users?$filter=userPrincipalName eq '{UPN}'
 
 	The user id is found in the id value of the returned object.
