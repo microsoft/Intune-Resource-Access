@@ -150,26 +150,27 @@ For payload, see above example.
 
 
 # Notes
-While encryptedPfxBlob and encryptedPfxPassword must be provided when a UserPFXCertificate record is imported, those values will be returned empty in any get call.
+- While encryptedPfxBlob and encryptedPfxPassword must be provided when a UserPFXCertificate record is imported, those values will be returned empty in any get call.
 
-A returned json object will be similar to this:
+	A returned json object will be similar to this:
 
-	{
-		"id": "5ffff976dffffe49affff8978fffff25-0ffff8962ffffdea9ffff8e83ffff1d83ffff6ae",
-		"thumbprint": "0ffff8962ffffdea9ffff8e83ffff1d83ffff6ae",
-		"intendedPurpose": "smimeEncryption",
-		"userPrincipalName": "User1@contoso.onmicrosoft.com",
-		"startDateTime": "2016-12-31T23:58:46.7156189-07:00",
-		"expirationDateTime": "2016-12-31T23:57:57.2481234-07:00",
-		"providerName": "Microsoft Software Key Storage Provider",
-		"keyName": "KeyNameValue",
-		"paddingScheme": "oaepSha512",
-		"encryptedPfxBlob": "AA==",
-		"encryptedPfxPassword": "",
-		"createdDateTime": "2017-01-01T00:02:43.5775965-07:00",
-		"lastModifiedDateTime": "2017-01-01T00:00:35.1329464-07:0"
-	}
+		{
+			"id": "5ffff976dffffe49affff8978fffff25-0ffff8962ffffdea9ffff8e83ffff1d83ffff6ae",
+			"thumbprint": "0ffff8962ffffdea9ffff8e83ffff1d83ffff6ae",
+			"intendedPurpose": "smimeEncryption",
+			"userPrincipalName": "User1@contoso.onmicrosoft.com",
+			"startDateTime": "2016-12-31T23:58:46.7156189-07:00",
+			"expirationDateTime": "2016-12-31T23:57:57.2481234-07:00",
+			"providerName": "Microsoft Software Key Storage Provider",
+			"keyName": "KeyNameValue",
+			"paddingScheme": "oaepSha512",
+			"encryptedPfxBlob": "AA==",
+			"encryptedPfxPassword": "",
+			"createdDateTime": "2017-01-01T00:02:43.5775965-07:00",
+			"lastModifiedDateTime": "2017-01-01T00:00:35.1329464-07:0"
+		}
 
+- The public key used for encryption's equvalent private key must be accessible to the account that is running the "PFX Certificate Connector for Microsoft Intune" service for decryption to work. This is normally the "NT AUTHORITY\System" account.
 
 # Other Useful graph examples
 
