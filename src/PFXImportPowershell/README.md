@@ -31,6 +31,7 @@ Visual Studio 2015 (or above)
 # Example Powershell Usage
 
 ## Prerequisite:
+1. Import the built powershell module. This usually is found in the "bin\debug" or "bin\release" directory.
 ```
 Import-Module .\IntunePfxImport.psd1
 ```
