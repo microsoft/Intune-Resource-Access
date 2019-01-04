@@ -1,8 +1,6 @@
 # PFXImport Powershell Project
 
-*This project is currently in pre-release. Not all features may be functional.*
-
-This project consists of helper Powershell Commandlets for importing PFX certificates to Microsoft Intune.
+This project consists of helper Powershell Commandlets for importing PFX certificates to Microsoft Intune. Further documetation of the feature can be found [here](https://docs.microsoft.com/en-us/intune/certificates-s-mime-encryption-sign).
 
 # Building the Commandlets
 ## Prerequisite
@@ -101,6 +99,7 @@ Remove-IntuneUserPfxCertificate -AuthenticationResult $authResult -UsertList "<U
 ```
 
 # Graph Usage
+See [UserPFXCertificate Graph resource type](https://docs.microsoft.com/en-us/graph/api/resources/intune-raimportcerts-userpfxcertificate?view=graph-rest-beta)
 
 ## GET
 A specific record
