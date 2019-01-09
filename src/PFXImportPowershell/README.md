@@ -122,7 +122,6 @@ https://graph.microsoft.com/beta/deviceManagement/userPfxCertificates
 with an example payload:
  
 	{
-		"@odata.type": "#microsoft.graph.userPFXCertificate",
 		"id": "",
 		"thumbprint": "f6f5f8f6-f8f6-f6f5-f6f8-f5f6f6f8f5f6",
 		"intendedPurpose": "smimeEncryption",
