@@ -39,6 +39,12 @@ Import-Module .\IntunePfxImport.psd1
 ```
 Add-IntuneKspKey "<ProviderName>" "<KeyName>"
 ```
+
+## Export the public key to a file
+1. Export the public key. It can be used so that encryption can happen in an independent location from where the private key is accessed.
+```
+Export-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>"
+```
 	
 ## Authenticate to Intune
 1. Optionally, create a secure string representing the account administrator password.
@@ -50,7 +56,7 @@ $secureAdminPassword = ConvertTo-SecureString -String "<admin password>" -AsPlai
 $authResult = Get-IntuneAuthenticationToken -AdminUserName "<Admin-UPN>" [-AdminPassword $secureAdminPassword]
 ```
 
-## Set up userPFXCertifcate object (including encrypting password)
+## Set up userPFXCertifcate object (including encrypting password from a location that has acccess to the key in the key store) 
 1. Setup Secure File Password string.
 ```
 $SecureFilePassword = ConvertTo-SecureString -String "<PFXPassword>" -AsPlainText -Force
@@ -66,6 +72,16 @@ $userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certifica
 or 
 ```
 $userPFXObject = New-IntuneUserPfxCertificate -PathToPfxFile "<FullPathPFXToCert>" $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>"
+```
+
+## Set up userPFXCertifcate object (including encrypting password with the public key that has been exported to a file) 
+1. Create a new UserPfxCertificate record.
+```
+$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>" "<File path to public key file>"
+```
+or 
+```
+$userPFXObject = New-IntuneUserPfxCertificate -PathToPfxFile "<FullPathPFXToCert>" $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>" "<File path to public key file>"
 ```
 
 ## Import Example

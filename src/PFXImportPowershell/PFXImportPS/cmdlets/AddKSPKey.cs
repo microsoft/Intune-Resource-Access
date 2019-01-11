@@ -25,12 +25,11 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 {
     using System;
     using System.Management.Automation;
-    using System.Security.Cryptography;
     using Microsoft.Intune.EncryptionUtilities;
 
     [Cmdlet(VerbsCommon.Add, "IntuneKspKey")]
     public class AddKSPKey : PSCmdlet
-    {
+    { 
         private const int KeyExistsErrorCode = -2146233296;
 
         private int keyLength = 2048;
