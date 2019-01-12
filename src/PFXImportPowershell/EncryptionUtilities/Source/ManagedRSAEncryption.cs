@@ -24,6 +24,7 @@
 namespace Microsoft.Intune.EncryptionUtilities
 {
     using System;
+    using System.IO;
     using System.Runtime.InteropServices;
     using System.Security.AccessControl;
     using System.Security.Cryptography;
@@ -205,6 +206,48 @@ namespace Microsoft.Intune.EncryptionUtilities
             }
         }
 
+
+        public void ExportPublicKeytoFile(string providerName, string keyName, string filePath)
+        {
+            CngProvider provider = new CngProvider(providerName);
+
+            bool keyExists = doesKeyExists(provider, keyName);
+
+            if (!keyExists)
+            {
+                throw new CryptographicException(string.Format("They key {0} does not exist so there is no public key to export", keyName));
+            }
+            if (File.Exists(filePath))
+            {
+                throw new IOException(string.Format("File {0} already exists.", filePath));
+            }
+            using (CngKey key = IsMicrosoftSoftwareKSP(provider) ? CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey) : CngKey.Open(keyName, provider))
+            {
+                File.WriteAllBytes(filePath, key.Export(CngKeyBlobFormat.GenericPublicBlob));
+            }
+        }
+
+        public byte[] EncryptWithFileKey(string filePath, byte[] toEncrypt, string hashAlgorithm = PaddingHashAlgorithmNames.SHA512, int paddingFlags = PaddingFlags.OAEPPadding)
+        {
+            byte[] encryptedData = null;
+ 
+            if (!File.Exists(filePath))
+            {
+                throw new IOException(string.Format("They file {0} does not exist and cannot be used for encryption", filePath));
+            }
+
+            byte[] keyBlob = File.ReadAllBytes(filePath);
+            using (CngKey key = CngKey.Import(keyBlob, CngKeyBlobFormat.GenericPublicBlob))
+            {
+                using (RSACng rsa = new RSACng(key))
+                {
+                    RSAEncryptionPadding padding = this.GetRSAPadding(hashAlgorithm, paddingFlags);
+                    encryptedData = rsa.Encrypt(toEncrypt, padding);
+                }
+            }
+            return encryptedData;
+        }
+
         /// <summary>
         /// Check for the existence of a key and set the Options accordingly.
         /// </summary>
@@ -296,16 +339,16 @@ namespace Microsoft.Intune.EncryptionUtilities
         }
 
         /// <summary>
-        /// Takes the encrypted data, decrypts it with the key <paramref name="keyName"/>  found in the provider <paramref name="providerName"/>, and then recrypts it with <paramref name="deviceCertificate"/>
+        /// Takes the encrypted data, decrypts it with the key <paramref name="keyName"/>  found in the provider <paramref name="providerName"/>, and then recrypts it with <paramref name="recryptionCertificate"/>
         /// </summary>
         /// <param name="encryptedPassword">Data encrypted with the given key</param>
-        /// <param name="deviceCertificate">Certificate to recrypt with</param>
+        /// <param name="recryptionCertificate">Certificate to recrypt with</param>
         /// <param name="providerName">Provider that the key is stored in</param>
         /// <param name="keyName">Key used to originally encrypt the data</param>
         /// <param name="hashAlgorithm">OAEP hash algorithm</param>
         /// <param name="paddingFlags">Padding Type</param>
         /// <returns>Data recrypted by the given certificate</returns>
-        public byte[] RecryptPfxImportMessage(byte[] encryptedPassword, X509Certificate2 deviceCertificate, string providerName, string keyName, string hashAlgorithm = PaddingHashAlgorithmNames.SHA512, int paddingFlags = PaddingFlags.OAEPPadding)
+        public byte[] RecryptPfxImportMessage(byte[] encryptedPassword, X509Certificate2 recryptionCertificate, string providerName, string keyName, string hashAlgorithm = PaddingHashAlgorithmNames.SHA512, int paddingFlags = PaddingFlags.OAEPPadding)
         {
             byte[] decryptedPassword = null;
             byte[] recryptedPassword;
@@ -315,7 +358,7 @@ namespace Microsoft.Intune.EncryptionUtilities
 
             try
             {
-                recryptedPassword = this.EncryptWithCertificate(decryptedPassword, deviceCertificate);
+                recryptedPassword = this.EncryptWithCertificate(decryptedPassword, recryptionCertificate);
                 return recryptedPassword;
             }
             finally
