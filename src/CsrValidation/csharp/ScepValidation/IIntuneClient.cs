@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // All rights reserved.
 //
 // This code is licensed under the MIT License.
@@ -21,28 +21,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using Newtonsoft.Json.Linq;
 using System;
-using System.Runtime.Serialization;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace lib
+namespace Microsoft.Intune
 {
-
-    public class IntuneClientException : Exception
+    public interface IIntuneClient
     {
-        public IntuneClientException()
-        {
-        }
 
-        public IntuneClientException(string message) : base(message)
-        {
-        }
-
-        public IntuneClientException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        protected IntuneClientException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        /// <summary>
+        /// Post a Request to an Intune rest service.
+        /// </summary>
+        /// <param name="serviceName">The name of the service to post to.</param>
+        /// <param name="urlSuffix">The end of the url to append onto the request.</param>
+        /// <param name="apiVersion">API Version of service to use.</param>
+        /// <param name="json">The body of the request.</param>
+        /// <param name="activityId">Client generated ID for correlation of this activity</param>
+        /// <param name="additionalHeaders">key value pairs of additional header values to add to the request</param>
+        /// <returns>JSON response from service</returns>
+        Task<JObject> PostAsync(string serviceName, string urlSuffix, string apiVersion, JObject json, Guid activityId, Dictionary<string, string> additionalHeaders = null);
     }
 }

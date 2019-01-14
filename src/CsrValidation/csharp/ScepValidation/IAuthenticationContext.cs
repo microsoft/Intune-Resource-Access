@@ -22,21 +22,21 @@
 // THE SOFTWARE.
 
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using System;
 using System.Threading.Tasks;
 
-namespace lib
+namespace Microsoft.Intune
 {
-    /**
-    * Azure Active Directory Authentication Client
-    */
-    public interface IADALClientWrapper
+    /// <summary>
+    /// Interface to allow dependency injection for UnitTests on ADALClientWrapper
+    /// </summary>
+    public interface IAuthenticationContext
     {
         /// <summary>
-        /// Gets an access token from AAD for the specified resource using the ClientCredential passed in.
+        /// Acquires security token from the authority.
         /// </summary>
-        /// <param name="resource">Resource to get token for.</param>
-        /// <returns></returns>
-        Task<AuthenticationResult> GetAccessTokenFromCredentialAsync(String resource);
+        /// <param name="resource">Identifier of the target resource that is the recipient of the requested token.</param>
+        /// <param name="clientCredential">The client credential to use for token acquisition.</param>
+        /// <returns>It contains Access Token and the Access Token's expiration time. Refresh Token property will be null for this overload.</returns>
+        Task<AuthenticationResult> AcquireTokenAsync(string resource, ClientCredential clientCredential);
     }
 }

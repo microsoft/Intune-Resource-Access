@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // All rights reserved.
 //
 // This code is licensed under the MIT License.
@@ -11,7 +11,7 @@
 // furnished to do so, subject to the following conditions :
 //
 // The above copyright notice and this permission notice shall be included in
-// all copies or substantial portionas of the Software.
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -21,22 +21,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
-namespace lib
+namespace Microsoft.Intune
 {
-    /// <summary>
-    /// Interface to allow dependency injection for UnitTests on ADALClientWrapper
-    /// </summary>
-    public interface IAuthenticationContext
+    internal class HttpClient : IHttpClient, IDisposable
     {
+        private System.Net.Http.HttpClient httpClient;
+
         /// <summary>
-        /// Acquires security token from the authority.
+        /// Instantiates an instance
         /// </summary>
-        /// <param name="resource">Identifier of the target resource that is the recipient of the requested token.</param>
-        /// <param name="clientCredential">The client credential to use for token acquisition.</param>
-        /// <returns>It contains Access Token and the Access Token's expiration time. Refresh Token property will be null for this overload.</returns>
-        Task<AuthenticationResult> AcquireTokenAsync(string resource, ClientCredential clientCredential);
+        /// <param name="httpClient"></param>
+        public HttpClient(System.Net.Http.HttpClient httpClient)
+        {
+            this.httpClient = httpClient;
+        }
+
+        /// <inheritdoc />
+        public HttpRequestHeaders DefaultRequestHeaders => this.httpClient.DefaultRequestHeaders;
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            this.httpClient.Dispose();
+        }
+
+        /// <inheritdoc />
+        public Task<HttpResponseMessage> GetAsync(string requestUri)
+        {
+            return this.httpClient.GetAsync(requestUri);
+        }
+
+        /// <inheritdoc />
+        public Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
+        {
+            return this.httpClient.PostAsync(requestUri, content);
+        }
     }
 }

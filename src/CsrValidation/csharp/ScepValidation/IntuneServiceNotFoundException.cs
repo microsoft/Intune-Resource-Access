@@ -21,12 +21,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace lib
+using System;
+using System.Runtime.Serialization;
+
+namespace Microsoft.Intune
 {
+    [Serializable]
     public class IntuneServiceNotFoundException : IntuneClientException
     {
         public IntuneServiceNotFoundException(string serviceName) : base("Did not find service named '" + serviceName + "' listed in Microsoft.Graph discovery service list.")
         {
+        }
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            base.GetObjectData(info, context);
         }
     }
 }

@@ -330,9 +330,6 @@ namespace Microsoft.Management.Powershell.PFXImport.UnitTests
         [TestMethod]
         public void TestBadProviderName()
         {
-            string hashAlgorithm = PaddingHashAlgorithmNames.SHA1;
-            int paddingFlags = PaddingFlags.OAEPPadding;
-
             Command encryptCommand = GenerateSetUserPFXCertificatesCommand(
                 TestFilePath1,
                 TestUPN1,

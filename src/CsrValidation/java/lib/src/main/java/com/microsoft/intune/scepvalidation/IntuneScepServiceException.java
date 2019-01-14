@@ -121,6 +121,7 @@ public class IntuneScepServiceException extends IntuneClientException
         this.activityId = activityId;
         this.transactionId = transactionId;
         this.errorCode = errorCode;
+        this.errorDescription = errorDescription;
         try
         {
             parsedErrorCode = ErrorCode.valueOf(this.errorCode);

@@ -23,6 +23,8 @@
 
 using Microsoft.Intune.EncryptionUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.IO;
 using System.Security.Cryptography;
 
 namespace Microsoft.Intune.Test.EncryptionUtilitiesUnitTests
@@ -42,11 +44,7 @@ namespace Microsoft.Intune.Test.EncryptionUtilitiesUnitTests
             ManagedRSAEncryption utility = new ManagedRSAEncryption();
             //Create the test key
 
-            if(!utility.TryGenerateLocalRSAKey(TestProvider, TestKeyName))
-            {
-                utility.DestroyLocalRSAKey(TestProvider, TestKeyName);
-                utility.TryGenerateLocalRSAKey(TestProvider, TestKeyName);
-            }
+            utility.TryGenerateLocalRSAKey(TestProvider, TestKeyName);
         }
 
         /// <summary>
@@ -58,8 +56,11 @@ namespace Microsoft.Intune.Test.EncryptionUtilitiesUnitTests
             ManagedRSAEncryption utility = new ManagedRSAEncryption();
             //Destroy the test key
 
-
-            utility.DestroyLocalRSAKey(TestProvider, TestKeyName);
+            try
+            {
+                utility.DestroyLocalRSAKey(TestProvider, TestKeyName);
+            }
+            catch (Exception) { }
         }
 
         /// <summary>
@@ -154,6 +155,34 @@ namespace Microsoft.Intune.Test.EncryptionUtilitiesUnitTests
             byte[] encrypted = util.EncryptWithLocalKey(TestProvider, TestKeyName, toEncrypt, "Not a real padding hash function", PaddingFlags.OAEPPadding);
         }
 
-        
+
+        /// <summary>
+        /// Test exporting a public key to a file and reading it back in and encrypting.
+        /// </summary>
+        [TestMethod]
+        public void ExportImportEncryptTest()
+        {
+            byte[] toEncrypt = new byte[] { 1, 2, 3, 4 };
+            string filePath = @".\TestPublic.Key";
+            try
+            {
+                File.Delete(filePath);
+            }
+            catch (Exception) { }
+            ManagedRSAEncryption util = new ManagedRSAEncryption();
+            util.ExportPublicKeytoFile(TestProvider, TestKeyName, filePath);
+            Assert.IsTrue(File.Exists(filePath));
+            byte[] encryptedBytes = util.EncryptWithFileKey(filePath, toEncrypt);
+            Assert.IsNotNull(encryptedBytes);
+            byte[] decryptedBytes = util.DecryptWithLocalKey(TestProvider, TestKeyName, encryptedBytes);
+            Assert.AreEqual(System.Convert.ToBase64String(toEncrypt), System.Convert.ToBase64String(decryptedBytes));
+            try
+            {
+                File.Delete(filePath);
+            }
+            catch (Exception) { }
+        }
+
+
     }
 }

@@ -11,7 +11,7 @@
 // furnished to do so, subject to the following conditions :
 //
 // The above copyright notice and this permission notice shall be included in
-// all copies or substantial portionas of the Software.
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -21,27 +21,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using System.Threading.Tasks;
 using System;
+using System.Runtime.Serialization;
 
-namespace lib
+namespace Microsoft.Intune
 {
-    /// <summary>
-    /// Interface to allow dependency injection for UnitTests on ADALClientWrapper
-    /// </summary>
-    public class AuthenticationContextWrapper : IAuthenticationContext
+    [Serializable]
+    public class IntuneClientException : Exception
     {
-        private AuthenticationContext context = null;
-
-        public AuthenticationContextWrapper(AuthenticationContext context)
+        public IntuneClientException()
         {
-            this.context = context ?? throw new ArgumentException(nameof(context));
         }
 
-        public Task<AuthenticationResult> AcquireTokenAsync(string resource, ClientCredential clientCredential)
+        public IntuneClientException(string message) : base(message)
         {
-            return context.AcquireTokenAsync(resource, clientCredential);
+        }
+
+        public IntuneClientException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected IntuneClientException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            base.GetObjectData(info, context);
         }
     }
 }

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntunePFXCertConnectorValidationService", "OnPremValidation\IntunePFXCertConnectorValidationService\IntunePFXCertConnectorValidationService.csproj", "{031F5622-EF2E-4F79-ABB4-25868F23DD36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncryptionUtilities", "EncryptionUtilities\Source\EncryptionUtilities.csproj", "{D4FF3D7B-3C1A-47B0-9983-95DD89D2AED4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{031F5622-EF2E-4F79-ABB4-25868F23DD36}.Debug|x64.ActiveCfg = Debug|x64
+		{031F5622-EF2E-4F79-ABB4-25868F23DD36}.Debug|x64.Build.0 = Debug|x64
+		{031F5622-EF2E-4F79-ABB4-25868F23DD36}.Release|x64.ActiveCfg = Release|x64
+		{031F5622-EF2E-4F79-ABB4-25868F23DD36}.Release|x64.Build.0 = Release|x64
+		{D4FF3D7B-3C1A-47B0-9983-95DD89D2AED4}.Debug|x64.ActiveCfg = Debug|x64
+		{D4FF3D7B-3C1A-47B0-9983-95DD89D2AED4}.Debug|x64.Build.0 = Debug|x64
+		{D4FF3D7B-3C1A-47B0-9983-95DD89D2AED4}.Release|x64.ActiveCfg = Release|x64
+		{D4FF3D7B-3C1A-47B0-9983-95DD89D2AED4}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {749AF51A-5109-46C1-99B9-8542BA663E56}
+	EndGlobalSection
+EndGlobal
