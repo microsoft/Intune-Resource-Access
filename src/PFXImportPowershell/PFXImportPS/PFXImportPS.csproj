@@ -63,6 +63,7 @@
     <Compile Include="Cmdlets\ConvertToBase64EncodedPFXCertificate.cs" />
     <Compile Include="Cmdlets\ExportPublicKey.cs" />
     <Compile Include="Cmdlets\GetAuthToken.cs" />
+    <Compile Include="Cmdlets\GetUserId.cs" />
     <Compile Include="Cmdlets\GetUserPFXCertificate.cs" />
     <Compile Include="Cmdlets\ImportUserPFXCertificate.cs" />
     <Compile Include="Cmdlets\NewUserPFXCertificate.cs" />

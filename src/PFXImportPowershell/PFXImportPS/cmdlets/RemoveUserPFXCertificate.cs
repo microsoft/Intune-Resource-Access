@@ -160,7 +160,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 foreach (PSObject result in ps.Invoke())
                 {
                     UserPFXCertificate cert = result.BaseObject as UserPFXCertificate;
-                    string userId = GetUserPFXCertificate.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
+                    string userId = GetUserId.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
                     UserThumbprintList.Add(new UserThumbprint() { User = userId, Thumbprint = cert.Thumbprint });
                 }
             }
@@ -169,7 +169,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 foreach(UserPFXCertificate cert in CertificateList)
                 {
-                    string userId = GetUserPFXCertificate.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
+                    string userId = GetUserId.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
                     UserThumbprintList.Add(new UserThumbprint() { User = userId, Thumbprint = cert.Thumbprint });
                 }
             }

@@ -147,7 +147,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 string url;
                 if (IsUpdate.IsPresent)
                 {
-                    string userId = GetUserPFXCertificate.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
+                    string userId = GetUserId.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
                     url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates({2}-{3})", graphURI, schemaVersion, userId, cert.Thumbprint);
                 }
                 else
