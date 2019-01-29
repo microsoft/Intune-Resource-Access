@@ -56,7 +56,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// <summary>
         /// List of users with PFX Certificates to be retrieved.
         /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Doesn't work for powershell parameters")]
         [Parameter(Mandatory = true)]
         [ValidateNotNullOrEmpty()]
         public string UPN
