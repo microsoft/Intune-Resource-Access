@@ -86,14 +86,14 @@ namespace Microsoft.Intune.EncryptionUtilities
         {
             CngProvider provider = new CngProvider(providerName);
             byte[] decrypted;
-            bool keyExists = doesKeyExists(provider, keyName);
-            bool isUserKey = false;
+            CngKeyOpenOptions cngkeyOpenOpts = CngKeyOpenOptions.MachineKey;
+            bool keyExists = doesKeyExists(provider, keyName, cngkeyOpenOpts);
 
             if (!keyExists)
             {
-                if (doesKeyExistsUserStore(provider, keyName))
+                if (doesKeyExists(provider, keyName, CngKeyOpenOptions.None))
                 {
-                    isUserKey = true;
+                    cngkeyOpenOpts = CngKeyOpenOptions.None;
                 }
                 else
                 {
@@ -101,7 +101,7 @@ namespace Microsoft.Intune.EncryptionUtilities
                 }
             }
 
-            using (CngKey key = isUserKey ? CngKey.Open(keyName, provider) : CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey))
+            using (CngKey key = CngKey.Open(keyName, provider, cngkeyOpenOpts))
             {
                 using (RSACng rsa = new RSACng(key))
                 {
@@ -264,38 +264,16 @@ namespace Microsoft.Intune.EncryptionUtilities
         /// <param name="keyName">Name of the key to destroy</param>
         /// <param name="cngKeyOpts">MachineKey or None depending on where it found the key.</param>
         /// <returns></returns>
-        private bool doesKeyExists(CngProvider provider, string keyName)
+        private bool doesKeyExists(CngProvider provider, string keyName, CngKeyOpenOptions openOpts=CngKeyOpenOptions.MachineKey)
         {
             bool keyExists = false;
             try
             {
-                keyExists = CngKey.Exists(keyName, provider, CngKeyOpenOptions.MachineKey);
+                keyExists = CngKey.Exists(keyName, provider, openOpts);
             }
             catch (CryptographicException e)
             {
                 throw new CryptographicException(string.Format("There was an error contacting provider {0}. It may not exist or may be configured incorrectly. Error Code:0x{1:X8}  Exception thrown:{2}\nStack Trace:{3}\n", 
-                    provider.ToString(), e.HResult, e.Message, e.StackTrace), e);
-            }
-            return keyExists;
-        }
-
-        /// <summary>
-        /// Check for the existence of a key and set the Options accordingly.
-        /// </summary>
-        /// <param name="provider">Provider Object</param>
-        /// <param name="keyName">Name of the key to destroy</param>
-        /// <param name="cngKeyOpts">MachineKey or None depending on where it found the key.</param>
-        /// <returns></returns>
-        private bool doesKeyExistsUserStore(CngProvider provider, string keyName)
-        {
-            bool keyExists = false;
-            try
-            {
-                keyExists = CngKey.Exists(keyName, provider);
-            }
-            catch (CryptographicException e)
-            {
-                throw new CryptographicException(string.Format("There was an error contacting provider {0}. It may not exist or may be configured incorrectly. Error Code:0x{1:X8}  Exception thrown:{2}\nStack Trace:{3}\n",
                     provider.ToString(), e.HResult, e.Message, e.StackTrace), e);
             }
             return keyExists;
