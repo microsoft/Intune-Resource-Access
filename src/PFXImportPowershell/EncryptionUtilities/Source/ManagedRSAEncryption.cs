@@ -61,7 +61,7 @@ namespace Microsoft.Intune.EncryptionUtilities
             {
                 throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for encryption", keyName));
             }
-            using (CngKey key = IsMicrosoftSoftwareKSP(provider) ? CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey) : CngKey.Open(keyName, provider))
+            using (CngKey key = CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey))
             {
                 using (RSACng rsa = new RSACng(key))
                 {
@@ -87,13 +87,21 @@ namespace Microsoft.Intune.EncryptionUtilities
             CngProvider provider = new CngProvider(providerName);
             byte[] decrypted;
             bool keyExists = doesKeyExists(provider, keyName);
+            bool isUserKey = false;
 
             if (!keyExists)
             {
-                throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for decryption", keyName));
+                if (doesKeyExistsUserStore(provider, keyName))
+                {
+                    isUserKey = true;
+                }
+                else
+                {
+                    throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for decryption", keyName));
+                }
             }
 
-            using (CngKey key = IsMicrosoftSoftwareKSP(provider) ? CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey) : CngKey.Open(keyName, provider))
+            using (CngKey key = isUserKey ? CngKey.Open(keyName, provider) : CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey))
             {
                 using (RSACng rsa = new RSACng(key))
                 {
@@ -170,7 +178,8 @@ namespace Microsoft.Intune.EncryptionUtilities
                 {
                     ExportPolicy = CngExportPolicies.None,
                     Provider = provider,
-                    Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None) }
+                    Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None) },
+                    KeyCreationOptions = CngKeyCreationOptions.MachineKey
                 };
                 using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams))
                 {
@@ -200,7 +209,7 @@ namespace Microsoft.Intune.EncryptionUtilities
                 return;
             }
 
-            using (CngKey key = IsMicrosoftSoftwareKSP(provider) ? CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey) : CngKey.Open(keyName, provider))
+            using (CngKey key = CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey))
             {
                 key.Delete();
             }
@@ -221,9 +230,9 @@ namespace Microsoft.Intune.EncryptionUtilities
             {
                 throw new IOException(string.Format("File {0} already exists.", filePath));
             }
-            using (CngKey key = IsMicrosoftSoftwareKSP(provider) ? CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey) : CngKey.Open(keyName, provider))
+            using (CngKey key = CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey))
             {
-                File.WriteAllBytes(filePath, key.Export(CngKeyBlobFormat.GenericPublicBlob));
+                File.WriteAllBytes(filePath, key.Export(new CngKeyBlobFormat("RSAPUBLICBLOB")));
             }
         }
 
@@ -237,7 +246,7 @@ namespace Microsoft.Intune.EncryptionUtilities
             }
 
             byte[] keyBlob = File.ReadAllBytes(filePath);
-            using (CngKey key = CngKey.Import(keyBlob, CngKeyBlobFormat.GenericPublicBlob))
+            using (CngKey key = CngKey.Import(keyBlob, new CngKeyBlobFormat("RSAPUBLICBLOB")))
             {
                 using (RSACng rsa = new RSACng(key))
                 {
@@ -260,11 +269,33 @@ namespace Microsoft.Intune.EncryptionUtilities
             bool keyExists = false;
             try
             {
-                keyExists = IsMicrosoftSoftwareKSP(provider)? CngKey.Exists(keyName, provider, CngKeyOpenOptions.MachineKey) : CngKey.Exists(keyName, provider);
+                keyExists = CngKey.Exists(keyName, provider, CngKeyOpenOptions.MachineKey);
             }
             catch (CryptographicException e)
             {
                 throw new CryptographicException(string.Format("There was an error contacting provider {0}. It may not exist or may be configured incorrectly. Error Code:0x{1:X8}  Exception thrown:{2}\nStack Trace:{3}\n", 
+                    provider.ToString(), e.HResult, e.Message, e.StackTrace), e);
+            }
+            return keyExists;
+        }
+
+        /// <summary>
+        /// Check for the existence of a key and set the Options accordingly.
+        /// </summary>
+        /// <param name="provider">Provider Object</param>
+        /// <param name="keyName">Name of the key to destroy</param>
+        /// <param name="cngKeyOpts">MachineKey or None depending on where it found the key.</param>
+        /// <returns></returns>
+        private bool doesKeyExistsUserStore(CngProvider provider, string keyName)
+        {
+            bool keyExists = false;
+            try
+            {
+                keyExists = CngKey.Exists(keyName, provider);
+            }
+            catch (CryptographicException e)
+            {
+                throw new CryptographicException(string.Format("There was an error contacting provider {0}. It may not exist or may be configured incorrectly. Error Code:0x{1:X8}  Exception thrown:{2}\nStack Trace:{3}\n",
                     provider.ToString(), e.HResult, e.Message, e.StackTrace), e);
             }
             return keyExists;
