@@ -61,7 +61,7 @@ $authResult = Get-IntuneAuthenticationToken -AdminUserName "<Admin-UPN>" [-Admin
 ```
 $SecureFilePassword = ConvertTo-SecureString -String "<PFXPassword>" -AsPlainText -Force
 ```
-2. Format a Base64 encoded certificate.
+2. (Optional) Format a Base64 encoded certificate.
 ```
 $Base64Certificate =ConvertTo-IntuneBase64EncodedPfxCertificate -CertificatePath "<FullPathPFXToCert>"
 ```
