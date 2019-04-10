@@ -1,6 +1,6 @@
 # PFXImport Powershell Project
 
-This project consists of helper Powershell Commandlets for importing PFX certificates to Microsoft Intune. Further documetation of the feature can be found [here](https://docs.microsoft.com/en-us/intune/certificates-s-mime-encryption-sign).
+This project consists of helper Powershell Commandlets for importing PFX certificates to Microsoft Intune. Further documentation of the feature can be found [here](https://docs.microsoft.com/en-us/intune/certificates-s-mime-encryption-sign).
 
 # Building the Commandlets
 ## Prerequisite
