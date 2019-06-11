@@ -35,7 +35,15 @@ namespace Microsoft.Management.Powershell.PFXImport
         public const string GraphURI = "https://graph.microsoft.com";
         public const string SchemaVersion = "beta";
 
-        public const string ClientId = "1950a258-227b-4e31-a9cf-717495945fc2";
+        // The next value is from
+        // https://github.com/microsoftgraph/powershell-intune-samples/blob/master/Authentication/Auth_From_File.ps1
+        // public const string ClientId = "1950a258-227b-4e31-a9cf-717495945fc2";
+        public const string ClientId = "d1ddf0e4-d672-4dae-b554-9d5bdfd93547";
+
+        public static string GetClientId(Hashtable modulePrivateData)
+        {
+            return (string)modulePrivateData["ClientId"] ?? Authenticate.ClientId;
+        }
 
         public static string GetAuthURI(Hashtable modulePrivateData)
         {
@@ -63,7 +71,13 @@ namespace Microsoft.Management.Powershell.PFXImport
             return false;
         };
 
-        private static Uri redirectUri = new Uri("urn:ietf:wg:oauth:2.0:oob");
+        //private static Uri redirectUri = new Uri("urn:ietf:wg:oauth:2.0:oob");
+        private static string redirectUri = @"urn:ietf:wg:oauth:2.0:oob";
+        public static Uri GetRedirectUri(Hashtable modulePrivateData)
+        {
+            string uri = (string)modulePrivateData["RedirectURI"] ?? redirectUri;
+            return new Uri(uri);
+        }
 
         public static AuthenticationResult GetAuthToken(string user, SecureString password, Hashtable modulePrivateData)
         {
@@ -74,12 +88,12 @@ namespace Microsoft.Management.Powershell.PFXImport
             if(password == null)
             {
                 UserIdentifier userId = new UserIdentifier(user, UserIdentifierType.OptionalDisplayableId);
-                return authContext.AcquireTokenAsync(GetGraphURI(modulePrivateData), ClientId, redirectUri, platformParams, userId).Result;
+                return authContext.AcquireTokenAsync(GetGraphURI(modulePrivateData), GetClientId(modulePrivateData), GetRedirectUri(modulePrivateData), platformParams, userId).Result;
             }
             else
             {
                 UserPasswordCredential userCreds = new UserPasswordCredential(user, password);
-                return AuthenticationContextIntegratedAuthExtensions.AcquireTokenAsync(authContext, GetGraphURI(modulePrivateData), ClientId, userCreds).Result;
+                return AuthenticationContextIntegratedAuthExtensions.AcquireTokenAsync(authContext, GetGraphURI(modulePrivateData), GetClientId(modulePrivateData), userCreds).Result;
             }
         }
     }
