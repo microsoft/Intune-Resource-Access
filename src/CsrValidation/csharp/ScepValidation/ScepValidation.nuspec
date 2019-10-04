@@ -12,6 +12,6 @@
     <description>$description$</description>
     <releaseNotes>Update package dependencies, delaysign set</releaseNotes>
     <copyright>Copyright 2019</copyright>
-    <tags>NDES SCEP Validation</tags>
+    <tags>NDES SCEP Validation Intune</tags>
   </metadata>
 </package>

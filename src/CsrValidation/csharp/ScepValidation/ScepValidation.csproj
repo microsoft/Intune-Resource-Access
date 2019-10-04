@@ -9,7 +9,7 @@
     <Description>SCEP Validation Library for 3rd party certificate providers to integrate with Microsoft Intune's SCEP delivery.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <SignAssembly>false</SignAssembly>
+    <SignAssembly>true</SignAssembly>
     <Copyright>Microsoft</Copyright>
     <PackageProjectUrl>https://github.com/microsoft/Intune-Resource-Access/tree/develop/src/CsrValidation/csharp</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/microsoft/Intune-Resource-Access/blob/develop/LICENSE</PackageLicenseUrl>
@@ -19,10 +19,12 @@
     <PackageReleaseNotes />
     <ApplicationIcon />
     <Win32Resource />
-    <DelaySign>true</DelaySign>
-    <AssemblyOriginatorKeyFile>35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
     <AssemblyName>ScepValidation</AssemblyName>
-  </PropertyGroup> 
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="35MSSharedLib1024.snk" />
+  </ItemGroup> 
 
   <ItemGroup>
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.1" />
