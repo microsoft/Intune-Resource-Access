@@ -21,11 +21,6 @@
     <Win32Resource />
     <AssemblyName>ScepValidation</AssemblyName>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="35MSSharedLib1024.snk" />
-  </ItemGroup> 
-
   <ItemGroup>
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.1" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01" PrivateAssets="All" />
