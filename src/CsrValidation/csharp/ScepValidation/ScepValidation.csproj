@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -8,11 +8,23 @@
     <Product>Intune</Product>
     <Description>SCEP Validation Library for 3rd party certificate providers to integrate with Microsoft Intune's SCEP delivery.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <SignAssembly>true</SignAssembly>
+    <Copyright>Microsoft</Copyright>
+    <PackageProjectUrl>https://github.com/microsoft/Intune-Resource-Access/tree/develop/src/CsrValidation/csharp</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/microsoft/Intune-Resource-Access/blob/develop/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/microsoft/Intune-Resource-Access</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>SCEP Validation Intune Certificate</PackageTags>
+    <PackageReleaseNotes />
+    <ApplicationIcon />
+    <Win32Resource />
+    <AssemblyName>ScepValidation</AssemblyName>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.19.8" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.1" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01" PrivateAssets="All" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
 
 </Project>
