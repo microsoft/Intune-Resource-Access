@@ -119,7 +119,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         /// <param name="keyName">Name of the key</param>
         /// <param name="keyLength">Length of the key to generate</param>
         /// <returns>true if successful, false if that key already exists.</returns>
-        public bool TryGenerateLocalRSAKey(string providerName, string keyName, int keyLength = 2048)
+        public bool TryGenerateLocalRSAKey(string providerName, string keyName, int keyLength = 2048, bool makeExportable = false)
         {
             CngProvider provider = new CngProvider(providerName);
 
@@ -134,7 +134,7 @@ namespace Microsoft.Intune.EncryptionUtilities
             CryptoKeySecurity sec = new CryptoKeySecurity();
             CngKeyCreationParameters keyParams = null;
 
-            if(IsMicrosoftSoftwareKSP(provider))
+             if (IsMicrosoftSoftwareKSP(provider))
             { 
                 sec.AddAccessRule(
                     new CryptoKeyAccessRule(
@@ -157,7 +157,7 @@ namespace Microsoft.Intune.EncryptionUtilities
                     CngPropertyOptions.Persist | DACL_SECURITY_INFORMATION);
                 keyParams = new CngKeyCreationParameters()
                 {
-                    ExportPolicy = CngExportPolicies.None,
+                    ExportPolicy = makeExportable ? CngExportPolicies.AllowExport | CngExportPolicies.AllowPlaintextExport : CngExportPolicies.None,
                     Provider = provider,
                     Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None),
                                 permissions},
@@ -176,9 +176,9 @@ namespace Microsoft.Intune.EncryptionUtilities
             { 
                 keyParams = new CngKeyCreationParameters()
                 {
-                    ExportPolicy = CngExportPolicies.None,
+                    ExportPolicy = makeExportable ? CngExportPolicies.AllowExport | CngExportPolicies.AllowPlaintextExport : CngExportPolicies.None,
                     Provider = provider,
-                    Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None) },
+                    Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None)},
                     KeyCreationOptions = CngKeyCreationOptions.MachineKey
                 };
                 using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams))
@@ -215,7 +215,12 @@ namespace Microsoft.Intune.EncryptionUtilities
             }
         }
 
-
+        /// <summary>
+        /// Export the public key so that encryption can happen off of the machine.
+        /// </summary>
+        /// <param name="providerName">Name of the provider</param>
+        /// <param name="keyName">Name of the key to destroy</param>
+        /// <param name="filePath">Output Path for where to write the key</param>
         public void ExportPublicKeytoFile(string providerName, string keyName, string filePath)
         {
             CngProvider provider = new CngProvider(providerName);
@@ -233,6 +238,114 @@ namespace Microsoft.Intune.EncryptionUtilities
             using (CngKey key = CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey))
             {
                 File.WriteAllBytes(filePath, key.Export(new CngKeyBlobFormat("RSAPUBLICBLOB")));
+            }
+        }
+
+        /// <summary>
+        /// Import a key from a file for use on the machine.
+        /// </summary>
+        /// <param name="providerName"></param>
+        /// <param name="filePath"></param>
+        public bool ImportKeyToKSP(string providerName, string keyName, string filePath)
+        {
+            CngProvider provider = new CngProvider(providerName);
+
+            bool keyExists = doesKeyExists(provider, keyName);
+
+            if (keyExists)
+            {
+                //Key already exists. Can't create it.
+                return false;
+            }
+
+            CryptoKeySecurity sec = new CryptoKeySecurity();
+            CngKeyCreationParameters keyParams = null;
+
+            byte[] keyBlob = File.ReadAllBytes(filePath);
+
+            CngProperty keyBlobProp = new CngProperty(new CngKeyBlobFormat("RSAFULLPRIVATEBLOB").Format, keyBlob, CngPropertyOptions.None);
+
+            if (IsMicrosoftSoftwareKSP(provider))
+            {
+                sec.AddAccessRule(
+                    new CryptoKeyAccessRule(
+                        new SecurityIdentifier(sidType: WellKnownSidType.BuiltinAdministratorsSid, domainSid: null),
+                        cryptoKeyRights: CryptoKeyRights.FullControl,
+                        type: AccessControlType.Allow));
+
+                sec.AddAccessRule(
+                    new CryptoKeyAccessRule(
+                        new SecurityIdentifier(sidType: WellKnownSidType.BuiltinSystemOperatorsSid, domainSid: null),
+                        cryptoKeyRights: CryptoKeyRights.GenericRead,
+                        type: AccessControlType.Allow));
+
+                const string NCRYPT_SECURITY_DESCR_PROPERTY = "Security Descr";
+                const CngPropertyOptions DACL_SECURITY_INFORMATION = (CngPropertyOptions)4;
+
+                CngProperty permissions = new CngProperty(
+                    NCRYPT_SECURITY_DESCR_PROPERTY,
+                    sec.GetSecurityDescriptorBinaryForm(),
+                    CngPropertyOptions.Persist | DACL_SECURITY_INFORMATION);
+                keyParams = new CngKeyCreationParameters()
+                {
+                    ExportPolicy = CngExportPolicies.None,
+                    Provider = provider,
+                    Parameters = { permissions, keyBlobProp },
+                    KeyCreationOptions = CngKeyCreationOptions.MachineKey
+                };
+                using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams))
+                {
+                    if (key == null)
+                    {
+                        return false;
+                    }
+                    return true;
+                }
+            }
+            else
+            {
+                keyParams = new CngKeyCreationParameters()
+                {
+                    ExportPolicy = CngExportPolicies.None,
+                    Provider = provider,
+                    Parameters = { keyBlobProp },
+                    KeyCreationOptions = CngKeyCreationOptions.MachineKey
+                };
+                using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams))
+                {
+                    if (key == null)
+                    {
+                        return false;
+                    }
+                    // nothing to do inside here, except to return without throwing an exception
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Export the private key so that decryption can happen on other machines.
+        /// </summary>
+        /// <param name="providerName">Name of the provider</param>
+        /// <param name="keyName">Name of the key to destroy</param>
+        /// <param name="filePath">Output Path for where to write the key</param>
+        public void ExportPrivateKeytoFile(string providerName, string keyName, string filePath)
+        {
+            CngProvider provider = new CngProvider(providerName);
+
+            bool keyExists = doesKeyExists(provider, keyName);
+
+            if (!keyExists)
+            {
+                throw new CryptographicException(string.Format("They key {0} does not exist so there is no key to export", keyName));
+            }
+            if (File.Exists(filePath))
+            {
+                throw new IOException(string.Format("File {0} already exists.", filePath));
+            }
+            using (CngKey key = CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey))
+            {
+                File.WriteAllBytes(filePath, key.Export(new CngKeyBlobFormat("RSAFULLPRIVATEBLOB")));
             }
         }
 
