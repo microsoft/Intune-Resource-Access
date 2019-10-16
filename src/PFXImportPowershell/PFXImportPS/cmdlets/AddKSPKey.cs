@@ -34,6 +34,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 
         private int keyLength = 2048;
 
+
         [Parameter(Position = 1, Mandatory = true)]
         public string ProviderName { get; set; }
 
@@ -54,10 +55,14 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             }
         }
 
+        [Parameter]
+        public SwitchParameter MakeExportable { get; set; }
+
+
         protected override void ProcessRecord()
         {
             ManagedRSAEncryption managedRSA = new ManagedRSAEncryption();
-            if(managedRSA.TryGenerateLocalRSAKey(ProviderName, KeyName, KeyLength))
+            if(managedRSA.TryGenerateLocalRSAKey(ProviderName, KeyName, KeyLength, MakeExportable.IsPresent))
             {
                 //Creation succeeded
             }
