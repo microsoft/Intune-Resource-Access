@@ -61,6 +61,8 @@
     <Compile Include="Authenticate.cs" />
     <Compile Include="Cmdlets\AddKSPKey.cs" />
     <Compile Include="Cmdlets\ConvertToBase64EncodedPFXCertificate.cs" />
+    <Compile Include="Cmdlets\RemoveAuthToken.cs" />
+    <Compile Include="Cmdlets\SetAuthToken.cs" />
     <Compile Include="Cmdlets\ImportPrivateKey.cs" />
     <Compile Include="Cmdlets\ExportPrivateKey.cs" />
     <Compile Include="Cmdlets\ExportPublicKey.cs" />

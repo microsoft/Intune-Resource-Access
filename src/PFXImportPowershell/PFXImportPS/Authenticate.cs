@@ -34,6 +34,7 @@ namespace Microsoft.Management.Powershell.PFXImport
         public const string AuthURI = "login.microsoftonline.com";
         public const string GraphURI = "https://graph.microsoft.com";
         public const string SchemaVersion = "beta";
+        public const string AuthTokenKey = "AuthToken";
 
         // The next value is from
         // https://github.com/microsoftgraph/powershell-intune-samples/blob/master/Authentication/Auth_From_File.ps1
