@@ -246,7 +246,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         /// </summary>
         /// <param name="providerName"></param>
         /// <param name="filePath"></param>
-        public bool ImportKeyToKSP(string providerName, string keyName, string filePath)
+        public bool ImportKeyToKSP(string providerName, string keyName, string filePath, bool makeExportable = false)
         {
             CngProvider provider = new CngProvider(providerName);
 
@@ -288,7 +288,7 @@ namespace Microsoft.Intune.EncryptionUtilities
                     CngPropertyOptions.Persist | DACL_SECURITY_INFORMATION);
                 keyParams = new CngKeyCreationParameters()
                 {
-                    ExportPolicy = CngExportPolicies.None,
+                    ExportPolicy = makeExportable ? CngExportPolicies.AllowExport | CngExportPolicies.AllowPlaintextExport : CngExportPolicies.None,
                     Provider = provider,
                     Parameters = { permissions, keyBlobProp },
                     KeyCreationOptions = CngKeyCreationOptions.MachineKey
@@ -306,7 +306,7 @@ namespace Microsoft.Intune.EncryptionUtilities
             {
                 keyParams = new CngKeyCreationParameters()
                 {
-                    ExportPolicy = CngExportPolicies.None,
+                    ExportPolicy = makeExportable ? CngExportPolicies.AllowExport | CngExportPolicies.AllowPlaintextExport : CngExportPolicies.None,
                     Provider = provider,
                     Parameters = { keyBlobProp },
                     KeyCreationOptions = CngKeyCreationOptions.MachineKey
