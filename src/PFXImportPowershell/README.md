@@ -4,7 +4,7 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 
 These scripts provide a baseline for the actions that can take place to import your PFX Certificates to Intune. They can be modified and adapted to fit your workflow. Most of the cmdlets are wrappers of Intune Graph calls.
 
-## Updates
+## What's New?
 ### Version 1.1
 - Added functionality to make private keys exportable, a cmdlet to export the key, and a cmdlet to import a key.
 	- Allows for use of multiple connectors when using the Microsoft Software Key Storage Provider.
@@ -50,8 +50,8 @@ Import-Module .\IntunePfxImport.psd1
 Add-IntuneKspKey "<ProviderName>" "<KeyName>" {-MakeExportable}
 ```
 
-## Export the public key to a file for use when encrypting the records on a machine separate from the one hosting the connector
-1. Export the public key. It can be used so that encryption can happen in an independent location from where the private key is accessed.
+## Export the public key to a file
+1. Export the public key. Used to encrypt in an independent location from where the private key is accessed. Set "Set up userPFXCertificate object (scenario: encrypting password with the public key that has been exported to a file)" below.
 ```
 Export-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>"
 ```
@@ -78,7 +78,7 @@ $secureAdminPassword = ConvertTo-SecureString -String "<admin password>" -AsPlai
 Set-IntuneAuthenticationToken -AdminUserName "<Admin-UPN>" [-AdminPassword $secureAdminPassword]
 ```
 
-## Set up userPFXCertifcate object (including encrypting password from a location that has acccess to the key in the key store) 
+## Set up userPFXCertifcate object (scenario: encrypting password from a location that has acccess to the private key in the key store) 
 1. Setup Secure File Password string.
 ```
 $SecureFilePassword = ConvertTo-SecureString -String "<PFXPassword>" -AsPlainText -Force
@@ -89,21 +89,29 @@ $Base64Certificate =ConvertTo-IntuneBase64EncodedPfxCertificate -CertificatePath
 ```
 3. Create a new UserPfxCertificate record.
 ```
-$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>"
+$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate -PfxPassword $SecureFilePassword -UPN "<UserUPN>" -ProviderName "<ProviderName>" -KeyName "<KeyName>" -IntendedPurpose "<IntendedPurpose>" {-PaddingScheme "<PaddingScheme>"}
 ```
 or 
 ```
-$userPFXObject = New-IntuneUserPfxCertificate -PathToPfxFile "<FullPathPFXToCert>" $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>"
+$userPFXObject = New-IntuneUserPfxCertificate -PathToPfxFile "<FullPathPFXToCert>" -PfxPassword $SecureFilePassword -UPN "<UserUPN>" -ProviderName "<ProviderName>" -KeyName "<KeyName>" -IntendedPurpose "<IntendedPurpose>" {-PaddingScheme "<PaddingScheme>"}
 ```
 
-## Set up userPFXCertificate object (including encrypting password with the public key that has been exported to a file) 
-1. Create a new UserPfxCertificate record.
+## Set up userPFXCertificate object (scenario: encrypting password with the public key that has been exported to a file) 
+1. Setup Secure File Password string.
 ```
-$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>" "<File path to public key file>"
+$SecureFilePassword = ConvertTo-SecureString -String "<PFXPassword>" -AsPlainText -Force
+```
+2. (Optional) Format a Base64 encoded certificate.
+```
+$Base64Certificate =ConvertTo-IntuneBase64EncodedPfxCertificate -CertificatePath "<FullPathPFXToCert>"
+```
+3. Create a new UserPfxCertificate record.
+```
+$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate -PfxPassword $SecureFilePassword -UPN "<UserUPN>" -ProviderName "<ProviderName>" -KeyName "<KeyName>" -IntendedPurpose "<IntendedPurpose>" -KeyFilePath "<File path to public key file>"  {-PaddingScheme "<PaddingScheme>"}
 ```
 or 
 ```
-$userPFXObject = New-IntuneUserPfxCertificate -PathToPfxFile "<FullPathPFXToCert>" $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>" "<File path to public key file>"
+$userPFXObject = New-IntuneUserPfxCertificate -PathToPfxFile "<FullPathPFXToCert>" -PfxPassword $SecureFilePassword -UPN "<UserUPN>" -ProviderName "<ProviderName>" -KeyName "<KeyName>" -IntendedPurpose "<IntendedPurpose>" -KeyFilePath "<File path to public key file>" {-PaddingScheme "<PaddingScheme>"}
 ```
 
 ## Import Example
