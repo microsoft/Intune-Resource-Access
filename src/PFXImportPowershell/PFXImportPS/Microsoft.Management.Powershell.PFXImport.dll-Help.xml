@@ -4,7 +4,7 @@
 	<command:details>
 		<command:name>Add-IntuneKspKey</command:name>
 		<maml:description>
-			<maml:para>Creates an Key Storage Provider RSA Key</maml:para>
+			<maml:para>Creates a Key Storage Provider RSA Key</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -14,7 +14,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para>Creates an Key Storage Provider RSA Key</maml:para>
+		<maml:para>Creates a Key Storage Provider RSA Key</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
