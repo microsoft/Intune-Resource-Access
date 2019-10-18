@@ -1,6 +1,16 @@
 # PFXImport Powershell Project
 
-This project consists of helper Powershell Commandlets for importing PFX certificates to Microsoft Intune. Further documentation of the feature can be found [here](https://docs.microsoft.com/en-us/intune/certificates-s-mime-encryption-sign).
+This project consists of helper Powershell Commandlets for importing PFX certificates to Microsoft Intune. Prior to running these scripts you will need to create the PFX files to import. Further documentation of the feature can be found [here](https://docs.microsoft.com/en-us/intune/certificates-s-mime-encryption-sign).
+
+These scripts provide a baseline for the actions that can take place to import your PFX Certificates to Intune. They can be modified and adapted to fit your workflow. Most of the cmdlets are wrappers of Intune Graph calls.
+
+## What's New?
+### Version 1.1
+- Added functionality to make private keys exportable, a cmdlet to export the key, and a cmdlet to import a key.
+	- Allows for use of multiple connectors when using the Microsoft Software Key Storage Provider.
+	- Serious security considerations needs to be taken when transferring keys between machines.
+- Added a sesssion variable to store the authentication token so that it isn't required as a parameter on every call that interacts with Intune.
+	- Calling Remove-IntuneAuthenticationToken or closing the session is recommended when calls to Intune are complete.
 
 # Building the Commandlets
 ## Prerequisite
@@ -35,17 +45,29 @@ Import-Module .\IntunePfxImport.psd1
 ```
 
 ## Create initial Key Example
-1. Setup Key -- Convenience method for creating a key. Key's may be created with other tools. If you don't have a dedicated provider, you can use "Microsoft Software Key Storage Provider".
+1. Setup Key -- Convenience method for creating a key. Key's may be created with other tools. If you don't have a dedicated provider, you can use "Microsoft Software Key Storage Provider". Only include the MakeExportable switch if you must move the key to another machine that is hosting another connector.
 ```
-Add-IntuneKspKey "<ProviderName>" "<KeyName>"
+Add-IntuneKspKey "<ProviderName>" "<KeyName>" {-MakeExportable}
 ```
 
 ## Export the public key to a file
-1. Export the public key. It can be used so that encryption can happen in an independent location from where the private key is accessed.
+1. Export the public key. Used to encrypt in an independent location from where the private key is accessed. Set "Set up userPFXCertificate object (scenario: encrypting password with the public key that has been exported to a file)" below.
 ```
 Export-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>"
 ```
-	
+
+## Export the private key to a file 
+1. Export the private key. For use when running multiple connector and moving keys between machines.
+```
+Export-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>"
+```
+
+## Import the private key from a file
+1. Import the private key. For use when running multiple connector and moving keys between machines.
+```
+Import-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>"
+```
+
 ## Authenticate to Intune
 1. Optionally, create a secure string representing the account administrator password.
 ```
@@ -53,10 +75,10 @@ $secureAdminPassword = ConvertTo-SecureString -String "<admin password>" -AsPlai
 ```
 2. Authenticate as the account administrator (using the admin UPN) to Intune. If the password is not provided a login dialog will appear.
 ```
-$authResult = Get-IntuneAuthenticationToken -AdminUserName "<Admin-UPN>" [-AdminPassword $secureAdminPassword]
+Set-IntuneAuthenticationToken -AdminUserName "<Admin-UPN>" [-AdminPassword $secureAdminPassword]
 ```
 
-## Set up userPFXCertifcate object (including encrypting password from a location that has acccess to the key in the key store) 
+## Set up userPFXCertifcate object (scenario: encrypting password from a location that has acccess to the private key in the key store) 
 1. Setup Secure File Password string.
 ```
 $SecureFilePassword = ConvertTo-SecureString -String "<PFXPassword>" -AsPlainText -Force
@@ -67,51 +89,64 @@ $Base64Certificate =ConvertTo-IntuneBase64EncodedPfxCertificate -CertificatePath
 ```
 3. Create a new UserPfxCertificate record.
 ```
-$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>"
+$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate -PfxPassword $SecureFilePassword -UPN "<UserUPN>" -ProviderName "<ProviderName>" -KeyName "<KeyName>" -IntendedPurpose "<IntendedPurpose>" {-PaddingScheme "<PaddingScheme>"}
 ```
 or 
 ```
-$userPFXObject = New-IntuneUserPfxCertificate -PathToPfxFile "<FullPathPFXToCert>" $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>"
+$userPFXObject = New-IntuneUserPfxCertificate -PathToPfxFile "<FullPathPFXToCert>" -PfxPassword $SecureFilePassword -UPN "<UserUPN>" -ProviderName "<ProviderName>" -KeyName "<KeyName>" -IntendedPurpose "<IntendedPurpose>" {-PaddingScheme "<PaddingScheme>"}
 ```
 
-## Set up userPFXCertifcate object (including encrypting password with the public key that has been exported to a file) 
-1. Create a new UserPfxCertificate record.
+## Set up userPFXCertificate object (scenario: encrypting password with the public key that has been exported to a file) 
+1. Setup Secure File Password string.
 ```
-$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>" "<File path to public key file>"
+$SecureFilePassword = ConvertTo-SecureString -String "<PFXPassword>" -AsPlainText -Force
+```
+2. (Optional) Format a Base64 encoded certificate.
+```
+$Base64Certificate =ConvertTo-IntuneBase64EncodedPfxCertificate -CertificatePath "<FullPathPFXToCert>"
+```
+3. Create a new UserPfxCertificate record.
+```
+$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate -PfxPassword $SecureFilePassword -UPN "<UserUPN>" -ProviderName "<ProviderName>" -KeyName "<KeyName>" -IntendedPurpose "<IntendedPurpose>" -KeyFilePath "<File path to public key file>"  {-PaddingScheme "<PaddingScheme>"}
 ```
 or 
 ```
-$userPFXObject = New-IntuneUserPfxCertificate -PathToPfxFile "<FullPathPFXToCert>" $SecureFilePassword "<UserUPN>" "<ProviderName>" "<KeyName>" "<IntendedPurpose>" "<PaddingScheme>" "<File path to public key file>"
+$userPFXObject = New-IntuneUserPfxCertificate -PathToPfxFile "<FullPathPFXToCert>" -PfxPassword $SecureFilePassword -UPN "<UserUPN>" -ProviderName "<ProviderName>" -KeyName "<KeyName>" -IntendedPurpose "<IntendedPurpose>" -KeyFilePath "<File path to public key file>" {-PaddingScheme "<PaddingScheme>"}
 ```
 
 ## Import Example
 1. Import User PFX
 ```
-Import-IntuneUserPfxCertificate -AuthenticationResult $authResult -CertificateList $userPFXObject
+Import-IntuneUserPfxCertificate -CertificateList $userPFXObject
 ```
 
 ## Get PFX Certificate Example
 1. Get-PfxCertificates (Specific records)
 ```
-Get-IntuneUserPfxCertificate -AuthenticationResult $authResult -UserThumbprintList <UserThumbprintObjs>
+Get-IntuneUserPfxCertificate -UserThumbprintList <UserThumbprintObjs>
 ```
 2. Get-PfxCertificates (Specific users)
 ```
-Get-IntuneUserPfxCertificate -AuthenticationResult $authResult -UsertList "<UserUPN>"
+Get-IntuneUserPfxCertificate -UsertList "<UserUPN>"
 ```
 3. Get-PfxCertificates (All records)
 ```
-Get-IntuneUserPfxCertificate -AuthenticationResult $authResult
+Get-IntuneUserPfxCertificate
 ```
 
 ## Remove PFX Certificate Example
 1. Remove-PfxCertificates (Specific records)
 ```
-Remove-IntuneUserPfxCertificate -AuthenticationResult $authResult -UserThumbprintList <UserThumbprintObjs>
+Remove-IntuneUserPfxCertificate -UserThumbprintList <UserThumbprintObjs>
 ```
 2. Remove-PfxCertificates (Specific users)
 ```
-Remove-IntuneUserPfxCertificate -AuthenticationResult $authResult -UsertList "<UserUPN>"
+Remove-IntuneUserPfxCertificate -UsertList "<UserUPN>"
+```
+
+## Remove Authentication Token from session (logout)
+```
+Remove-IntuneAuthenticationToken
 ```
 
 # Graph Usage
