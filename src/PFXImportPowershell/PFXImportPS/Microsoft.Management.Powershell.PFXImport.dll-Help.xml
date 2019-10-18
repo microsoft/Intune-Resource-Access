@@ -4,7 +4,7 @@
 	<command:details>
 		<command:name>Add-IntuneKspKey</command:name>
 		<maml:description>
-			<maml:para />
+			<maml:para>Creates an Key Storage Provider RSA Key</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -14,7 +14,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para />
+		<maml:para>Creates an Key Storage Provider RSA Key</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -22,28 +22,28 @@
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 				<maml:name>ProviderName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The KSP Provider Name.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="2">
 				<maml:name>KeyName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The name of the Key to create.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="3">
 				<maml:name>KeyLength</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The length of the Key to create.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>MakeExportable</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>Allow this key to be exported for use on another machine.</maml:para>
 				</maml:description>
 				<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
 			</command:parameter>
@@ -53,7 +53,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 			<maml:name>ProviderName</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The KSP Provider Name.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -65,7 +65,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="2">
 			<maml:name>KeyName</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The name of the Key to create.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -77,23 +77,35 @@
 		<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="3">
 			<maml:name>KeyLength</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The length of the Key to create.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
 			<dev:type>
 				<maml:name>Int32</maml:name>
 				<maml:uri/>
 			</dev:type>
-			<dev:defaultValue></dev:defaultValue>
+			<dev:defaultValue>2048</dev:defaultValue>
 		</command:parameter>
 		<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 			<maml:name>MakeExportable</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>Allow this key to be exported for use on another machine.</maml:para>
 			</maml:description>
 			<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
 			<dev:type>
 				<maml:name>SwitchParameter</maml:name>
+				<maml:uri/>
+			</dev:type>
+			<dev:defaultValue></dev:defaultValue>
+		</command:parameter>
+		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="3">
+			<maml:name>AlgorithmName</maml:name>
+			<maml:description>
+				<maml:para>The hash/encryption algorithm to be used to generate the key.</maml:para>
+			</maml:description>
+			<command:parameterValue required="true" variableLength="false">string</command:parameterValue>
+			<dev:type>
+				<maml:name>string</maml:name>
 				<maml:uri/>
 			</dev:type>
 			<dev:defaultValue></dev:defaultValue>
@@ -107,7 +119,8 @@
 				<maml:description/>
 			</dev:type>
 			<maml:description>
-<maml:para />
+				<maml:para>
+</maml:para>
 			</maml:description>
 		</command:inputType>
 	</command:inputTypes>
@@ -119,7 +132,8 @@
 				<maml:description/>
 			</dev:type>
 			<maml:description>
-<maml:para />
+				<maml:para>
+</maml:para>
 			</maml:description>
 		</command:returnValue>
 	</command:returnValues>
@@ -134,6 +148,10 @@
 	<command:examples>
 	</command:examples>
 	<maml:relatedLinks>
+		<maml:navigationLink>
+			<maml:linkText>Unknown</maml:linkText>
+			<maml:uri></maml:uri>
+		</maml:navigationLink>
 	</maml:relatedLinks>
 </command:command>
 <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
@@ -141,7 +159,7 @@
 	<command:details>
 		<command:name>ConvertTo-IntuneBase64EncodedPfxCertificate</command:name>
 		<maml:description>
-			<maml:para />
+			<maml:para>Converts a PFX (PKCS #12) file to a Base 64 Encoded String.</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -151,7 +169,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para />
+		<maml:para>Converts a PFX (PKCS #12) file to a Base 64 Encoded String.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -159,7 +177,7 @@
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 				<maml:name>CertificatePath</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The path to the PFX(PKCS#12) file.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
@@ -169,7 +187,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 			<maml:name>CertificatePath</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The path to the PFX(PKCS#12) file.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -187,19 +205,21 @@
 				<maml:description/>
 			</dev:type>
 			<maml:description>
-<maml:para />
+				<maml:para>
+</maml:para>
 			</maml:description>
 		</command:inputType>
 	</command:inputTypes>
 	<command:returnValues>
 		<command:returnValue>
 			<dev:type>
-				<maml:name>System.String</maml:name>
+				<maml:name>string</maml:name>
 				<maml:uri></maml:uri>
 				<maml:description/>
 			</dev:type>
 			<maml:description>
-<maml:para />
+				<maml:para>The base64 encoded string of the PFX file.
+</maml:para>
 			</maml:description>
 		</command:returnValue>
 	</command:returnValues>
@@ -214,6 +234,10 @@
 	<command:examples>
 	</command:examples>
 	<maml:relatedLinks>
+		<maml:navigationLink>
+			<maml:linkText>Unknown</maml:linkText>
+			<maml:uri></maml:uri>
+		</maml:navigationLink>
 	</maml:relatedLinks>
 </command:command>
 <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
@@ -221,7 +245,7 @@
 	<command:details>
 		<command:name>Export-IntunePrivateKey</command:name>
 		<maml:description>
-			<maml:para />
+			<maml:para>Export the RSA full blob to a file.</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -231,7 +255,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para />
+		<maml:para>Export the RSA full blob to a file. It will be stored in raw byte format.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -239,21 +263,21 @@
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 				<maml:name>ProviderName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The Key Storage Provider Name associated with the key that will encrypt the PFX password.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="2">
 				<maml:name>KeyName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The Key Storage Provider Key that will be used to encrypt the PFX password.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="3">
 				<maml:name>FilePath</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The path to the file that the RSA blob will be exported to.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
@@ -263,7 +287,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 			<maml:name>ProviderName</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The Key Storage Provider Name associated with the key that will encrypt the PFX password.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -275,7 +299,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="2">
 			<maml:name>KeyName</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The Key Storage Provider Key that will be used to encrypt the PFX password.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -287,7 +311,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="3">
 			<maml:name>FilePath</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The path to the file that the RSA blob will be exported to.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -339,7 +363,7 @@
 	<command:details>
 		<command:name>Export-IntunePublicKey</command:name>
 		<maml:description>
-			<maml:para />
+			<maml:para>Export the public key. </maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -349,7 +373,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para />
+		<maml:para>Export the public key to be able to encypt userPFXCertificate information independent of where the private key is stored. It will be stored in raw byte format.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -357,21 +381,21 @@
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 				<maml:name>ProviderName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The Key Storage Provider Name associated with the key that will encrypt the PFX password.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="2">
 				<maml:name>KeyName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The Key Storage Provider Key that will be used to encrypt the PFX password.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="2">
 				<maml:name>FilePath</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The path to the file that the RSA public key blob will be exported to.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
@@ -381,7 +405,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 			<maml:name>ProviderName</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The Key Storage Provider Name associated with the key that will encrypt the PFX password.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -393,7 +417,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="2">
 			<maml:name>KeyName</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The Key Storage Provider Key that will be used to encrypt the PFX password.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -405,7 +429,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="2">
 			<maml:name>FilePath</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The path to the file that the RSA public key blob will be exported to.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -457,7 +481,7 @@
 	<command:details>
 		<command:name>Get-IntuneAuthenticationToken</command:name>
 		<maml:description>
-			<maml:para />
+			<maml:para>Retrieves an AuthenticationResult that can be used in subsequent graph calls.</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -467,7 +491,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para />
+		<maml:para>Retrieves an AuthenticationResult that contains the authentication token that can be used in subsequent graph calls.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -475,14 +499,14 @@
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>AdminUserName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>Intune Tenant Admin user to be authenticated.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>AdminPassword</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>Intune Tenant Admin password to be authenticated.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">SecureString</command:parameterValue>
 			</command:parameter>
@@ -506,7 +530,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named">
 			<maml:name>AdminUserName</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>Intune Tenant Admin user to be authenticated.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -518,7 +542,7 @@
 		<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 			<maml:name>AdminPassword</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>Intune Tenant Admin password to be authenticated.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">SecureString</command:parameterValue>
 			<dev:type>
@@ -560,19 +584,21 @@
 				<maml:description/>
 			</dev:type>
 			<maml:description>
-<maml:para />
+				<maml:para>
+</maml:para>
 			</maml:description>
 		</command:inputType>
 	</command:inputTypes>
 	<command:returnValues>
 		<command:returnValue>
 			<dev:type>
-				<maml:name>Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationResult</maml:name>
+				<maml:name>AuthenticationResult</maml:name>
 				<maml:uri></maml:uri>
 				<maml:description/>
 			</dev:type>
 			<maml:description>
-<maml:para />
+				<maml:para>Returns the structure that holds the authentication token used to validate the user.
+</maml:para>
 			</maml:description>
 		</command:returnValue>
 	</command:returnValues>
@@ -587,6 +613,10 @@
 	<command:examples>
 	</command:examples>
 	<maml:relatedLinks>
+		<maml:navigationLink>
+			<maml:linkText>Unknown</maml:linkText>
+			<maml:uri></maml:uri>
+		</maml:navigationLink>
 	</maml:relatedLinks>
 </command:command>
 <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
@@ -594,7 +624,7 @@
 	<command:details>
 		<command:name>Get-IntuneUserId</command:name>
 		<maml:description>
-			<maml:para />
+			<maml:para>Retrieves the UserId guid associated with a UPN.</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -604,7 +634,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para />
+		<maml:para>Retrieves the UserId guid associated with a UPN</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -612,14 +642,14 @@
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>AuthenticationResult</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>AuthenticationResult retrieved from Get-IntuneAuthenticationToken</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">AuthenticationResult</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>UPN</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The User Principal Name associated with the UserId to retrieve.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
@@ -629,7 +659,7 @@
 		<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 			<maml:name>AuthenticationResult</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>AuthenticationResult retrieved from Get-IntuneAuthenticationToken</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">AuthenticationResult</command:parameterValue>
 			<dev:type>
@@ -641,7 +671,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named">
 			<maml:name>UPN</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The User Principal Name associated with the UserId to retrieve.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -671,7 +701,7 @@
 				<maml:description/>
 			</dev:type>
 			<maml:description>
-<maml:para />
+				<maml:para>The UserId guid associated with the UPN.</maml:para>
 			</maml:description>
 		</command:returnValue>
 	</command:returnValues>
@@ -693,7 +723,7 @@
 	<command:details>
 		<command:name>Get-IntuneUserPfxCertificate</command:name>
 		<maml:description>
-			<maml:para />
+			<maml:para>Retrieves existing certificates based on provided Users or Thumbprints.</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -703,7 +733,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para />
+		<maml:para>Retrieves existing certificates based on provided Users or Thumbprints.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -711,21 +741,21 @@
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>AuthenticationResult</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>AuthenticationResult retrieved from Get-IntuneAuthenticationToken</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">AuthenticationResult</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="true (ByValue)" position="named">
 				<maml:name>UserThumbprintList</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>A list of UserTumbprints (userid-Thumbprint) to retrieve specific Imported PFX Certificate records.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="true">List`1[UserThumbprint]</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="true (ByValue)" position="named">
 				<maml:name>UserList</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>A list of UPNs that have Imported PFX Certificate records associated with them.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="true">List`1[String]</command:parameterValue>
 			</command:parameter>
@@ -749,7 +779,7 @@
 		<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 			<maml:name>AuthenticationResult</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>AuthenticationResult retrieved from Get-IntuneAuthenticationToken</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">AuthenticationResult</command:parameterValue>
 			<dev:type>
@@ -761,7 +791,7 @@
 		<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="true (ByValue)" position="named">
 			<maml:name>UserThumbprintList</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>A list of UserTumbprints (userid-Thumbprint) to retrieve specific Imported PFX Certificate records.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="true">List`1[UserThumbprint]</command:parameterValue>
 			<dev:type>
@@ -773,7 +803,7 @@
 		<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="true (ByValue)" position="named">
 			<maml:name>UserList</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>A list of UPNs that have Imported PFX Certificate records associated with them.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="true">List`1[String]</command:parameterValue>
 			<dev:type>
@@ -806,6 +836,18 @@
 			</dev:type>
 			<dev:defaultValue></dev:defaultValue>
 		</command:parameter>
+		<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named">
+			<maml:name>ThumbprintList</maml:name>
+			<maml:description>
+				<maml:para>List of thumbprints of the PFX Certificates to be retrieved.</maml:para>
+			</maml:description>
+			<command:parameterValue required="true" variableLength="false">list[string]</command:parameterValue>
+			<dev:type>
+				<maml:name>list[string]</maml:name>
+				<maml:uri/>
+			</dev:type>
+			<dev:defaultValue></dev:defaultValue>
+		</command:parameter>
 	</command:parameters>
 	<command:inputTypes>
 		<command:inputType>
@@ -815,19 +857,21 @@
 				<maml:description/>
 			</dev:type>
 			<maml:description>
-<maml:para />
+				<maml:para>
+</maml:para>
 			</maml:description>
 		</command:inputType>
 	</command:inputTypes>
 	<command:returnValues>
 		<command:returnValue>
 			<dev:type>
-				<maml:name>System.Collections.Generic.List`1[[Microsoft.Management.Services.Api.UserPFXCertificate, Microsoft.Management.Powershell.PFXImport, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null]]</maml:name>
+				<maml:name>List&lt;UserPFXCertificate&gt;</maml:name>
 				<maml:uri></maml:uri>
 				<maml:description/>
 			</dev:type>
 			<maml:description>
-<maml:para />
+				<maml:para>Returns a list of Imported PFX Certificates records associated with the request.
+</maml:para>
 			</maml:description>
 		</command:returnValue>
 	</command:returnValues>
@@ -842,6 +886,10 @@
 	<command:examples>
 	</command:examples>
 	<maml:relatedLinks>
+		<maml:navigationLink>
+			<maml:linkText>Unknown</maml:linkText>
+			<maml:uri></maml:uri>
+		</maml:navigationLink>
 	</maml:relatedLinks>
 </command:command>
 <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
@@ -849,7 +897,7 @@
 	<command:details>
 		<command:name>Import-IntunePrivateKey</command:name>
 		<maml:description>
-			<maml:para />
+			<maml:para>Import a Private Key.</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -859,7 +907,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para />
+		<maml:para>Imports a private RSA blob from a file so that a connector can be functional on the associated machine.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -867,21 +915,21 @@
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 				<maml:name>ProviderName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The Key Storage Provider Name associated with the key that will encrypt the PFX password.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="2">
 				<maml:name>KeyName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The Key Storage Provider Name associated with the key that will encrypt the PFX password.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="3">
 				<maml:name>FilePath</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The path to the file that has the RSA blob in it.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
@@ -891,7 +939,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 			<maml:name>ProviderName</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The Key Storage Provider Name associated with the key that will encrypt the PFX password.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -903,7 +951,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="2">
 			<maml:name>KeyName</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The Key Storage Provider Name associated with the key that will encrypt the PFX password.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -915,7 +963,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="3">
 			<maml:name>FilePath</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The path to the file that has the RSA blob in it.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -967,7 +1015,7 @@
 	<command:details>
 		<command:name>Import-IntuneUserPfxCertificate</command:name>
 		<maml:description>
-			<maml:para />
+			<maml:para>Imports PFX certificates for delivery to user devices.</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -977,7 +1025,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para />
+		<maml:para>Imports PFX certificates for delivery to user devices.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -985,21 +1033,21 @@
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>AuthenticationResult</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>AuthenticationResult retrieved from Get-IntuneAuthenticationToken</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">AuthenticationResult</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="true (ByValue)" position="named">
 				<maml:name>CertificateList</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>List of PFX certificates to import.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="true">List`1[UserPFXCertificate]</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>IsUpdate</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>Marks this command as an update to existing records.</maml:para>
 				</maml:description>
 				<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
 			</command:parameter>
@@ -1023,7 +1071,7 @@
 		<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 			<maml:name>AuthenticationResult</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>AuthenticationResult retrieved from Get-IntuneAuthenticationToken</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">AuthenticationResult</command:parameterValue>
 			<dev:type>
@@ -1035,7 +1083,7 @@
 		<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="true (ByValue)" position="named">
 			<maml:name>CertificateList</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>List of PFX certificates to import.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="true">List`1[UserPFXCertificate]</command:parameterValue>
 			<dev:type>
@@ -1047,7 +1095,7 @@
 		<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 			<maml:name>IsUpdate</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>Marks this command as an update to existing records.</maml:para>
 			</maml:description>
 			<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
 			<dev:type>
@@ -1089,7 +1137,8 @@
 				<maml:description/>
 			</dev:type>
 			<maml:description>
-<maml:para />
+				<maml:para>
+</maml:para>
 			</maml:description>
 		</command:inputType>
 	</command:inputTypes>
@@ -1101,7 +1150,8 @@
 				<maml:description/>
 			</dev:type>
 			<maml:description>
-<maml:para />
+				<maml:para>
+</maml:para>
 			</maml:description>
 		</command:returnValue>
 	</command:returnValues>
@@ -1116,6 +1166,10 @@
 	<command:examples>
 	</command:examples>
 	<maml:relatedLinks>
+		<maml:navigationLink>
+			<maml:linkText>Unknown</maml:linkText>
+			<maml:uri></maml:uri>
+		</maml:navigationLink>
 	</maml:relatedLinks>
 </command:command>
 <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
@@ -1123,7 +1177,7 @@
 	<command:details>
 		<command:name>New-IntuneUserPfxCertificate</command:name>
 		<maml:description>
-			<maml:para />
+			<maml:para>Creates an Import PFX Certificate record.</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -1133,7 +1187,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para />
+		<maml:para>Creates an Import PFX Certificate record formated in such a way that all sensitive information is encrypted and ready to be imported into Intune.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -1141,56 +1195,56 @@
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 				<maml:name>PathToPfxFile</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The Path to a pfx file to import.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="2">
 				<maml:name>PfxPassword</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The password to the PFX certificate.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">SecureString</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="3">
 				<maml:name>UPN</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The User Principal Name associated with the PFX Certificate.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="4">
 				<maml:name>ProviderName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The Key Storage Provider Name associated with the key that will encrypt the PFX password.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="5">
 				<maml:name>KeyName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The Key Storage Provider Key that will be used to encrypt the PFX password.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="6">
 				<maml:name>IntendedPurpose</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The intended usage of the certificate.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="true">Nullable`1[UserPfxIntendedPurpose]</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="7">
 				<maml:name>PaddingScheme</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The hash algorithm used in the encryption of the password.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="true">Nullable`1[UserPfxPaddingScheme]</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="8">
 				<maml:name>KeyFilePath</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The path to a file containing the public key to encrypt the PFX certificate records.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
@@ -1200,56 +1254,56 @@
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 				<maml:name>Base64EncodedPfx</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>A Base64 Encoded PFX string.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="2">
 				<maml:name>PfxPassword</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The password to the PFX certificate.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">SecureString</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="3">
 				<maml:name>UPN</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The User Principal Name associated with the PFX Certificate.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="4">
 				<maml:name>ProviderName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The Key Storage Provider Name associated with the key that will encrypt the PFX password.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="5">
 				<maml:name>KeyName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The Key Storage Provider Key that will be used to encrypt the PFX password.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="6">
 				<maml:name>IntendedPurpose</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The intended usage of the certificate.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="true">Nullable`1[UserPfxIntendedPurpose]</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="7">
 				<maml:name>PaddingScheme</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The hash algorithm used in the encryption of the password.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="true">Nullable`1[UserPfxPaddingScheme]</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="8">
 				<maml:name>KeyFilePath</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>The path to a file containing the public key to encrypt the PFX certificate records.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
@@ -1259,7 +1313,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 			<maml:name>PathToPfxFile</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The Path to a pfx file to import.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -1271,7 +1325,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="2">
 			<maml:name>PfxPassword</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The password to the PFX certificate.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">SecureString</command:parameterValue>
 			<dev:type>
@@ -1283,7 +1337,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="3">
 			<maml:name>UPN</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The User Principal Name associated with the PFX Certificate.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -1295,7 +1349,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="4">
 			<maml:name>ProviderName</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The Key Storage Provider Name associated with the key that will encrypt the PFX password.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -1307,7 +1361,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="5">
 			<maml:name>KeyName</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The Key Storage Provider Key that will be used to encrypt the PFX password.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -1319,7 +1373,7 @@
 		<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="6">
 			<maml:name>IntendedPurpose</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The intended usage of the certificate.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="true">Nullable`1[UserPfxIntendedPurpose]</command:parameterValue>
 			<dev:type>
@@ -1331,7 +1385,7 @@
 		<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="false" position="7">
 			<maml:name>PaddingScheme</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The hash algorithm used in the encryption of the password.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="true">Nullable`1[UserPfxPaddingScheme]</command:parameterValue>
 			<dev:type>
@@ -1343,7 +1397,7 @@
 		<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="8">
 			<maml:name>KeyFilePath</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>The path to a file containing the public key to encrypt the PFX certificate records.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -1355,7 +1409,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="1">
 			<maml:name>Base64EncodedPfx</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>A Base64 Encoded PFX string.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -1373,19 +1427,21 @@
 				<maml:description/>
 			</dev:type>
 			<maml:description>
-<maml:para />
+				<maml:para>
+</maml:para>
 			</maml:description>
 		</command:inputType>
 	</command:inputTypes>
 	<command:returnValues>
 		<command:returnValue>
 			<dev:type>
-				<maml:name>Microsoft.Management.Services.Api.UserPFXCertificate</maml:name>
+				<maml:name>UserPFXCertificate</maml:name>
 				<maml:uri></maml:uri>
 				<maml:description/>
 			</dev:type>
 			<maml:description>
-<maml:para />
+				<maml:para>
+</maml:para>
 			</maml:description>
 		</command:returnValue>
 	</command:returnValues>
@@ -1400,6 +1456,10 @@
 	<command:examples>
 	</command:examples>
 	<maml:relatedLinks>
+		<maml:navigationLink>
+			<maml:linkText>Unknown</maml:linkText>
+			<maml:uri></maml:uri>
+		</maml:navigationLink>
 	</maml:relatedLinks>
 </command:command>
 <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
@@ -1407,7 +1467,7 @@
 	<command:details>
 		<command:name>Remove-IntuneAuthenticationToken</command:name>
 		<maml:description>
-			<maml:para />
+			<maml:para>Removes the current session varible that contains the AuthenticationResult.</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -1417,7 +1477,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para />
+		<maml:para>Removes the current session varible that contains the AuthenticationResult. The AuthenticationResult holds the authentication token used in communication and authorization with Intune.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -1479,7 +1539,7 @@
 	<command:returnValues>
 		<command:returnValue>
 			<dev:type>
-				<maml:name>Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationResult</maml:name>
+				<maml:name></maml:name>
 				<maml:uri></maml:uri>
 				<maml:description/>
 			</dev:type>
@@ -1506,7 +1566,7 @@
 	<command:details>
 		<command:name>Remove-IntuneUserPfxCertificate</command:name>
 		<maml:description>
-			<maml:para />
+			<maml:para>Deleted an imported PFX Certificate from Intune.</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -1516,7 +1576,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para />
+		<maml:para>Deleted an imported PFX Certificate from Intune.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -1524,14 +1584,14 @@
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>AuthenticationResult</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>AuthenticationResult retrieved from Get-IntuneAuthenticationToken</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">AuthenticationResult</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="true (ByValue)" position="named">
 				<maml:name>CertificateList</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>List of PFX certificates to remove.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="true">List`1[UserPFXCertificate]</command:parameterValue>
 			</command:parameter>
@@ -1555,14 +1615,14 @@
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>AuthenticationResult</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>AuthenticationResult retrieved from Get-IntuneAuthenticationToken</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">AuthenticationResult</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="true (ByValue)" position="named">
 				<maml:name>UserThumbprintList</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>A list of UserTumbprints (userid-Thumbprint) to remove specific Imported PFX Certificate records.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="true">List`1[UserThumbprint]</command:parameterValue>
 			</command:parameter>
@@ -1586,14 +1646,14 @@
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>AuthenticationResult</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>AuthenticationResult retrieved from Get-IntuneAuthenticationToken</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">AuthenticationResult</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="true (ByValue)" position="named">
 				<maml:name>UserList</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>A list of UPNs that have Imported PFX Certificate records associated with them that are to be removed.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="true">List`1[String]</command:parameterValue>
 			</command:parameter>
@@ -1617,7 +1677,7 @@
 		<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 			<maml:name>AuthenticationResult</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>AuthenticationResult retrieved from Get-IntuneAuthenticationToken</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">AuthenticationResult</command:parameterValue>
 			<dev:type>
@@ -1629,7 +1689,7 @@
 		<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="true (ByValue)" position="named">
 			<maml:name>CertificateList</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>List of PFX certificates to remove.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="true">List`1[UserPFXCertificate]</command:parameterValue>
 			<dev:type>
@@ -1665,7 +1725,7 @@
 		<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="true (ByValue)" position="named">
 			<maml:name>UserThumbprintList</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>A list of UserTumbprints (userid-Thumbprint) to remove specific Imported PFX Certificate records.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="true">List`1[UserThumbprint]</command:parameterValue>
 			<dev:type>
@@ -1677,7 +1737,7 @@
 		<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="true (ByValue)" position="named">
 			<maml:name>UserList</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>A list of UPNs that have Imported PFX Certificate records associated with them that are to be removed.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="true">List`1[String]</command:parameterValue>
 			<dev:type>
@@ -1729,7 +1789,7 @@
 	<command:details>
 		<command:name>Set-IntuneAuthenticationToken</command:name>
 		<maml:description>
-			<maml:para />
+			<maml:para>Sets a session variable with an AuthenticationResult that can be used in subsequent graph calls.</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -1739,7 +1799,7 @@
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para />
+		<maml:para>sets a session variable with an AuthenticationResult that contains the authentication token that can be used in subsequent graph calls.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -1747,14 +1807,14 @@
 			<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>AdminUserName</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>Intune Tenant Admin user to be authenticated.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>AdminPassword</maml:name>
 				<maml:description>
-					<maml:para />
+					<maml:para>Intune Tenant Admin password to be authenticated.</maml:para>
 				</maml:description>
 				<command:parameterValue required="true" variableLength="false">SecureString</command:parameterValue>
 			</command:parameter>
@@ -1778,7 +1838,7 @@
 		<command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named">
 			<maml:name>AdminUserName</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>Intune Tenant Admin user to be authenticated.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
 			<dev:type>
@@ -1790,7 +1850,7 @@
 		<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 			<maml:name>AdminPassword</maml:name>
 			<maml:description>
-				<maml:para />
+				<maml:para>Intune Tenant Admin password to be authenticated.</maml:para>
 			</maml:description>
 			<command:parameterValue required="true" variableLength="false">SecureString</command:parameterValue>
 			<dev:type>
@@ -1839,7 +1899,7 @@
 	<command:returnValues>
 		<command:returnValue>
 			<dev:type>
-				<maml:name>Microsoft.IdentityModel.Clients.ActiveDirectory.AuthenticationResult</maml:name>
+				<maml:name></maml:name>
 				<maml:uri></maml:uri>
 				<maml:description/>
 			</dev:type>

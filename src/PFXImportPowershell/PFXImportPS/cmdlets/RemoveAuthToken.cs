@@ -30,7 +30,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     /// Removes the AuthenticationResult from the powershell session. Should be called when all calls to intune are complete.
     /// </summary>
     [Cmdlet(VerbsCommon.Remove, "IntuneAuthenticationToken", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Medium)]
-    [OutputType(typeof(AuthenticationResult))]
     public class RemoveAuthToken : PSCmdlet
     {
         protected override void ProcessRecord()

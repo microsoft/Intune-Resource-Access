@@ -33,7 +33,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     /// Authenticates against into and puts AuthenticationResult in a session variable for subsequent cmdlet calls.
     /// </summary>
     [Cmdlet(VerbsCommon.Set, "IntuneAuthenticationToken", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Medium)]
-    [OutputType(typeof(AuthenticationResult))]
     public class SetAuthToken : PSCmdlet
     {
         /// <summary>
