@@ -7,7 +7,7 @@ These scripts provide a baseline for the actions that can take place to import y
 ## What's New?
 ### Version 1.1
 - Added functionality to make private keys exportable, a cmdlet to export the key, and a cmdlet to import a key.
-	- Allows for use of multiple connectors when using the Microsoft Software Key Storage Provider.
+	- Allows migrating connectors when using the Microsoft Software Key Storage Provider.
 	- Serious security considerations needs to be taken when transferring keys between machines.
 - Added a sesssion variable to store the authentication token so that it isn't required as a parameter on every call that interacts with Intune.
 	- Calling Remove-IntuneAuthenticationToken or closing the session is recommended when calls to Intune are complete.
@@ -57,13 +57,13 @@ Export-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -File
 ```
 
 ## Export the private key to a file 
-1. Export the private key. For use when running multiple connector and moving keys between machines.
+1. Export the private key. For use when migrating connector and moving keys between machines.
 ```
 Export-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>"
 ```
 
 ## Import the private key from a file
-1. Import the private key. For use when running multiple connector and moving keys between machines.
+1. Import the private key. For use when migrating connector and moving keys between machines.
 ```
 Import-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>"
 ```
