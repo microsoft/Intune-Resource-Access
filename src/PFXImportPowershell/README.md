@@ -45,7 +45,7 @@ Import-Module .\IntunePfxImport.psd1
 ```
 
 ## Create initial Key Example
-1. Setup Key -- Convenience method for creating a key. Key's may be created with other tools. If you don't have a dedicated provider, you can use "Microsoft Software Key Storage Provider". Only include the MakeExportable switch if you must move the key to another machine that is hosting another connector.
+1. Setup Key -- Convenience method for creating a key. Key's may be created with other tools. If you don't have a dedicated provider, you can use "Microsoft Software Key Storage Provider". Only include the MakeExportable switch if you must have the ability to move the key to another machine.
 ```
 Add-IntuneKspKey "<ProviderName>" "<KeyName>" {-MakeExportable}
 ```
