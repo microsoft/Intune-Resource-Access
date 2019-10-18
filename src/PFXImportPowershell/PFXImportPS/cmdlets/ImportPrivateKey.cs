@@ -41,12 +41,14 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         [Parameter(Position = 3, Mandatory = true)]
         public string FilePath { get; set; }
 
+        [Parameter]
+        public SwitchParameter MakeExportable { get; set; }
 
 
         protected override void ProcessRecord()
         {
             ManagedRSAEncryption managedRSA = new ManagedRSAEncryption();
-            if (!managedRSA.ImportKeyToKSP(ProviderName, KeyName, FilePath))
+            if (!managedRSA.ImportKeyToKSP(ProviderName, KeyName, FilePath, MakeExportable.IsPresent))
             {
                 //Creation failed, likely already exists
                 this.WriteError(

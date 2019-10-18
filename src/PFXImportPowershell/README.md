@@ -59,7 +59,7 @@ Export-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -File
 ## Export the private key to a file 
 1. Export the private key. For use when migrating connector and moving keys between machines.
 ```
-Export-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>"
+Export-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>" {-MakeExportable}
 ```
 
 ## Import the private key from a file
