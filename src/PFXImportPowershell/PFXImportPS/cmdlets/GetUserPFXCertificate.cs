@@ -60,7 +60,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// <summary>
         /// AuthenticationResult retrieved from Get-IntuneAuthenticationToken
         /// </summary>
-        [Parameter(Mandatory = true)]
+        [Parameter]
         [ValidateNotNullOrEmpty()]
         public AuthenticationResult AuthenticationResult
         {
@@ -113,6 +113,10 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// </summary>
         protected override void ProcessRecord()
         {
+            if (AuthenticationResult == null)
+            {
+                AuthenticationResult = (AuthenticationResult)SessionState.PSVariable.Get(Authenticate.AuthTokenKey)?.Value;
+            }
             if (!Authenticate.AuthTokenIsValid(AuthenticationResult))
             {
                 this.ThrowTerminatingError(
