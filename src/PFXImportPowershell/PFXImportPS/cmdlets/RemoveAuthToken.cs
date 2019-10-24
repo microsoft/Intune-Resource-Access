@@ -23,8 +23,8 @@
 
 namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 {
+    using System.Collections;
     using System.Management.Automation;
-    using IdentityModel.Clients.ActiveDirectory;
 
     /// <summary>
     /// Removes the AuthenticationResult from the powershell session. Should be called when all calls to intune are complete.
@@ -34,7 +34,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     {
         protected override void ProcessRecord()
         {
-            SessionState.PSVariable.Remove(Authenticate.AuthTokenKey);
+            Authenticate.ClearTokenCache(this.MyInvocation.MyCommand.Module.PrivateData as Hashtable);
         }
     }
 }

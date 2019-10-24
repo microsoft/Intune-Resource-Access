@@ -97,5 +97,21 @@ namespace Microsoft.Management.Powershell.PFXImport
                 return AuthenticationContextIntegratedAuthExtensions.AcquireTokenAsync(authContext, GetGraphURI(modulePrivateData), GetClientId(modulePrivateData), userCreds).Result;
             }
         }
+
+        public static AuthenticationResult GetAuthToken(Hashtable modulePrivateData)
+        {
+            string authority = string.Format("https://{0}/common", GetAuthURI(modulePrivateData));
+            AuthenticationContext authContext = new AuthenticationContext(authority);
+            PlatformParameters platformParams = new PlatformParameters(PromptBehavior.Auto);
+            return authContext.AcquireTokenSilentAsync(GetGraphURI(modulePrivateData), GetClientId(modulePrivateData)).Result;
+        }
+
+        public static void ClearTokenCache(Hashtable modulePrivateData)
+        {
+            string authority = string.Format("https://{0}/common", GetAuthURI(modulePrivateData));
+            AuthenticationContext authContext = new AuthenticationContext(authority);
+            authContext.TokenCache.Clear();
+        }
+
     }
 }
