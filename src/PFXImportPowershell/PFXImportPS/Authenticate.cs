@@ -102,7 +102,6 @@ namespace Microsoft.Management.Powershell.PFXImport
         {
             string authority = string.Format("https://{0}/common", GetAuthURI(modulePrivateData));
             AuthenticationContext authContext = new AuthenticationContext(authority);
-            PlatformParameters platformParams = new PlatformParameters(PromptBehavior.Auto);
             return authContext.AcquireTokenSilentAsync(GetGraphURI(modulePrivateData), GetClientId(modulePrivateData)).Result;
         }
 
