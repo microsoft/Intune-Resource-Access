@@ -30,8 +30,9 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     using IdentityModel.Clients.ActiveDirectory;
 
     /// <summary>
-    /// Retrieves an AuthenticationResult that can be used in subsequent graph calls.
+    /// Deprecated. Use Set-IntuneAuthenticationToken and Remove-IntuneAuthenticationToken instead.
     /// </summary>
+    [Obsolete("Use Set-IntuneAuthenticationToken and Remove-IntuneAuthenticationToken instead.", true)]
     [Cmdlet(VerbsCommon.Get, "IntuneAuthenticationToken", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Medium)]
     [OutputType(typeof(AuthenticationResult))]
     public class GetAuthToken : PSCmdlet

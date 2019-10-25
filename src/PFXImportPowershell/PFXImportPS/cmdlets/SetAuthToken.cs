@@ -24,60 +24,52 @@
 namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 {
     using System;
+    using System.Collections;
     using System.Management.Automation;
-    using Microsoft.Intune.EncryptionUtilities;
+    using System.Security;
+    using IdentityModel.Clients.ActiveDirectory;
 
-    [Cmdlet(VerbsCommon.Add, "IntuneKspKey")]
-    public class AddKSPKey : PSCmdlet
-    { 
-        private const int KeyExistsErrorCode = -2146233296;
-
-        private int keyLength = 2048;
-
-
-        [Parameter(Position = 1, Mandatory = true)]
-        public string ProviderName { get; set; }
-
-        [Parameter(Position = 2, Mandatory = true)]
-        public string KeyName { get; set; }
-
-        [Parameter(Position = 3)]
-        public int KeyLength
+    /// <summary>
+    /// Does the initial authentication against AAD and can be used for subsequest cmdlet calls.
+    /// </summary>
+    [Cmdlet(VerbsCommon.Set, "IntuneAuthenticationToken", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Medium)]
+    public class SetAuthToken : PSCmdlet
+    {
+        /// <summary>
+        /// Intune Tenant Admin user to be authenticated.
+        /// </summary>
+        [Parameter(Mandatory = true)]
+        [ValidateNotNullOrEmpty()]
+        public string AdminUserName
         {
-            get
-            {
-                return keyLength;
-            }
-
-            set
-            {
-                keyLength = value;
-            }
+            get;
+            set;
         }
 
+        /// <summary>
+        /// Intune Tenant Admin password to be authenticated.
+        /// </summary>
         [Parameter]
-        public SwitchParameter MakeExportable { get; set; }
-
+        public SecureString AdminPassword
+        {
+            get;
+            set;
+        }
 
         protected override void ProcessRecord()
         {
-            ManagedRSAEncryption managedRSA = new ManagedRSAEncryption();
-            if(managedRSA.TryGenerateLocalRSAKey(ProviderName, KeyName, KeyLength, MakeExportable.IsPresent))
+
+            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
+            AuthenticationResult authToken = Authenticate.GetAuthToken(AdminUserName, AdminPassword, modulePrivateData);
+            if (!Authenticate.AuthTokenIsValid(authToken))
             {
-                //Creation succeeded
-            }
-            else
-            {
-                //Creation failed, likely already exists
-                this.WriteError(
+                this.ThrowTerminatingError(
                     new ErrorRecord(
-                        new InvalidOperationException("Key Creation failed, it likely already exists"), 
-                        "KeyAlreadyExists", 
-                        ErrorCategory.InvalidOperation, 
-                        null));
-
+                        new InvalidOperationException("Cannot get Authentication Token"),
+                        "Authentication Failure",
+                        ErrorCategory.AuthenticationError,
+                        authToken));
             }
-
         }
     }
 }

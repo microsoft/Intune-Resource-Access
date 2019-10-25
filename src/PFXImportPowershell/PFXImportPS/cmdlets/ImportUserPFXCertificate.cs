@@ -52,8 +52,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// <summary>
         ///  AuthenticationResult retrieve from Get-IntuneAuthenticationToken
         /// </summary>
-        [Parameter(Mandatory = true)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter(DontShow = true)]//Deprecated
         public AuthenticationResult AuthenticationResult
         {
             get;
@@ -115,6 +114,11 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// </summary>
         protected override void ProcessRecord()
         {
+            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
+            if (AuthenticationResult == null)
+            {
+                AuthenticationResult = Authenticate.GetAuthToken(modulePrivateData);
+            }
             if (!Authenticate.AuthTokenIsValid(AuthenticationResult))
             {
                 this.ThrowTerminatingError(
@@ -128,7 +132,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             successCnt = 0;
             failureCnt = 0;
 
-            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
             string graphURI = Authenticate.GetGraphURI(modulePrivateData);
             string schemaVersion = Authenticate.GetSchemaVersion(modulePrivateData);
 
@@ -147,7 +150,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 string url;
                 if (IsUpdate.IsPresent)
                 {
-                    string userId = GetUserPFXCertificate.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
+                    string userId = GetUserId.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
                     url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates({2}-{3})", graphURI, schemaVersion, userId, cert.Thumbprint);
                 }
                 else

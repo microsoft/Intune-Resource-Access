@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://github.com/microsoft/Intune-Resource-Access/blob/develop/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/microsoft/Intune-Resource-Access/tree/develop/src/CsrValidation/csharp</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>Update package dependencies, delaysign set</releaseNotes>
+    <copyright>Copyright 2019</copyright>
+    <tags>NDES SCEP Validation Intune</tags>
+  </metadata>
+</package>

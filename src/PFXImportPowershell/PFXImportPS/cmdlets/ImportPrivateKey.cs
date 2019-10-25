@@ -21,19 +21,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+
 namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 {
+    using Microsoft.Intune.EncryptionUtilities;
     using System;
     using System.Management.Automation;
-    using Microsoft.Intune.EncryptionUtilities;
 
-    [Cmdlet(VerbsCommon.Add, "IntuneKspKey")]
-    public class AddKSPKey : PSCmdlet
-    { 
-        private const int KeyExistsErrorCode = -2146233296;
-
-        private int keyLength = 2048;
-
+    [Cmdlet(VerbsData.Import, "IntunePrivateKey")]
+    public class ImportPrivateKey: PSCmdlet
+    {
 
         [Parameter(Position = 1, Mandatory = true)]
         public string ProviderName { get; set; }
@@ -41,19 +38,8 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         [Parameter(Position = 2, Mandatory = true)]
         public string KeyName { get; set; }
 
-        [Parameter(Position = 3)]
-        public int KeyLength
-        {
-            get
-            {
-                return keyLength;
-            }
-
-            set
-            {
-                keyLength = value;
-            }
-        }
+        [Parameter(Position = 3, Mandatory = true)]
+        public string FilePath { get; set; }
 
         [Parameter]
         public SwitchParameter MakeExportable { get; set; }
@@ -62,22 +48,16 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         protected override void ProcessRecord()
         {
             ManagedRSAEncryption managedRSA = new ManagedRSAEncryption();
-            if(managedRSA.TryGenerateLocalRSAKey(ProviderName, KeyName, KeyLength, MakeExportable.IsPresent))
-            {
-                //Creation succeeded
-            }
-            else
+            if (!managedRSA.ImportKeyToKSP(ProviderName, KeyName, FilePath, MakeExportable.IsPresent))
             {
                 //Creation failed, likely already exists
                 this.WriteError(
                     new ErrorRecord(
-                        new InvalidOperationException("Key Creation failed, it likely already exists"), 
-                        "KeyAlreadyExists", 
-                        ErrorCategory.InvalidOperation, 
+                        new InvalidOperationException("Key Import failed"),
+                        "KeyImportFailure",
+                        ErrorCategory.InvalidOperation,
                         null));
-
             }
-
         }
     }
 }

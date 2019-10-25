@@ -51,7 +51,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// <summary>
         ///  AuthenticationResult retrieve from Get-IntuneAuthenticationToken
         /// </summary>
-        [Parameter(Mandatory = true)]
+        [Parameter(DontShow = true)]//Deprecated
         public AuthenticationResult AuthenticationResult
         {
             get;
@@ -115,6 +115,11 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// </summary>
         protected override void ProcessRecord()
         {
+            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
+            if (AuthenticationResult == null)
+            {
+                AuthenticationResult = Authenticate.GetAuthToken(modulePrivateData);
+            }
             if (!Authenticate.AuthTokenIsValid(AuthenticationResult))
             {
                 this.ThrowTerminatingError(
@@ -125,7 +130,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                         AuthenticationResult));
             }
 
-            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
             string graphURI = Authenticate.GetGraphURI(modulePrivateData);
             string schemaVersion = Authenticate.GetSchemaVersion(modulePrivateData);
 
@@ -160,7 +164,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 foreach (PSObject result in ps.Invoke())
                 {
                     UserPFXCertificate cert = result.BaseObject as UserPFXCertificate;
-                    string userId = GetUserPFXCertificate.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
+                    string userId = GetUserId.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
                     UserThumbprintList.Add(new UserThumbprint() { User = userId, Thumbprint = cert.Thumbprint });
                 }
             }
@@ -169,7 +173,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 foreach(UserPFXCertificate cert in CertificateList)
                 {
-                    string userId = GetUserPFXCertificate.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
+                    string userId = GetUserId.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
                     UserThumbprintList.Add(new UserThumbprint() { User = userId, Thumbprint = cert.Thumbprint });
                 }
             }

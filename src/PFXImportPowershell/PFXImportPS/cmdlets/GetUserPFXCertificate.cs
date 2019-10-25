@@ -42,7 +42,9 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 
     public struct UserThumbprint
     {
+        //The User Id guid associate with the user certificate.
         public string User;
+        //Thumbprint assoicated with the imported PFX certificate
         public string Thumbprint;
     }
 
@@ -58,7 +60,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// <summary>
         /// AuthenticationResult retrieved from Get-IntuneAuthenticationToken
         /// </summary>
-        [Parameter(Mandatory = true)]
+        [Parameter(DontShow = true)]//Deprecated
         [ValidateNotNullOrEmpty()]
         public AuthenticationResult AuthenticationResult
         {
@@ -107,41 +109,15 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         }
 
         /// <summary>
-        /// Uses a graph call to return the UserId for a specified UPN
-        /// </summary>
-        /// <param name="user">The User Principal Name.</param>
-        /// <returns>The Azuer UserId.</returns>
-        public static string GetUserIdFromUpn(string user, string graphURI, string schemaVersion, AuthenticationResult authenticationResult)
-        {
-            string url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/users?$filter=userPrincipalName eq '{2}'", graphURI, schemaVersion, user);
-            HttpWebRequest request;
-            request = CreateWebRequest(url, authenticationResult);
-
-            using (var response = (HttpWebResponse)request.GetResponse())
-            {
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    string responseMessage = string.Empty;
-                    using (StreamReader rs = new StreamReader(response.GetResponseStream()))
-                    {
-                        responseMessage = rs.ReadToEnd();
-                    }
-
-                    User userObj = SerializationHelpers.DeserializeUser(responseMessage);
-                    return userObj.Id.Replace("-", string.Empty);
-                }
-                else
-                {
-                   throw new InvalidOperationException(response.StatusDescription);
-                }
-            }
-        }
-
-        /// <summary>
         /// ProcessRecord.
         /// </summary>
         protected override void ProcessRecord()
         {
+            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
+            if (AuthenticationResult == null)
+            {
+                AuthenticationResult = Authenticate.GetAuthToken(modulePrivateData);
+            }
             if (!Authenticate.AuthTokenIsValid(AuthenticationResult))
             {
                 this.ThrowTerminatingError(
@@ -152,7 +128,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                         AuthenticationResult));
             }
 
-            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
             string graphURI = Authenticate.GetGraphURI(modulePrivateData);
             string schemaVersion = Authenticate.GetSchemaVersion(modulePrivateData);
 
