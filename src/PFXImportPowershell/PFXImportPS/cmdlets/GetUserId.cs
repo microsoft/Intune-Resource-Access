@@ -45,7 +45,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// <summary>
         /// AuthenticationResult retrieved from Get-IntuneAuthenticationToken
         /// </summary>
-        [Parameter]
+        [Parameter(DontShow = true)]//Deprecated
         [ValidateNotNullOrEmpty()]
         public AuthenticationResult AuthenticationResult
         {
@@ -71,9 +71,10 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// </summary>
         protected override void ProcessRecord()
         {
-            if(AuthenticationResult == null)
+            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
+            if (AuthenticationResult == null)
             {
-                AuthenticationResult = (AuthenticationResult)SessionState.PSVariable.Get(Authenticate.AuthTokenKey)?.Value;
+                AuthenticationResult = Authenticate.GetAuthToken(modulePrivateData);
             }
             if (!Authenticate.AuthTokenIsValid(AuthenticationResult))
             {
@@ -85,7 +86,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                         AuthenticationResult));
             }
 
-            Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
             string graphURI = Authenticate.GetGraphURI(modulePrivateData);
             string schemaVersion = Authenticate.GetSchemaVersion(modulePrivateData);
             string userId = GetUserId.GetUserIdFromUpn(UPN, graphURI, schemaVersion, AuthenticationResult);

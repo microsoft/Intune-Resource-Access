@@ -30,7 +30,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     using IdentityModel.Clients.ActiveDirectory;
 
     /// <summary>
-    /// Authenticates against into and puts AuthenticationResult in a session variable for subsequent cmdlet calls.
+    /// Does the initial authentication against AAD and can be used for subsequest cmdlet calls.
     /// </summary>
     [Cmdlet(VerbsCommon.Set, "IntuneAuthenticationToken", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Medium)]
     public class SetAuthToken : PSCmdlet
@@ -70,7 +70,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                         ErrorCategory.AuthenticationError,
                         authToken));
             }
-            SessionState.PSVariable.Set(Authenticate.AuthTokenKey, authToken);
         }
     }
 }
