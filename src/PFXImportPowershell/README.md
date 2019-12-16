@@ -9,7 +9,7 @@ These scripts provide a baseline for the actions that can take place to import y
 - Added functionality to make private keys exportable, a cmdlet to export the key, and a cmdlet to import a key.
 	- Allows migrating connectors when using the Microsoft Software Key Storage Provider.
 	- Serious security considerations needs to be taken when transferring keys between machines.
-- Deprecated the Get-IntuneAuthenticationToken cmdlet in favore of the new Set-IntuneAuthenticationToken to store the authentication token so that it isn't required as a parameter on every call that interacts with Intune.
+- Deprecated the Get-IntuneAuthenticationToken cmdlet in favor of the new Set-IntuneAuthenticationToken to store the authentication token so that it isn't required as a parameter on every call that interacts with Intune.
 	- Calling Remove-IntuneAuthenticationToken or closing the session is recommended when calls to Intune are complete.
 
 # Building the Commandlets
