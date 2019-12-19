@@ -42,6 +42,18 @@ namespace Microsoft.Intune.EncryptionUtilities
         }
 
         /// <summary>
+        /// Defines the format of exported Public Key
+        /// CngBlob - RSA PUBLIC BLOB format
+        /// PEM - Public Key PEM format
+        /// </summary>
+        public enum FileFormat
+        {
+            CngBlob = 0,
+            PEM = 1
+        }
+
+
+        /// <summary>
         /// Given a KeyProvider and a KeyName, uses that key to encrypt the given data
         /// </summary>
         /// <param name="providerName">Provider where the key is stored</param>
@@ -221,7 +233,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         /// <param name="providerName">Name of the provider</param>
         /// <param name="keyName">Name of the key to destroy</param>
         /// <param name="filePath">Output Path for where to write the key</param>
-        public void ExportPublicKeytoFile(string providerName, string keyName, string filePath)
+        public void ExportPublicKeytoFile(string providerName, string keyName, string filePath, FileFormat fileFormat)
         {
             CngProvider provider = new CngProvider(providerName);
 
@@ -237,9 +249,18 @@ namespace Microsoft.Intune.EncryptionUtilities
             }
             using (CngKey key = CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey))
             {
-                File.WriteAllBytes(filePath, key.Export(new CngKeyBlobFormat("RSAPUBLICBLOB")));
+                if (fileFormat == FileFormat.CngBlob)
+                {
+                    File.WriteAllBytes(filePath, key.Export(new CngKeyBlobFormat("RSAPUBLICBLOB")));
+                }
+                else
+                {
+                    // FileFormat.PEM
+                    File.WriteAllText(filePath, ExportToPem(key));
+                }
             }
         }
+        
 
         /// <summary>
         /// Import a key from a file for use on the machine.
@@ -577,6 +598,129 @@ namespace Microsoft.Intune.EncryptionUtilities
             }
 
             return hashAlgorithmName;
+        }
+
+        /// <summary>
+        /// Returns PEM encoded RSA PublicKey
+        /// </summary>
+        /// <param name="key">CngKey containing RSA PublicKey</param>
+        /// <returns>PEM encoded PublicKey</returns>
+
+        private string ExportToPem(CngKey key)
+        {
+            TextWriter outputStream = new StringWriter();
+            RSACng rsaCng = new RSACng(key);
+
+            var parameters = rsaCng.ExportParameters(false);
+
+            using (var stream = new MemoryStream())
+            {
+                var writer = new BinaryWriter(stream);
+                writer.Write((byte)0x30); // SEQUENCE
+                using (var innerStream = new MemoryStream())
+                {
+                    var innerWriter = new BinaryWriter(innerStream);
+                    innerWriter.Write((byte)0x30); // SEQUENCE
+                    EncodeLength(innerWriter, 13);
+                    innerWriter.Write((byte)0x06); // OBJECT IDENTIFIER
+                    var rsaEncryptionOid = new byte[] { 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01 };
+                    EncodeLength(innerWriter, rsaEncryptionOid.Length);
+                    innerWriter.Write(rsaEncryptionOid);
+                    innerWriter.Write((byte)0x05); // NULL
+                    EncodeLength(innerWriter, 0);
+                    innerWriter.Write((byte)0x03); // BIT STRING
+                    using (var bitStringStream = new MemoryStream())
+                    {
+                        var bitStringWriter = new BinaryWriter(bitStringStream);
+                        bitStringWriter.Write((byte)0x00); // # of unused bits
+                        bitStringWriter.Write((byte)0x30); // SEQUENCE
+                        using (var paramsStream = new MemoryStream())
+                        {
+                            var paramsWriter = new BinaryWriter(paramsStream);
+                            EncodeIntegerBigEndian(paramsWriter, parameters.Modulus); // Modulus
+                            EncodeIntegerBigEndian(paramsWriter, parameters.Exponent); // Exponent
+                            var paramsLength = (int)paramsStream.Length;
+                            EncodeLength(bitStringWriter, paramsLength);
+                            bitStringWriter.Write(paramsStream.GetBuffer(), 0, paramsLength);
+                        }
+                        var bitStringLength = (int)bitStringStream.Length;
+                        EncodeLength(innerWriter, bitStringLength);
+                        innerWriter.Write(bitStringStream.GetBuffer(), 0, bitStringLength);
+                    }
+                    var length = (int)innerStream.Length;
+                    EncodeLength(writer, length);
+                    writer.Write(innerStream.GetBuffer(), 0, length);
+                }
+
+                var base64 = Convert.ToBase64String(stream.GetBuffer(), 0, (int)stream.Length).ToCharArray();
+                outputStream.WriteLine("-----BEGIN PUBLIC KEY-----");
+                for (var i = 0; i < base64.Length; i += 64)
+                {
+                    outputStream.WriteLine(base64, i, Math.Min(64, base64.Length - i));
+                }
+                outputStream.WriteLine("-----END PUBLIC KEY-----");
+            }
+
+            return outputStream.ToString();
+        }
+
+        private void EncodeIntegerBigEndian(BinaryWriter stream, byte[] value, bool forceUnsigned = true)
+        {
+            stream.Write((byte)0x02); // INTEGER
+            var prefixZeros = 0;
+            for (var i = 0; i < value.Length; i++)
+            {
+                if (value[i] != 0) break;
+                prefixZeros++;
+            }
+            if (value.Length - prefixZeros == 0)
+            {
+                EncodeLength(stream, 1);
+                stream.Write((byte)0);
+            }
+            else
+            {
+                if (forceUnsigned && value[prefixZeros] > 0x7f)
+                {
+                    // Add a prefix zero to force unsigned if the MSB is 1
+                    EncodeLength(stream, value.Length - prefixZeros + 1);
+                    stream.Write((byte)0);
+                }
+                else
+                {
+                    EncodeLength(stream, value.Length - prefixZeros);
+                }
+                for (var i = prefixZeros; i < value.Length; i++)
+                {
+                    stream.Write(value[i]);
+                }
+            }
+        }
+
+        private static void EncodeLength(BinaryWriter stream, int length)
+        {
+            if (length < 0) throw new ArgumentOutOfRangeException("length", "Length must be non-negative");
+            if (length < 0x80)
+            {
+                // Short form
+                stream.Write((byte)length);
+            }
+            else
+            {
+                // Long form
+                var temp = length;
+                var bytesRequired = 0;
+                while (temp > 0)
+                {
+                    temp >>= 8;
+                    bytesRequired++;
+                }
+                stream.Write((byte)(bytesRequired | 0x80));
+                for (var i = bytesRequired - 1; i >= 0; i--)
+                {
+                    stream.Write((byte)(length >> (8 * i) & 0xff));
+                }
+            }
         }
     }
 }
