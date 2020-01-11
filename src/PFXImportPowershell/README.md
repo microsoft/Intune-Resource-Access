@@ -108,11 +108,11 @@ $Base64Certificate =ConvertTo-IntuneBase64EncodedPfxCertificate -CertificatePath
 ```
 3. Create a new UserPfxCertificate record.
 ```
-$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate -PfxPassword $SecureFilePassword -UPN "<UserUPN>" -ProviderName "<ProviderName>" -KeyName "<KeyName>" -IntendedPurpose "<IntendedPurpose>" -KeyFilePath "<File path to public key file>"  {-PaddingScheme "<PaddingScheme>"}
+$userPFXObject = New-IntuneUserPfxCertificate -Base64EncodedPFX $Base64Certificate -PfxPassword $SecureFilePassword -UPN "<UserUPN>" -ProviderName "<ProviderName>" -KeyName "<KeyName>" -IntendedPurpose "<IntendedPurpose>" -KeyFilePath "<File path to public key file>"
 ```
 or 
 ```
-$userPFXObject = New-IntuneUserPfxCertificate -PathToPfxFile "<FullPathPFXToCert>" -PfxPassword $SecureFilePassword -UPN "<UserUPN>" -ProviderName "<ProviderName>" -KeyName "<KeyName>" -IntendedPurpose "<IntendedPurpose>" -KeyFilePath "<File path to public key file>" {-PaddingScheme "<PaddingScheme>"}
+$userPFXObject = New-IntuneUserPfxCertificate -PathToPfxFile "<FullPathPFXToCert>" -PfxPassword $SecureFilePassword -UPN "<UserUPN>" -ProviderName "<ProviderName>" -KeyName "<KeyName>" -IntendedPurpose "<IntendedPurpose>" -KeyFilePath "<File path to public key file>"
 ```
 
 ## Import Example
