@@ -38,6 +38,7 @@ namespace Microsoft.Management.Powershell.PFXImport.UnitTests
     using System.Security.Cryptography.X509Certificates;
 
     [TestClass]
+    [Ignore] //Needs to be run as admin to manage machine certs.
     public class NewUserPFXCertificateUnitTests
     {
         private const string TestFilePath1 = @"TestCertificates\TestPFX.pfx";
@@ -132,38 +133,6 @@ namespace Microsoft.Management.Powershell.PFXImport.UnitTests
             Assert.IsNotNull(userPFXResult.EncryptedPfxBlob);
 
             ValidatePasswordDecryptable(userPFXResult, testPassword, PaddingHashAlgorithmNames.SHA512, PaddingFlags.OAEPPadding);
-
-            ProviderKeyCleanup(TestProviderName1, TestKeyName1);
-        }
-
-        [TestMethod]
-        public void TestEncryptPFXFileOaepSha1()
-        {
-            string hashAlgorithm = PaddingHashAlgorithmNames.SHA1;
-            int paddingFlags = PaddingFlags.OAEPPadding;
-
-            ProviderKeyInitialize(TestProviderName1, TestKeyName1, TestAlgorithmName);
-
-            Command encryptCommand = GenerateSetUserPFXCertificatesCommand(
-                TestFilePath1,
-                TestUPN1,
-                securePassword,
-                TestProviderName1,
-                TestKeyName1,
-                UserPfxPaddingScheme.OaepSha1,
-                UserPfxIntendedPurpose.SmimeEncryption);
-
-            powershell.Commands.AddCommand(encryptCommand);
-
-            var pfxResults = powershell.Invoke<UserPFXCertificate>();
-
-            Assert.AreEqual(pfxResults.Count(), 1);
-
-            UserPFXCertificate userPFXResult = pfxResults.First();
-
-            Assert.AreEqual(userPFXResult.PaddingScheme, UserPfxPaddingScheme.OaepSha1);
-
-            ValidatePasswordDecryptable(userPFXResult, testPassword, hashAlgorithm, paddingFlags);
 
             ProviderKeyCleanup(TestProviderName1, TestKeyName1);
         }
@@ -328,6 +297,7 @@ namespace Microsoft.Management.Powershell.PFXImport.UnitTests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(CmdletInvocationException))]
         public void TestBadProviderName()
         {
             Command encryptCommand = GenerateSetUserPFXCertificatesCommand(
@@ -336,20 +306,12 @@ namespace Microsoft.Management.Powershell.PFXImport.UnitTests
                 securePassword,
                 "Holy Provider of Azeroth",
                 TestKeyName1,
-                UserPfxPaddingScheme.OaepSha1,
+                UserPfxPaddingScheme.OaepSha512,
                 UserPfxIntendedPurpose.SmimeEncryption);
 
             powershell.Commands.AddCommand(encryptCommand);
 
-            try
-            {
-                var pfxResults = powershell.Invoke<UserPFXCertificate>();
-            }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e.Message.Contains("The provider"));
-                Assert.IsTrue(e.Message.Contains("does not exist"));
-            }
+            _ = powershell.Invoke<UserPFXCertificate>();
         }
 
         [TestMethod]
