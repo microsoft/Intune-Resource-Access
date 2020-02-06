@@ -39,7 +39,9 @@ steps:
     sourceFolder: '$(Build.SourcesDirectory)'
     contents: '**/?(OnPremValidation|PFXImportPS)/**/bin/**/$(BuildConfiguration)/**/?(*.exe|*.dll|*.xml|*.psd1|*.pdb)'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    
+ 
+- powershell: dir $env:BUILD_ARTIFACTSTAGINGDIRECTORY
+ 
 - powershell: Compress-Archive -Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY/src/PFXImportPowershell/OnPremValidation/IntunePFXCertConnetorValidationServer/bin/Release/ -DestinationPath $env:BUILD_ARTIFACTSTAGINGDIRECTORY/OnPremValidation.zip
 
 - powershell: Compress-Archive -Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY/src/PFXImportPowershell/PFXImportPS/bin/Release/ -DestinationPath $env:BUILD_ARTIFACTSTAGINGDIRECTORY/PFXImportPS.zip
