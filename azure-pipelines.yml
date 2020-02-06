@@ -45,9 +45,3 @@ steps:
 - powershell: Compress-Archive -Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY\src\PFXImportPowershell\OnPremValidation\IntunePFXCertConnectorValidationService\bin\Release -DestinationPath $env:BUILD_ARTIFACTSTAGINGDIRECTORY\OnPremValidation.zip
 
 - powershell: Compress-Archive -Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY\src\PFXImportPowershell\PFXImportPS\bin\Release -DestinationPath $env:BUILD_ARTIFACTSTAGINGDIRECTORY\PFXImportPS.zip
-
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: PFXImport
