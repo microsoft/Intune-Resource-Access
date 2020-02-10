@@ -67,18 +67,22 @@ namespace Microsoft.Management.Services.Api
     public enum UserPfxPaddingScheme
     {
         /// <summary>
-        /// No padding used.
+        /// Padding scheme not specified. Uses the default.
         /// </summary>
         None = 0,
 
         /// <summary>
         /// Use PKCS#1 padding.
+        /// NO LONGER SUPPORTED
         /// </summary>
+        [Obsolete("Pkcs1 no longer supported")]
         Pkcs1 = 1,
 
         /// <summary>
         /// Use OAEP SHA-1 padding.
+        /// NO LONGER SUPPORTED
         /// </summary>
+        [Obsolete("OaepSha1 no longer supported")]
         OaepSha1 = 2,
 
         /// <summary>
