@@ -39,3 +39,15 @@ steps:
     sourceFolder: '$(Build.SourcesDirectory)'
     contents: '**/?(OnPremValidation|PFXImportPS)/**/bin/**/$(BuildConfiguration)/**/?(*.exe|*.dll|*.xml|*.psd1|*.pdb)'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: GitHubRelease@1
+  inputs:
+    gitHubConnection: 'github connection 1'
+    repositoryName: '$(Build.Repository.Name)'
+    action: 'create'
+    target: '$(Build.SourceVersion)'
+    tagSource: 'gitTag'
+    tagPattern: 'release-v*'
+    assets: '$(Build.ArtifactStagingDirectory)/**/?(*.exe|*.dll|*.xml|*.psd1|*.pdb)'
+    changeLogCompareToRelease: 'lastFullRelease'
+    changeLogType: 'commitBased'
