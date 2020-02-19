@@ -47,7 +47,7 @@ steps:
     action: 'create'
     target: '$(Build.SourceVersion)'
     tagSource: 'gitTag'
-    tagPattern: 'release-v*'
+    tagPattern: '*release-v*'
     assets: '$(Build.ArtifactStagingDirectory)/**/?(*.exe|*.dll|*.xml|*.psd1|*.pdb)'
     changeLogCompareToRelease: 'lastFullRelease'
     changeLogType: 'commitBased'
