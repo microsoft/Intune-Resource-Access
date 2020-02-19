@@ -15,12 +15,12 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-#- task: NuGetToolInstaller@1
-#
-#- task: NuGetCommand@2
-#  inputs:
-#    restoreSolution: '$(solution)'
-#
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
+
 - task: VSBuild@1
   inputs:
     solution: '$(solution)'
