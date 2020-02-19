@@ -40,6 +40,8 @@ steps:
     contents: '**/?(OnPremValidation|PFXImportPS)/**/bin/**/$(BuildConfiguration)/**/?(*.exe|*.dll|*.xml|*.psd1|*.pdb)'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
+- task: CodeSignValidationInjected@1
+
 - task: GitHubRelease@1
   inputs:
     gitHubConnection: 'github connection 1'
