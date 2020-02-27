@@ -71,7 +71,8 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         [Parameter(Position = 6)]
         public UserPfxIntendedPurpose? IntendedPurpose { get; set; } = UserPfxIntendedPurpose.Unassigned;
 
-        [Parameter(Position = 7)]
+        [Obsolete("PaddingScheme should no longer be used. Cmdlet will use a value that is currently known to be secure.")]
+        [Parameter(Position = 7, DontShow = true)]
         public UserPfxPaddingScheme? PaddingScheme { get; set; } = UserPfxPaddingScheme.OaepSha512;
 
         /// <summary>
@@ -143,13 +144,14 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 switch (PaddingScheme)
                 {
                     case UserPfxPaddingScheme.Pkcs1:
-                        hashAlgorithm = null;
-                        paddingFlags = PaddingFlags.PKCS1Padding;
-                        break;
                     case UserPfxPaddingScheme.OaepSha1:
-                        hashAlgorithm = PaddingHashAlgorithmNames.SHA1;
-                        paddingFlags = PaddingFlags.OAEPPadding;
-                        break;
+                        ThrowTerminatingError(
+                            new ErrorRecord(
+                                new ArgumentException("Pkcs1 and OaepSha1 are no longer supported."),
+                                Guid.NewGuid().ToString(),
+                                ErrorCategory.InvalidArgument,
+                                null));
+                        return;
                     case UserPfxPaddingScheme.OaepSha256:
                         hashAlgorithm = PaddingHashAlgorithmNames.SHA256;
                         paddingFlags = PaddingFlags.OAEPPadding;
