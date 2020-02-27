@@ -233,7 +233,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         /// <param name="providerName">Name of the provider</param>
         /// <param name="keyName">Name of the key to destroy</param>
         /// <param name="filePath">Output Path for where to write the key</param>
-        public void ExportPublicKeytoFile(string providerName, string keyName, string filePath, FileFormat fileFormat)
+        public void ExportPublicKeytoFile(string providerName, string keyName, string filePath, FileFormat fileFormat = FileFormat.CngBlob)
         {
             CngProvider provider = new CngProvider(providerName);
 
