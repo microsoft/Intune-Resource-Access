@@ -31,9 +31,22 @@ namespace Microsoft.Intune.EncryptionUtilities
     using System.Security.Cryptography.Pkcs;
     using System.Security.Cryptography.X509Certificates;
     using System.Security.Principal;
+    using System.Text;
 
     public class ManagedRSAEncryption : ICNGLocalKeyCrypto
     {
+
+        /// <summary>
+        /// Defines the format of exported Public Key
+        /// CngBlob - RSA PUBLIC BLOB format
+        /// PEM - Public Key PEM format
+        /// </summary>
+        public enum FileFormat
+        {
+            CngBlob = 0,
+            PEM = 1
+        }
+
         /// <summary>
         /// Default constructor for serialization
         /// </summary>
@@ -134,8 +147,8 @@ namespace Microsoft.Intune.EncryptionUtilities
             CryptoKeySecurity sec = new CryptoKeySecurity();
             CngKeyCreationParameters keyParams = null;
 
-             if (IsMicrosoftSoftwareKSP(provider))
-            { 
+            if (IsMicrosoftSoftwareKSP(provider))
+            {
                 sec.AddAccessRule(
                     new CryptoKeyAccessRule(
                         new SecurityIdentifier(sidType: WellKnownSidType.BuiltinAdministratorsSid, domainSid: null),
@@ -173,12 +186,12 @@ namespace Microsoft.Intune.EncryptionUtilities
                 }
             }
             else
-            { 
+            {
                 keyParams = new CngKeyCreationParameters()
                 {
                     ExportPolicy = makeExportable ? CngExportPolicies.AllowExport | CngExportPolicies.AllowPlaintextExport : CngExportPolicies.None,
                     Provider = provider,
-                    Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None)},
+                    Parameters = { new CngProperty("Length", BitConverter.GetBytes(keyLength), CngPropertyOptions.None) },
                     KeyCreationOptions = CngKeyCreationOptions.MachineKey
                 };
                 using (CngKey key = CngKey.Create(CngAlgorithm.Rsa, keyName, keyParams))
@@ -203,7 +216,7 @@ namespace Microsoft.Intune.EncryptionUtilities
             CngProvider provider = new CngProvider(providerName);
             bool keyExists = doesKeyExists(provider, keyName);
 
-            if(!keyExists)
+            if (!keyExists)
             {
                 //Nothing to destroy
                 return;
@@ -221,7 +234,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         /// <param name="providerName">Name of the provider</param>
         /// <param name="keyName">Name of the key to destroy</param>
         /// <param name="filePath">Output Path for where to write the key</param>
-        public void ExportPublicKeytoFile(string providerName, string keyName, string filePath)
+        public void ExportPublicKeytoFile(string providerName, string keyName, string filePath, FileFormat fileFormat = FileFormat.CngBlob)
         {
             CngProvider provider = new CngProvider(providerName);
 
@@ -237,7 +250,15 @@ namespace Microsoft.Intune.EncryptionUtilities
             }
             using (CngKey key = CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey))
             {
-                File.WriteAllBytes(filePath, key.Export(new CngKeyBlobFormat("RSAPUBLICBLOB")));
+                if (fileFormat == FileFormat.CngBlob)
+                {
+                    File.WriteAllBytes(filePath, key.Export(new CngKeyBlobFormat("RSAPUBLICBLOB")));
+                }
+                else
+                {
+                    // FileFormat.PEM
+                    File.WriteAllText(filePath, PemHelper.ExportToPem(key));
+                }
             }
         }
 
@@ -352,14 +373,26 @@ namespace Microsoft.Intune.EncryptionUtilities
         public byte[] EncryptWithFileKey(string filePath, byte[] toEncrypt, string hashAlgorithm = PaddingHashAlgorithmNames.SHA512, int paddingFlags = PaddingFlags.OAEPPadding)
         {
             byte[] encryptedData = null;
- 
+
             if (!File.Exists(filePath))
             {
                 throw new IOException(string.Format("They file {0} does not exist and cannot be used for encryption", filePath));
             }
 
-            byte[] keyBlob = File.ReadAllBytes(filePath);
-            using (CngKey key = CngKey.Import(keyBlob, new CngKeyBlobFormat("RSAPUBLICBLOB")))
+            byte[] keyBlob = null;
+
+            CngKey key;
+
+            try
+            {
+                key = PemHelper.ImportFromPem(filePath);
+            }
+            catch //Not a PEM, just import the RSA blob
+            {
+                keyBlob = File.ReadAllBytes(filePath);
+                key = CngKey.Import(keyBlob, new CngKeyBlobFormat("RSAPUBLICBLOB"));
+            }
+            using(key)
             {
                 using (RSACng rsa = new RSACng(key))
                 {
@@ -377,7 +410,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         /// <param name="keyName">Name of the key to destroy</param>
         /// <param name="cngKeyOpts">MachineKey or None depending on where it found the key.</param>
         /// <returns></returns>
-        private bool doesKeyExists(CngProvider provider, string keyName, CngKeyOpenOptions openOpts=CngKeyOpenOptions.MachineKey)
+        private bool doesKeyExists(CngProvider provider, string keyName, CngKeyOpenOptions openOpts = CngKeyOpenOptions.MachineKey)
         {
             bool keyExists = false;
             try
@@ -386,7 +419,7 @@ namespace Microsoft.Intune.EncryptionUtilities
             }
             catch (CryptographicException e)
             {
-                throw new CryptographicException(string.Format("There was an error contacting provider {0}. It may not exist or may be configured incorrectly. Error Code:0x{1:X8}  Exception thrown:{2}\nStack Trace:{3}\n", 
+                throw new CryptographicException(string.Format("There was an error contacting provider {0}. It may not exist or may be configured incorrectly. Error Code:0x{1:X8}  Exception thrown:{2}\nStack Trace:{3}\n",
                     provider.ToString(), e.HResult, e.Message, e.StackTrace), e);
             }
             return keyExists;
@@ -527,9 +560,9 @@ namespace Microsoft.Intune.EncryptionUtilities
                 default:
                     throw new CryptographicException(
                         string.Format(
-                            "Attempting to get the RSA padding of type {0} is not supported, only supported types are PKCS1 ({1}) or OAEP ({2})", 
-                            paddingFlags, 
-                            (int)PaddingFlags.PKCS1Padding, 
+                            "Attempting to get the RSA padding of type {0} is not supported, only supported types are PKCS1 ({1}) or OAEP ({2})",
+                            paddingFlags,
+                            (int)PaddingFlags.PKCS1Padding,
                             (int)PaddingFlags.OAEPPadding));
             }
 
@@ -569,10 +602,10 @@ namespace Microsoft.Intune.EncryptionUtilities
                 throw new CryptographicException(
                     string.Format(
                         "Attempting to find HashAlgorithm for {0} failed, only supported algorithms are {1}, {2}, {3}, {4}",
-                        hashAlgorithm, 
-                        PaddingHashAlgorithmNames.SHA1, 
-                        PaddingHashAlgorithmNames.SHA256, 
-                        PaddingHashAlgorithmNames.SHA384, 
+                        hashAlgorithm,
+                        PaddingHashAlgorithmNames.SHA1,
+                        PaddingHashAlgorithmNames.SHA256,
+                        PaddingHashAlgorithmNames.SHA384,
                         PaddingHashAlgorithmNames.SHA512));
             }
 
