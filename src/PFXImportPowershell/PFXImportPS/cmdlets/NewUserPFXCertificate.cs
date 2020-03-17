@@ -62,10 +62,10 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         [Parameter(Position = 3, Mandatory = true)]
         public string UPN { get; set; }
 
-        [Parameter(Position = 4, Mandatory = true)]
+        [Parameter(Position = 4)]
         public string ProviderName { get; set; }
 
-        [Parameter(Position = 5, Mandatory = true)]
+        [Parameter(Position = 5)]
         public string KeyName { get; set; }
 
         [Parameter(Position = 6)]
@@ -83,6 +83,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 
         protected override void ProcessRecord()
         {
+
             byte[] pfxData;
             if (this.ParameterSetName == PFXBase64String)
             {
@@ -223,7 +224,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             const string IntendedPurposeVariable = "EncryptPFXFilesIntendedPurpose";
             const string PaddingSchemeVariable = "EncryptPFXFilesPaddingScheme";
 
-            // Get Session Variable for ProviderName if one wasn't supplied. Throw error if never supplied.
+            // Get Session Variable for ProviderName if one wasn't supplied.
             if (!string.IsNullOrEmpty(ProviderName))
             {
                 SessionState.PSVariable.Set(ProviderNameVariable, ProviderName);
@@ -231,13 +232,9 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             else
             {
                 ProviderName = SessionState.PSVariable.GetValue(ProviderNameVariable, string.Empty).ToString();
-                if (string.IsNullOrEmpty(ProviderName))
-                {
-                    ThrowParameterError("ProviderName");
-                }
             }
 
-            // Get Session Variable for KeyName if one wasn't supplied. Throw error if never supplied.
+            // Get Session Variable for KeyName if one wasn't supplied.
             if (!string.IsNullOrEmpty(KeyName))
             {
                 SessionState.PSVariable.Set(KeyNameVariable, KeyName);
@@ -245,10 +242,17 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             else
             {
                 KeyName = SessionState.PSVariable.GetValue(KeyNameVariable, string.Empty).ToString();
-                if (string.IsNullOrEmpty(KeyName))
-                {
-                    ThrowParameterError("KeyName");
-                }
+            }
+
+
+            if (string.IsNullOrEmpty(KeyFilePath) && (string.IsNullOrEmpty(KeyName) || string.IsNullOrEmpty(ProviderName)))
+            {
+                ThrowTerminatingError(
+                    new ErrorRecord(
+                        new ArgumentException("KeyFilePath or PrividerName and KeyName is required."),
+                            Guid.NewGuid().ToString(),
+                            ErrorCategory.InvalidArgument,
+                            null));
             }
 
             // Get Session Variable for IntendedPurpose if one wasn't supplied. Default to Unassigned if never supplied.
