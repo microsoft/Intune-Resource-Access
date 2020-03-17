@@ -40,11 +40,14 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         [Parameter(Position = 2, Mandatory = true)]
         public string FilePath { get; set; }
 
+        [Parameter(Position = 3, Mandatory = false)]
+        public ManagedRSAEncryption.FileFormat FileFormat { get; set; } = ManagedRSAEncryption.FileFormat.CngBlob;
+
 
         protected override void ProcessRecord()
         {
             ManagedRSAEncryption managedRSA = new ManagedRSAEncryption();
-            managedRSA.ExportPublicKeytoFile(ProviderName, KeyName, FilePath);
+            managedRSA.ExportPublicKeytoFile(ProviderName, KeyName, FilePath, FileFormat);
         }
     }
 }
