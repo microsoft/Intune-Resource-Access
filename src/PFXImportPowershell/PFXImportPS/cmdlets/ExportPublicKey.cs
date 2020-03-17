@@ -37,10 +37,10 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         [Parameter(Position = 2, Mandatory = true)]
         public string KeyName { get; set; }
 
-        [Parameter(Position = 2, Mandatory = true)]
+        [Parameter(Position = 3, Mandatory = true)]
         public string FilePath { get; set; }
 
-        [Parameter(Position = 3, Mandatory = false)]
+        [Parameter(Position = 4, Mandatory = false)]
         public ManagedRSAEncryption.FileFormat FileFormat { get; set; } = ManagedRSAEncryption.FileFormat.CngBlob;
 
 
