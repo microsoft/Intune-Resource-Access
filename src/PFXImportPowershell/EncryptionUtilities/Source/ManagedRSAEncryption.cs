@@ -560,9 +560,8 @@ namespace Microsoft.Intune.EncryptionUtilities
                 default:
                     throw new CryptographicException(
                         string.Format(
-                            "Attempting to get the RSA padding of type {0} is not supported, only supported types are PKCS1 ({1}) or OAEP ({2})",
+                            "Attempting to get the RSA padding of type {0} is not supported, only supported type is OAEP ({1})",
                             paddingFlags,
-                            (int)PaddingFlags.PKCS1Padding,
                             (int)PaddingFlags.OAEPPadding));
             }
 
@@ -581,11 +580,7 @@ namespace Microsoft.Intune.EncryptionUtilities
                 throw new ArgumentNullException(nameof(hashAlgorithm));
             }
             HashAlgorithmName hashAlgorithmName;
-            if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA1, StringComparison.Ordinal))
-            {
-                hashAlgorithmName = HashAlgorithmName.SHA1;
-            }
-            else if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA256, StringComparison.Ordinal))
+            if (hashAlgorithm.Equals(PaddingHashAlgorithmNames.SHA256, StringComparison.Ordinal))
             {
                 hashAlgorithmName = HashAlgorithmName.SHA256;
             }
@@ -601,9 +596,8 @@ namespace Microsoft.Intune.EncryptionUtilities
             {
                 throw new CryptographicException(
                     string.Format(
-                        "Attempting to find HashAlgorithm for {0} failed, only supported algorithms are {1}, {2}, {3}, {4}",
+                        "Attempting to find HashAlgorithm for {0} failed, only supported algorithms are {1}, {2}, {3}",
                         hashAlgorithm,
-                        PaddingHashAlgorithmNames.SHA1,
                         PaddingHashAlgorithmNames.SHA256,
                         PaddingHashAlgorithmNames.SHA384,
                         PaddingHashAlgorithmNames.SHA512));
