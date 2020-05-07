@@ -209,7 +209,7 @@ namespace Microsoft.Intune
 
                 foreach (var service in serviceEndpoints)
                 {
-                    serviceMap.Add(service["serviceName"].ToString().ToLowerInvariant(), service["uri"].ToString());
+                    serviceMap[service["serviceName"].ToString().ToLowerInvariant()] = service["uri"].ToString();
                 }
             }
             else
