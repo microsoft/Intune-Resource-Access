@@ -142,8 +142,11 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 string hashAlgorithm;
                 int paddingFlags;
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 switch (PaddingScheme)
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     case UserPfxPaddingScheme.Pkcs1:
                     case UserPfxPaddingScheme.OaepSha1:
                         ThrowTerminatingError(
@@ -153,6 +156,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                                 ErrorCategory.InvalidArgument,
                                 null));
                         return;
+#pragma warning restore CS0618 // Type or member is obsolete
                     case UserPfxPaddingScheme.OaepSha256:
                         hashAlgorithm = PaddingHashAlgorithmNames.SHA256;
                         paddingFlags = PaddingFlags.OAEPPadding;
@@ -162,7 +166,9 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                         paddingFlags = PaddingFlags.OAEPPadding;
                         break;
                     case UserPfxPaddingScheme.None:
+#pragma warning disable CS0618 // Type or member is obsolete
                         PaddingScheme = UserPfxPaddingScheme.OaepSha512;
+#pragma warning restore CS0618 // Type or member is obsolete
                         goto default;   // Since C# doesn't allow switch-case fall-through!
                     case UserPfxPaddingScheme.OaepSha512:
                     default:
@@ -198,7 +204,9 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             UserPFXCertificate userPfxCertifiate = new UserPFXCertificate();
             userPfxCertifiate.Thumbprint = pfxCert.Thumbprint.ToLowerInvariant();
             userPfxCertifiate.IntendedPurpose = (UserPfxIntendedPurpose)IntendedPurpose;
+#pragma warning disable CS0618 // Type or member is obsolete
             userPfxCertifiate.PaddingScheme = (UserPfxPaddingScheme)PaddingScheme;
+#pragma warning restore CS0618 // Type or member is obsolete
             userPfxCertifiate.KeyName = KeyName;
             userPfxCertifiate.UserPrincipalName = UPN;
             userPfxCertifiate.ProviderName = ProviderName;
@@ -266,7 +274,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             }
 
             // Get Session Variable for Padding Scheme if one wasn't supplied. Default to None if never supplied.
-
+#pragma warning disable CS0618 // Type or member is obsolete
             if (PaddingScheme != null)
             {
                 SessionState.PSVariable.Set(PaddingSchemeVariable, PaddingScheme);
@@ -275,6 +283,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 PaddingScheme = (UserPfxPaddingScheme)SessionState.PSVariable.GetValue(PaddingSchemeVariable, 0);
             }
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private void ThrowParameterError(string parameterName)
