@@ -257,7 +257,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 ThrowTerminatingError(
                     new ErrorRecord(
-                        new ArgumentException("KeyFilePath or PrividerName and KeyName is required."),
+                        new ArgumentException("KeyFilePath or ProviderName and KeyName is required."),
                             Guid.NewGuid().ToString(),
                             ErrorCategory.InvalidArgument,
                             null));
