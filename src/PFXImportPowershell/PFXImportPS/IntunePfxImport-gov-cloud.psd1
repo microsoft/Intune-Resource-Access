@@ -1,5 +1,5 @@
 #-----------------------------------------------------------------------------------
-# <copyright company="Microsoft" file="PFXImport.psd1">
+# <copyright company="Microsoft" file="PFXImport-gov-cloud.psd1">
 #      Copyright (c) Microsoft Corporation.  All rights reserved.
 # </copyright>
 #
@@ -28,7 +28,7 @@ Author = ''
 CompanyName = 'Microsoft'
 
 # Copyright statement for this module
-Copyright = '(c) 2018 Microsoft. All rights reserved.'
+Copyright = '(c) Microsoft. All rights reserved.'
 
 # Description of the functionality provided by this module
 # Description = ''
