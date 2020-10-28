@@ -11,7 +11,7 @@
 // furnished to do so, subject to the following conditions :
 //
 // The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
+// all copies or substantial portionas of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -21,26 +21,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace Microsoft.Intune
+namespace Microsoft.Management.Services.Api
 {
-    public interface IIntuneClient
+    /// <summary>
+    /// Types of Certificate Authority Requests
+    /// </summary>
+    public enum CARequestType
     {
+        // Default value, not to be used
+        Invalid = 0,
 
-        /// <summary>
-        /// Post a Request to an Intune rest service.
-        /// </summary>
-        /// <param name="serviceName">The name of the service to post to.</param>
-        /// <param name="urlSuffix">The end of the url to append onto the request.</param>
-        /// <param name="apiVersion">API Version of service to use.</param>
-        /// <param name="json">The body of the request.</param>
-        /// <param name="activityId">Client generated ID for correlation of this activity</param>
-        /// <param name="additionalHeaders">key value pairs of additional header values to add to the request</param>
-        /// <returns>JSON response from service</returns>
-        Task<string> PostAsync(string serviceName, string urlSuffix, string apiVersion, JObject json, Guid activityId, Dictionary<string, string> additionalHeaders = null);
+        // Certificate Revocation Type
+        RevokeCertificate = 1,
     }
 }

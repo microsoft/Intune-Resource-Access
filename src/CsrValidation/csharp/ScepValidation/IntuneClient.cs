@@ -106,7 +106,7 @@ namespace Microsoft.Intune
         }
 
         /// <inheritdoc />
-        public async Task<JObject> PostAsync(string serviceName, string urlSuffix, string apiVersion, JObject json, Guid activityId, Dictionary<string, string> additionalHeaders = null)
+        public async Task<string> PostAsync(string serviceName, string urlSuffix, string apiVersion, JObject json, Guid activityId, Dictionary<string, string> additionalHeaders = null)
         {
             if (string.IsNullOrWhiteSpace(serviceName))
             {
@@ -170,17 +170,8 @@ namespace Microsoft.Intune
                 this.locationProvider.Clear(); // clear contents in case the service location has changed and we cached the value
                 throw;
             }
-            
-            
 
-            try
-            {
-                return JObject.Parse(result);
-            }
-            catch (JsonReaderException e)
-            {
-                throw new IntuneClientException($"Failed to parse JSON response from Intune. Response {result}", e);
-            }
+            return results;
         }
     }
 }

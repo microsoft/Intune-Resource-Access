@@ -22,6 +22,7 @@
 // THE SOFTWARE.
 
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -258,14 +259,24 @@ namespace Microsoft.Intune
         private async Task PostAsync(JObject requestBody, string urlSuffix, string transactionId)
         {
             Guid activityId = Guid.NewGuid();
-            JObject result = await intuneClient.PostAsync(VALIDATION_SERVICE_NAME,
+            string resultJson = await intuneClient.PostAsync(VALIDATION_SERVICE_NAME,
                         urlSuffix,
                         serviceVersion,
                         requestBody,
                         activityId);
 
+            JObject result;
+            try
+            {
+                result = JObject.Parse(resultJson);
+            }
+            catch (JsonReaderException ex)
+            {
+                throw new IntuneClientException($"Failed to parse JSON response from Intune. Response {resultJson}", ex);
+            }
+
             trace.TraceEvent(TraceEventType.Information, 0, "Activity " + activityId + " has completed.");
-            trace.TraceEvent(TraceEventType.Information, 0, result.ToString());
+            trace.TraceEvent(TraceEventType.Information, 0, resultJson);
 
             string code = (string)result["code"];
             string errorDescription = (string)result["errorDescription"];
