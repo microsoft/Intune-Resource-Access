@@ -80,5 +80,38 @@ namespace Microsoft.Management.Services.Api
         /// </summary>
         [JsonProperty(Required = Required.Default)]
         public string ErrorMessage { get; set; }
+
+        /// <summary>
+        /// Static helper function for creating a new result message from a CARequest
+        /// </summary>
+        /// <param name="request">CARequest to create the result from.</param>
+        /// <param name="succeeded">Whether the request was successful (true/false).</param>
+        /// <param name="errorCode">Error code for the failure.</param>
+        /// <param name="errorMessage">Error message for the failure.</param>
+        /// <returns>A new CARequestResult</returns>
+        public static CARequestResult CreateFromCARequest(CARequest request, bool succeeded, CARequestErrorCode errorCode = CARequestErrorCode.None, string errorMessage = null)
+        {
+            if (succeeded && errorCode != CARequestErrorCode.None)
+            {
+                throw new ArgumentException($"ErrorCodes are not allowed if 'Succeeded' is set to true");
+            }
+
+            if (succeeded && errorMessage != null)
+            {
+                throw new ArgumentException($"ErrorMessages are not allowed if 'Succeeded' is set to true");
+            }
+
+            return new CARequestResult()
+            {
+                TenantId = request.TenantId,
+                UserId = request.UserId,
+                DeviceId = request.DeviceId,
+                RequestId = request.RequestId,
+                RequestType = request.RequestType,
+                Succeeded = succeeded,
+                ErrorCode = errorCode,
+                ErrorMessage = errorMessage
+            };
+        }
     }
 }

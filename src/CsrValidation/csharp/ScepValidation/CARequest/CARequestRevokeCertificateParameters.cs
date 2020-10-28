@@ -24,6 +24,7 @@
 namespace Microsoft.Management.Services.Api
 {
     using Newtonsoft.Json;
+    using System;
 
     /// <summary>
     /// Parameters for Revoke Certificate Requests.
@@ -53,5 +54,24 @@ namespace Microsoft.Management.Services.Api
         /// </summary>
         [JsonProperty(Required = Required.Default)]
         public string CaConfiguration { get; set; }
+
+        /// <summary>
+        /// Static helper class for creating 
+        /// </summary>
+        /// <returns></returns>
+        public static CARequestRevokeParameters CreateFromRevokeRequest(CARequest request)
+        {
+            if (request.RequestType != CARequestType.RevokeCertificate)
+            {
+                throw new ArgumentException($"CARequest is an unsupported type. Expected: {CARequestType.RevokeCertificate}, Actual: {request.RequestType}");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Parameters))
+            {
+                throw new ArgumentException($"CARequest has null or empty Parameters property.");
+            }
+
+            return JsonConvert.DeserializeObject<CARequestRevokeParameters>(request.Parameters);
+        }
     }
 }
