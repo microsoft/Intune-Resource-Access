@@ -23,15 +23,29 @@
 
 namespace Microsoft.Management.Services.Api
 {
-    /// <summary>
-    /// Types of Certificate Authority Requests
-    /// </summary>
-    public enum CARequestType
-    {
-        // Default value, not to be used
-        Invalid = 0,
+    using Newtonsoft.Json;
 
-        // Certificate Revocation Type
-        RevokeCertificate = 1,
+    /// <summary>
+    /// Class defining the Parameters sent to the Download Revocation Requests endpoint.
+    /// </summary>
+    public class CARevocationDownloadParameters
+    {
+        /// <summary>
+        /// Download Request Filter: Certificate Provider Name
+        /// </summary>
+        [JsonProperty(Required = Required.Default)]
+        public string CertificateProviderName { get; set; }
+
+        /// <summary>
+        /// Maximum number of requests to download at a time
+        /// </summary>
+        [JsonProperty(Required = Required.Always)]
+        public int MaxRequests { get; set; }
+
+        /// <summary>
+        /// Download Request Filter: Issuer Name 
+        /// </summary>
+        [JsonProperty(Required = Required.Default)]
+        public string IssuerName { get; set; }
     }
 }

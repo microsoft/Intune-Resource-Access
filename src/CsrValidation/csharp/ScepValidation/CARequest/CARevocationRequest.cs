@@ -21,53 +21,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
-
 namespace Microsoft.Management.Services.Api
 {
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
 
     /// <summary>
     /// Class defining a Certificate Authority Request
     /// </summary>
-    public class CARequest
+    public class CARevocationRequest
     {
         /// <summary>
-        /// Tenant ID
+        /// Context for this request
         /// </summary>
         [JsonProperty(Required = Required.Always)]
-        public Guid TenantId { get; set; }
+        public string RequestContext { get; set; }
+
 
         /// <summary>
-        /// User ID
+        /// Serial number for the certificate to revoke
         /// </summary>
         [JsonProperty(Required = Required.Always)]
-        public Guid UserId { get; set; }
+        public string SerialNumber { get; set; }
 
         /// <summary>
-        /// Device ID
+        /// Issuer Name for the certficate to be revoked.
         /// </summary>
-        [JsonProperty(Required = Required.Always)]
-        public Guid DeviceId { get; set; }
+        [JsonProperty(Required = Required.Default)]
+        public string IssuerName { get; set; }
 
         /// <summary>
-        /// Unique Identifier for this request
+        /// CA Configuration for the certficate to be revoked
         /// </summary>
-        [JsonProperty(Required = Required.Always)]
-        public string RequestId { get; set; }
-
-        /// <summary>
-        /// The type for this request
-        /// </summary>
-        [JsonProperty(Required = Required.Always)]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public CARequestType RequestType { get; set; }
-
-        /// <summary>
-        /// JSON serialized parameter data for this request. The format of this data is determined by the Request type.
-        /// </summary>
-        [JsonProperty(Required = Required.Always)]
-        public string Parameters { get; set; }
+        [JsonProperty(Required = Required.Default)]
+        public string CaConfiguration { get; set; }
     } 
 }

@@ -24,54 +24,34 @@
 namespace Microsoft.Management.Services.Api
 {
     using Newtonsoft.Json;
-    using System;
 
     /// <summary>
-    /// Parameters for Revoke Certificate Requests.
+    /// Class defining the results of a Certificate Authority Request
     /// </summary>
-    public class CARequestRevokeParameters
+    public class CARevocationResult
     {
         /// <summary>
-        /// Serial number for the certificate to revoke
+        /// Context for this request
         /// </summary>
         [JsonProperty(Required = Required.Always)]
-        public string SerialNumber { get; set; }
+        public string RequestContext { get; set; }
 
         /// <summary>
-        /// Scenario that triggered the revocation
+        /// Boolean for whether the request was successful
         /// </summary>
         [JsonProperty(Required = Required.Always)]
-        public CARequestRevocationScenario RevocationScenario { get; set; }
+        public bool Succeeded { get; set; }
 
         /// <summary>
-        /// Issuer Name for the certficate to be revoked.
+        /// The Error Code for a failed request
         /// </summary>
         [JsonProperty(Required = Required.Default)]
-        public string IssuerName { get; set; }
+        public CARequestErrorCode ErrorCode { get; set; }
 
         /// <summary>
-        /// CA Configuration for the certficate to be revoked
+        /// The Error Message string describing why the request failed
         /// </summary>
         [JsonProperty(Required = Required.Default)]
-        public string CaConfiguration { get; set; }
-
-        /// <summary>
-        /// Static helper class for creating 
-        /// </summary>
-        /// <returns></returns>
-        public static CARequestRevokeParameters CreateFromRevokeRequest(CARequest request)
-        {
-            if (request.RequestType != CARequestType.RevokeCertificate)
-            {
-                throw new ArgumentException($"CARequest is an unsupported type. Expected: {CARequestType.RevokeCertificate}, Actual: {request.RequestType}");
-            }
-
-            if (string.IsNullOrWhiteSpace(request.Parameters))
-            {
-                throw new ArgumentException($"CARequest has null or empty Parameters property.");
-            }
-
-            return JsonConvert.DeserializeObject<CARequestRevokeParameters>(request.Parameters);
-        }
+        public string ErrorMessage { get; set; }
     }
 }

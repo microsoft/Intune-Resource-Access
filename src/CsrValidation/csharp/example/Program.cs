@@ -58,59 +58,6 @@ namespace Example
             // This notification is to be sent on failure to issue certificate
             (validator.SendFailureNotificationAsync(transactionId.ToString(), csr, 0xFFFF, "Short description of error that occurred.")).Wait();
             Console.WriteLine("No exceptions means failure notification was recorded succesfully!");
-
-
-            // CARequest Client - Cert Revocation Example
-            var caRequestClient = new IntuneCARequestClient(
-                configProperties,
-                trace: trace
-            );
-
-            // Download CARequests from Intune
-            List<CARequest> caRequests = (caRequestClient.DownloadCARequestsAsync(transactionId.ToString(), 10)).Result;
-
-            // Process CARequest List
-            List<CARequestResult> caRequestResults = new List<CARequestResult>();
-            foreach (CARequest request in caRequests)
-            {
-                switch (request.RequestType)
-                {
-                    case CARequestType.RevokeCertificate:
-
-                        var revokeParams = CARequestRevokeParameters.CreateFromRevokeRequest(request);
-
-                        // Revoke the certificate
-                        RevokeCertificate(
-                            revokeParams.SerialNumber, 
-                            revokeParams.RevocationScenario, 
-                            out bool succeeded, 
-                            out CARequestErrorCode errorCode, 
-                            out string errorMessage);
-
-                        // Add result to list
-                        caRequestResults.Add(CARequestResult.CreateFromCARequest(request, succeeded, errorCode, errorMessage);
-
-                        break;
-                    default:
-                        // Unsupported
-                        caRequestResults.Add(CARequestResult.CreateFromCARequest(request, false, CARequestErrorCode.NotSupportedError, $"Client does not support request type: {request.RequestType}");
-                        break;
-                }
-            }
-
-            // Upload Results
-            (caRequestClient.UploadCARequestResults(transactionId.ToString(), caRequestResults)).Wait();
-        }
-
-        private static void RevokeCertificate(string serialNumber, CARequestRevocationScenario revocationScenario, out bool succeeded, out CARequestErrorCode errorCode, out string errorMessage)
-        {
-            Console.WriteLine($"Revoking Certificate on the Certificate Authority. Serial Number {serialNumber}, Reason: {revocationScenario}");
-
-            succeeded = true;
-            errorCode = CARequestErrorCode.None;
-            errorMessage = null;
-
-            throw new NotImplementedException();
         }
     }
 }

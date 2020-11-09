@@ -171,7 +171,7 @@ namespace Microsoft.Intune
                 throw;
             }
 
-            return results;
+            return result;
         }
     }
 }

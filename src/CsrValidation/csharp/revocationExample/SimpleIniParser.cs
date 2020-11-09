@@ -21,37 +21,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-namespace Microsoft.Management.Services.Api
-{
-    using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
-    /// <summary>
-    /// Class defining the Download parameters sent to the Certificate Authority Request endpoint
-    /// </summary>
-    public class CARequestDownloadParameters
+namespace RevocationExample
+{
+    public class SimpleIniParser
     {
         /// <summary>
-        /// Download Request Filter: Certificate Provider Name
+        /// Initialize an INI file
+        /// Load it if it exists
         /// </summary>
-        [JsonProperty(Required = Required.Default)]
-        public string CertificateProviderName { get; set; }
+        /// <param name="file">Full path where the INI file has to be read from or written to</param>
+        public static Dictionary<string, string> Parse(string file)
+        {
+            if (!File.Exists(file))
+                return null;
 
-        /// <summary>
-        /// Maximum number of requests to download at a time
-        /// </summary>
-        [JsonProperty(Required = Required.Always)]
-        public int MaxMessages { get; set; }
+            var txt = File.ReadAllText(file);
 
-        /// <summary>
-        /// Download Request Filter: Request Type
-        /// </summary>
-        [JsonProperty(Required = Required.Default)]
-        public CARequestType? RequestType { get; set; }
+            Dictionary<string, string> properties = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
-        /// <summary>
-        /// Download Request Filter: Issuer Name 
-        /// </summary>
-        [JsonProperty(Required = Required.Default)]
-        public string IssuerName { get; set; }
+            foreach (var l in txt.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var line = l.Trim();
+
+                if (line.StartsWith("#") || string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                var idx = line.IndexOf("=");
+                if (idx != -1)
+                {
+                    properties[line.Substring(0, idx)] = line.Substring(idx + 1);
+                }
+            }
+
+            return properties;
+        }
     }
 }
