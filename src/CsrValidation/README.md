@@ -3,7 +3,7 @@
 
 This project consists of libraries to help integrate Third Party SCEP SErvers with Intune's SCEP Management Solution.
 
-See [Integrating with Intune SCEP Management Solution](Add link to Intune documentation) for complete documentation on how to use the libraries.
+See [Use APIs to add third-party CAs for SCEP to Intune](https://docs.microsoft.com/en-us/mem/intune/protect/scep-libraries-apis) for complete documentation on how to use the libraries.
 
 # How to build Java
 
