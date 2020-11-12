@@ -70,6 +70,7 @@ namespace RevocationExample
 
             // Download CARequests from Intune
             List<CARevocationRequest> caRequests = (caRequestClient.DownloadCARevocationRequestsAsync(transactionId.ToString(), 10)).Result;
+            Console.WriteLine($"Downloaded {caRequests.Count} number of Revocation requests from Intune.");
 
             // Process CARequest List
             List<CARevocationResult> caRequestResults = new List<CARevocationResult>();
@@ -93,8 +94,11 @@ namespace RevocationExample
                 caRequestResults.Add(newCARequestResult);
             }
 
-            // Upload Results
-            (caRequestClient.UploadCARequestResults(transactionId.ToString(), caRequestResults)).Wait();
+            if (caRequestResults.Count > 0)
+            {
+                // Upload Results
+                (caRequestClient.UploadCARequestResults(transactionId.ToString(), caRequestResults)).Wait();
+            }
         }
 
         private static void RevokeCertificate(string serialNumber, out bool succeeded, out CARequestErrorCode errorCode, out string errorMessage)

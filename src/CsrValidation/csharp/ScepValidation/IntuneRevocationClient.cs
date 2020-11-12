@@ -38,8 +38,8 @@ namespace Microsoft.Intune
     /// </summary>
     public class IntuneRevocationClient
     {
-        public const string DEFAULT_SERVICE_VERSION = "2018-02-20";
-        public const string CAREQUEST_SERVICE_NAME = "StatelessPkiConnectorService";
+        public const string DEFAULT_SERVICE_VERSION = "5019-05-05";
+        public const string CAREQUEST_SERVICE_NAME = "PkiConnectorFEService";
         public const string DOWNLOADREVOCATIONREQUESTS_URL = "CertificateAuthorityRequests/downloadRevocationRequests";
         public const string UPLOADREVOCATIONRESULTS_URL = "CertificateAuthorityRequests/uploadRevocationResults";
         public const int MAXREQUESTS_MAXVALUE = 500;
@@ -47,7 +47,7 @@ namespace Microsoft.Intune
         private TraceSource trace = new TraceSource(nameof(IntuneRevocationClient));
 
         /// <summary>
-        /// The version of the StatelessPkiConnectorService that we are making requests against.
+        /// The version of the PkiConnectorFEService that we are making requests against.
         /// </summary>
         private string serviceVersion = null;
 
@@ -91,7 +91,7 @@ namespace Microsoft.Intune
                 this.trace = trace;
             }
 
-            configProperties.TryGetValue("StatelessPkiConnectorServiceVersion", out this.serviceVersion);
+            configProperties.TryGetValue("PkiConnectorFEServiceVersion", out this.serviceVersion);
             serviceVersion = serviceVersion ?? DEFAULT_SERVICE_VERSION;
 
             // Dependencies
