@@ -106,7 +106,7 @@ namespace Microsoft.Intune
         }
 
         /// <inheritdoc />
-        public async Task<string> PostAsync(string serviceName, string urlSuffix, string apiVersion, JObject json, Guid activityId, Dictionary<string, string> additionalHeaders = null)
+        public async Task<JObject> PostAsync(string serviceName, string urlSuffix, string apiVersion, JObject json, Guid activityId, Dictionary<string, string> additionalHeaders = null)
         {
             if (string.IsNullOrWhiteSpace(serviceName))
             {
@@ -145,6 +145,7 @@ namespace Microsoft.Intune
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
             client.DefaultRequestHeaders.Add("client-request-id", activityId.ToString());
             client.DefaultRequestHeaders.Add("api-version", apiVersion);
+
             var httpContent = new StringContent(json.ToString(), Encoding.UTF8, "application/json");
 
             if (additionalHeaders != null)
@@ -171,7 +172,15 @@ namespace Microsoft.Intune
                 throw;
             }
 
-            return result;
+
+            try
+            {
+                return JObject.Parse(result);
+            }
+            catch (JsonReaderException e)
+            {
+                throw new IntuneClientException($"Failed to parse JSON response from Intune. Response {result}", e);
+            }
         }
     }
 }

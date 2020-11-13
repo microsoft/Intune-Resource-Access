@@ -32,6 +32,7 @@ namespace UnitTests
     using Moq;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
+    using Newtonsoft.Json.Serialization;
 
     [TestClass]
     public class IntuneRevocationClientTests
@@ -44,7 +45,7 @@ namespace UnitTests
             {"PROVIDER_NAME_AND_VERSION","providerName"}
         };
 
-        private string validResponse;
+        private JObject validDownloadResponse;
         private List<CARevocationResult> validRequestResults;
 
         [TestInitialize]
@@ -60,7 +61,13 @@ namespace UnitTests
                     SerialNumber = "1234567890",
                 }
             };
-            validResponse = JsonConvert.SerializeObject(revocationRequests);
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+            validDownloadResponse = new JObject(
+                new JProperty("@odata.context", "https://manage.microsoft.com/RACerts/StatelessPkiConnectorService/$metadata#Collection(microsoft.management.services.api.caRevocationRequest)"),
+                new JProperty("value", JToken.FromObject(revocationRequests)));
 
             // Initialize a sample valid result list for upload
             validRequestResults = new List<CARevocationResult>()
@@ -78,7 +85,7 @@ namespace UnitTests
         [TestMethod]
         public async Task DownloadCARevocationRequestsAsync_ValidResponseTest()
         {
-            Mock<IIntuneClient> mock = CreateDownloadMock(validResponse);
+            Mock<IIntuneClient> mock = CreateDownloadMock(validDownloadResponse);
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
             await client.DownloadCARevocationRequestsAsync(transactionId, 10);
@@ -89,7 +96,17 @@ namespace UnitTests
         public async Task DownloadCARevocationRequestsAsync_InvalidResponseTest()
         {
             string invalidResponse = "This is an invalid response that should fail deserialization";
-            Mock<IIntuneClient> mock = CreateDownloadMock(invalidResponse);
+            Mock<IIntuneClient> mock = CreateDownloadMock(new JObject(new JProperty("value", invalidResponse)));
+            IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
+            string transactionId = Guid.NewGuid().ToString();
+            await client.DownloadCARevocationRequestsAsync(transactionId, 10);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(IntuneClientException))]
+        public async Task DownloadCARevocationRequestsAsync_InvalidResponseTest_NoValue()
+        {
+            Mock<IIntuneClient> mock = CreateDownloadMock(new JObject(new JProperty("not_value", "test")));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
             await client.DownloadCARevocationRequestsAsync(transactionId, 10);
@@ -99,7 +116,7 @@ namespace UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task DownloadCARevocationRequestsAsync_InvalidTransactionId()
         {
-            Mock<IIntuneClient> mock = CreateDownloadMock(validResponse);
+            Mock<IIntuneClient> mock = CreateDownloadMock(validDownloadResponse);
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = null;
             await client.DownloadCARevocationRequestsAsync(transactionId, 10);
@@ -109,7 +126,7 @@ namespace UnitTests
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public async Task DownloadCARevocationRequestsAsync_NegativeMaxRequests()
         {
-            Mock<IIntuneClient> mock = CreateDownloadMock(validResponse);
+            Mock<IIntuneClient> mock = CreateDownloadMock(validDownloadResponse);
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
             await client.DownloadCARevocationRequestsAsync(transactionId, -1);
@@ -119,7 +136,7 @@ namespace UnitTests
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public async Task DownloadCARevocationRequestsAsync_OverMaxRequests()
         {
-            Mock<IIntuneClient> mock = CreateDownloadMock(validResponse);
+            Mock<IIntuneClient> mock = CreateDownloadMock(validDownloadResponse);
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
             await client.DownloadCARevocationRequestsAsync(transactionId, IntuneRevocationClient.MAXREQUESTS_MAXVALUE + 1);
@@ -128,7 +145,7 @@ namespace UnitTests
         [TestMethod]
         public async Task UploadCARequestResults_ValidResultsTest()
         {
-            Mock<IIntuneClient> mock = CreateUploadMock("true");
+            Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("value", true)));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
             await client.UploadCARequestResults(transactionId, validRequestResults);
@@ -138,7 +155,7 @@ namespace UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task UploadCARequestResults_InvalidResultsTest()
         {
-            Mock<IIntuneClient> mock = CreateUploadMock("true");
+            Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("value", true)));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
             await client.UploadCARequestResults(transactionId, new List<CARevocationResult>());
@@ -148,7 +165,7 @@ namespace UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task UploadCARequestResults_NullResultsTest()
         {
-            Mock<IIntuneClient> mock = CreateUploadMock("true");
+            Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("value", true)));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
             await client.UploadCARequestResults(transactionId, null);
@@ -158,7 +175,7 @@ namespace UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task UploadCARequestResults_InvalidTransactionId()
         {
-            Mock<IIntuneClient> mock = CreateUploadMock("true");
+            Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("value", true)));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = null;
             await client.UploadCARequestResults(transactionId, validRequestResults);
@@ -168,7 +185,7 @@ namespace UnitTests
         [ExpectedException(typeof(IntuneClientException))]
         public async Task UploadCARequestResults_FalseResponse()
         {
-            Mock<IIntuneClient> mock = CreateUploadMock("false");
+            Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("value", false)));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
             await client.UploadCARequestResults(transactionId, validRequestResults);
@@ -178,7 +195,17 @@ namespace UnitTests
         [ExpectedException(typeof(IntuneClientException))]
         public async Task UploadCARequestResults_NonBooleanResponse()
         {
-            Mock<IIntuneClient> mock = CreateUploadMock("invalid");
+            Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("value", "test")));
+            IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
+            string transactionId = Guid.NewGuid().ToString();
+            await client.UploadCARequestResults(transactionId, validRequestResults);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(IntuneClientException))]
+        public async Task UploadCARequestResults_NoValueResponse()
+        {
+            Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("not_value", true)));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
             await client.UploadCARequestResults(transactionId, validRequestResults);
@@ -353,7 +380,7 @@ namespace UnitTests
             new IntuneRevocationClient(props);
         }
         
-        private Mock<IIntuneClient> CreateDownloadMock(string response)
+        private Mock<IIntuneClient> CreateDownloadMock(JObject response)
         {
             var mock = new Mock<IIntuneClient>();
             mock.Setup(foo => foo.PostAsync(
@@ -364,12 +391,12 @@ namespace UnitTests
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string, string>>())
             ).Returns(
-                Task.FromResult<string>(response)
+                Task.FromResult<JObject>(response)
             );
             return mock;
         }
 
-        private Mock<IIntuneClient> CreateUploadMock(string response)
+        private Mock<IIntuneClient> CreateUploadMock(JObject response)
         {
             var mock = new Mock<IIntuneClient>();
             mock.Setup(foo => foo.PostAsync(
@@ -380,7 +407,7 @@ namespace UnitTests
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string, string>>())
             ).Returns(
-                Task.FromResult<string>(response)
+                Task.FromResult<JObject>(response)
             );
             return mock;
         }

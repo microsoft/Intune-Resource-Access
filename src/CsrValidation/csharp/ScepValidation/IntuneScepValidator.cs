@@ -259,24 +259,13 @@ namespace Microsoft.Intune
         private async Task PostAsync(JObject requestBody, string urlSuffix, string transactionId)
         {
             Guid activityId = Guid.NewGuid();
-            string resultJson = await intuneClient.PostAsync(VALIDATION_SERVICE_NAME,
+            JObject result = await intuneClient.PostAsync(VALIDATION_SERVICE_NAME,
                         urlSuffix,
                         serviceVersion,
                         requestBody,
                         activityId);
-
-            JObject result;
-            try
-            {
-                result = JObject.Parse(resultJson);
-            }
-            catch (JsonReaderException ex)
-            {
-                throw new IntuneClientException($"Failed to parse JSON response from Intune. Response {resultJson}", ex);
-            }
-
             trace.TraceEvent(TraceEventType.Information, 0, "Activity " + activityId + " has completed.");
-            trace.TraceEvent(TraceEventType.Information, 0, resultJson);
+            trace.TraceEvent(TraceEventType.Information, 0, result.ToString());
 
             string code = (string)result["code"];
             string errorDescription = (string)result["errorDescription"];

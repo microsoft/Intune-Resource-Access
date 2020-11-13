@@ -68,8 +68,13 @@ namespace RevocationExample
                 trace: trace
             );
 
+            // Set Parameters
+            int maxRequests = 10;
+            string certificateProviderName = "TestCA";
+            string issuerName = "test.issuer.com";
+
             // Download CARequests from Intune
-            List<CARevocationRequest> caRequests = (caRequestClient.DownloadCARevocationRequestsAsync(transactionId.ToString(), 10)).Result;
+            List<CARevocationRequest> caRequests = (caRequestClient.DownloadCARevocationRequestsAsync(transactionId.ToString(), maxRequests, certificateProviderName, issuerName)).Result;
             Console.WriteLine($"Downloaded {caRequests.Count} number of Revocation requests from Intune.");
 
             // Process CARequest List

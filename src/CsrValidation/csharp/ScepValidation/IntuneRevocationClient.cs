@@ -24,11 +24,11 @@
 using Microsoft.Management.Services.Api;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.Intune
@@ -147,16 +147,25 @@ namespace Microsoft.Intune
                 CertificateProviderName = certificateProviderName, 
                 IssuerName = issuerName,
             };
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
             JObject requestBody = new JObject(new JProperty("downloadParameters", JToken.FromObject(downloadParamsObj)));
 
             // Perform Download call
-            string result = await PostAsync(requestBody, DOWNLOADREVOCATIONREQUESTS_URL, transactionId);
-
+            JObject result = await PostAsync(requestBody, DOWNLOADREVOCATIONREQUESTS_URL, transactionId);
+            
             // Deserialize the results from the download call
             List<CARevocationRequest> revocationRequests;
             try
             {
-                revocationRequests = JsonConvert.DeserializeObject<IEnumerable<CARevocationRequest>>(result).ToList();
+                if (result == null || result["value"] == null)
+                {
+                    throw new IntuneClientException($"Unable to deeserialize value returned from Intune. No 'value' property is present in the resposne. JSON: {result}.");
+                }
+
+                revocationRequests = (List<CARevocationRequest>)result["value"].ToObject(typeof(List<CARevocationRequest>));
             }
             catch (JsonException e)
             {
@@ -187,10 +196,15 @@ namespace Microsoft.Intune
             JObject requestBody = new JObject(new JProperty("results", JToken.FromObject(requestResults)));
 
             // Perform the Upload results call 
-            string result = await PostAsync(requestBody, UPLOADREVOCATIONRESULTS_URL, transactionId);
+            JObject result = await PostAsync(requestBody, UPLOADREVOCATIONRESULTS_URL, transactionId);
+
+            if (result == null || result["value"] == null)
+            {
+                throw new IntuneClientException($"Unable to deeserialize value returned from Intune. No 'value' property is present in the resposne. JSON: {result}.");
+            }
 
             // Parse the result being sent back from Intune
-            if (!bool.TryParse(result, out bool postSuccessful) || !postSuccessful)
+            if (!bool.TryParse((string)result["value"], out bool postSuccessful) || !postSuccessful)
             {
                 throw new IntuneClientException($"Results not successfully recorded in Intune. Expected 'true' from service. Recieved: '{result}'");
             }
@@ -203,11 +217,11 @@ namespace Microsoft.Intune
         /// <param name="urlSuffix">URL suffix to use in the POST call</param>
         /// <param name="transactionId">Transaction Id</param>
         /// <returns></returns>
-        private async Task<string> PostAsync(JObject requestBody, string urlSuffix, string transactionId)
+        private async Task<JObject> PostAsync(JObject requestBody, string urlSuffix, string transactionId)
         {
             Guid activityId = Guid.NewGuid();
 
-            string resultJson = await intuneClient.PostAsync(CAREQUEST_SERVICE_NAME,
+            JObject resultJson = await intuneClient.PostAsync(CAREQUEST_SERVICE_NAME,
                     urlSuffix,
                     serviceVersion,
                     requestBody,

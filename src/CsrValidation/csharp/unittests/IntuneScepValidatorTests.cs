@@ -60,7 +60,7 @@ namespace UnitTests
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string, string>>())
             ).Returns(
-                Task.FromResult<string>(validResponse.ToString())
+                Task.FromResult<JObject>(validResponse)
             );
 
             Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: mock.Object);
@@ -88,7 +88,7 @@ namespace UnitTests
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string, string>>())
             ).Returns(
-                Task.FromResult<string>(invalidResponse.ToString())
+                Task.FromResult<JObject>(invalidResponse)
             );
 
             Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: mock.Object);
@@ -115,7 +115,7 @@ namespace UnitTests
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string, string>>())
             ).Returns(
-                Task.FromResult<string>(validResponse.ToString())
+                Task.FromResult<JObject>(validResponse)
             );
 
             Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: mock.Object);
@@ -143,7 +143,7 @@ namespace UnitTests
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string, string>>())
             ).Returns(
-                Task.FromResult<string>(invalidResponse.ToString())
+                Task.FromResult<JObject>(invalidResponse)
             );
 
             Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: mock.Object);
@@ -170,7 +170,7 @@ namespace UnitTests
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string, string>>())
             ).Returns(
-                Task.FromResult<string>(validResponse.ToString())
+                Task.FromResult<JObject>(validResponse)
             );
 
             Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: mock.Object);
@@ -198,7 +198,7 @@ namespace UnitTests
                 It.IsAny<Guid>(),
                 It.IsAny<Dictionary<string, string>>())
             ).Returns(
-                Task.FromResult<string>(invalidResponse.ToString())
+                Task.FromResult<JObject>(invalidResponse)
             );
 
             Microsoft.Intune.IntuneScepValidator client = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: mock.Object);

@@ -41,6 +41,6 @@ namespace Microsoft.Intune
         /// <param name="activityId">Client generated ID for correlation of this activity</param>
         /// <param name="additionalHeaders">key value pairs of additional header values to add to the request</param>
         /// <returns>JSON response from service</returns>
-        Task<string> PostAsync(string serviceName, string urlSuffix, string apiVersion, JObject json, Guid activityId, Dictionary<string, string> additionalHeaders = null);
+        Task<JObject> PostAsync(string serviceName, string urlSuffix, string apiVersion, JObject json, Guid activityId, Dictionary<string, string> additionalHeaders = null);
     }
 }
