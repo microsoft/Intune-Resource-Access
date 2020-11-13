@@ -64,7 +64,7 @@ namespace Example
             var transactionId = Guid.NewGuid(); // A GUID that will uniquley identify the entire transaction to allow for log correlation accross Validate and Notification calls.
 
             // The CSR should be in Base64 encoding format
-            string csr = "a";
+            string csr = "";
 
             // This validates the request
             (validator.ValidateRequestAsync(transactionId.ToString(), csr)).Wait();

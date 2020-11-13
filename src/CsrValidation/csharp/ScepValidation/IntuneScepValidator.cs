@@ -22,7 +22,6 @@
 // THE SOFTWARE.
 
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -264,6 +263,7 @@ namespace Microsoft.Intune
                         serviceVersion,
                         requestBody,
                         activityId);
+
             trace.TraceEvent(TraceEventType.Information, 0, "Activity " + activityId + " has completed.");
             trace.TraceEvent(TraceEventType.Information, 0, result.ToString());
 

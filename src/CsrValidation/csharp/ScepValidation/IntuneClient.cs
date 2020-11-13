@@ -145,7 +145,6 @@ namespace Microsoft.Intune
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
             client.DefaultRequestHeaders.Add("client-request-id", activityId.ToString());
             client.DefaultRequestHeaders.Add("api-version", apiVersion);
-
             var httpContent = new StringContent(json.ToString(), Encoding.UTF8, "application/json");
 
             if (additionalHeaders != null)
@@ -171,6 +170,7 @@ namespace Microsoft.Intune
                 this.locationProvider.Clear(); // clear contents in case the service location has changed and we cached the value
                 throw;
             }
+
 
 
             try
