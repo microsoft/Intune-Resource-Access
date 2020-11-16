@@ -123,7 +123,7 @@ namespace UnitTests
             Guid transactionId = Guid.NewGuid();
             string csr = "testing";
 
-            await client.SendSuccessNotificationAsync(transactionId.ToString(), csr, "thumpbrint", "serial", "expire", "auth");
+            await client.SendSuccessNotificationAsync(transactionId.ToString(), csr, "thumpbrint", "serial", "expire", "auth", "caCinfig", "certauthroty");
         }
 
         [TestMethod]
@@ -151,7 +151,7 @@ namespace UnitTests
             Guid transactionId = Guid.NewGuid();
             string csr = "testing";
 
-            await client.SendSuccessNotificationAsync(transactionId.ToString(), csr, "thumpbrint", "serial", "expire", "auth");
+            await client.SendSuccessNotificationAsync(transactionId.ToString(), csr, "thumpbrint", "serial", "expire", "auth", "caConfig", "certAuthorty");
         }
 
         [TestMethod]

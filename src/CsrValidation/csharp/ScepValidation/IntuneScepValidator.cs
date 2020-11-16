@@ -170,7 +170,7 @@ namespace Microsoft.Intune
         /// <param name="certExpirationDate">The date time string should be formated as web UTC time (YYYY-MM-DDThh:mm:ss.sssTZD) ISO 8601. </param>
         /// <param name="certIssuingAuthority">Issuing Authority that issued the certificate.</param>
         /// <returns></returns>
-        public async Task SendSuccessNotificationAsync(string transactionId, string certificateRequest, string certThumbprint, string certSerialNumber, string certExpirationDate, string certIssuingAuthority)
+        public async Task SendSuccessNotificationAsync(string transactionId, string certificateRequest, string certThumbprint, string certSerialNumber, string certExpirationDate, string certIssuingAuthority, string caConfiguration, string certificateAuthority)
         {
             if (string.IsNullOrWhiteSpace(transactionId))
             {
@@ -210,7 +210,9 @@ namespace Microsoft.Intune
                     new JProperty("certificateSerialNumber", certSerialNumber),
                     new JProperty("certificateExpirationDateUtc", certExpirationDate),
                     new JProperty("issuingCertificateAuthority", certIssuingAuthority),
-                    new JProperty("callerInfo", this.providerNameAndVersion))));
+                    new JProperty("callerInfo", this.providerNameAndVersion),
+                    new JProperty("caConfiguration", caConfiguration),
+                    new JProperty("certificateAuthority", certificateAuthority))));
 
             await PostAsync(requestBody, NOTIFY_SUCCESS_URL, transactionId);
         }
