@@ -24,6 +24,7 @@
 namespace Microsoft.Management.Services.Api
 {
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
 
     /// <summary>
     /// Class defining the results of a Certificate Authority Request
@@ -46,6 +47,7 @@ namespace Microsoft.Management.Services.Api
         /// The Error Code for a failed request
         /// </summary>
         [JsonProperty(Required = Required.Default)]
+        [JsonConverter(typeof(StringEnumConverter))]
         public CARequestErrorCode ErrorCode { get; set; }
 
         /// <summary>
