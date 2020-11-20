@@ -169,6 +169,8 @@ namespace Microsoft.Intune
         /// <param name="certSerialNumber">Serial number of the certificate issued.</param>
         /// <param name="certExpirationDate">The date time string should be formated as web UTC time (YYYY-MM-DDThh:mm:ss.sssTZD) ISO 8601. </param>
         /// <param name="certIssuingAuthority">Issuing Authority that issued the certificate.</param>
+        /// <param name="caConfiguration">CA configuration that issued the certificate.</param>
+        /// <param name="certificateAuthority">Certificate Authority that issued the certificate.</param>
         /// <returns></returns>
         public async Task SendSuccessNotificationAsync(string transactionId, string certificateRequest, string certThumbprint, string certSerialNumber, string certExpirationDate, string certIssuingAuthority, string caConfiguration, string certificateAuthority)
         {

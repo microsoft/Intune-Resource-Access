@@ -132,10 +132,12 @@ public class IntuneScepServiceClient extends IntuneClient
      * @param certSerialNumber Serial number of the certificate issued.
      * @param certExpirationDate The date time string should be formated as web UTC time (YYYY-MM-DDThh:mm:ss.sssTZD) ISO 8601. 
      * @param certIssuingAuthority Issuing Authority that issued the certificate.
+     * @param caConfiguration CA Configuration that issued the certificate.
+     * @param certificateAuthority Certificate Authority that issued the certificate.
      * @throws IntuneScepServiceException The service reported a failure in processing the notification examine the exception error code.
      * @throws Exception Unexpected error
      */
-    public void SendSuccessNotification(String transactionId, String certificateRequest, String certThumbprint, String certSerialNumber, String certExpirationDate, String certIssuingAuthority) throws IntuneScepServiceException, Exception
+    public void SendSuccessNotification(String transactionId, String certificateRequest, String certThumbprint, String certSerialNumber, String certExpirationDate, String certIssuingAuthority, String caConfiguration, String certificateAuthority) throws IntuneScepServiceException, Exception
     {
         if(transactionId == null || transactionId.isEmpty())
         {
@@ -175,7 +177,9 @@ public class IntuneScepServiceClient extends IntuneClient
                     .put("certificateSerialNumber", certSerialNumber)
                     .put("certificateExpirationDateUtc", certExpirationDate)
                     .put("issuingCertificateAuthority", certIssuingAuthority)
-                    .put("callerInfo", this.providerNameAndVersion));
+                    .put("callerInfo", this.providerNameAndVersion)
+                    .put("caConfiguration", caConfiguration)
+                    .put("certificateAuthority", certificateAuthority));
         
         Post(requestBody, NOTIFY_SUCCESS_URL, transactionId);
     }

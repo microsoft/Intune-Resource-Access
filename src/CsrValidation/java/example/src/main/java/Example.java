@@ -48,7 +48,7 @@ public class Example
         {
             client.ValidateRequest(transactionId.toString(), csr);
             
-            client.SendSuccessNotification(transactionId.toString(), csr, "thumbprint", "serial", "2018-06-11T16:11:20.0904778Z", "authority");
+            client.SendSuccessNotification(transactionId.toString(), csr, "thumbprint", "serial", "2018-06-11T16:11:20.0904778Z", "authority", "caConfig", "certAuthority");
             
             client.SendFailureNotification(transactionId.toString(), csr, 0x8000ffff, "description");    
         }
