@@ -121,29 +121,29 @@ namespace Microsoft.Intune
         }
 
         /// <summary>
-        /// Downloads a list of CARequests from Intune to be acted on
+        /// Downloads a list of CARevocationRequests from Intune to be acted on
         /// </summary>
         /// <param name="transactionId">Transaction Id for request</param>
-        /// <param name="maxCARequestsToDownload">The maximum number of requests to download</param>
+        /// <param name="maxCARevocationRequestsToDownload">The maximum number of requests to download</param>
         /// <param name="certificateProviderName">Optional filter for the name of the Certificate Authority</param>
         /// <param name="issuerName">Optional filter for the issuer name</param>
-        /// <returns>List of CARequests</returns>
-        public async Task<List<CARevocationRequest>> DownloadCARevocationRequestsAsync(string transactionId, int maxCARequestsToDownload, string certificateProviderName = null, string issuerName = null)
+        /// <returns>List of CARevocationRequests</returns>
+        public async Task<List<CARevocationRequest>> DownloadCARevocationRequestsAsync(string transactionId, int maxCARevocationRequestsToDownload, string certificateProviderName = null, string issuerName = null)
         {
             // Validate the parameters
             if (string.IsNullOrWhiteSpace(transactionId))
             {
                 throw new ArgumentNullException(nameof(transactionId));
             }
-            if (maxCARequestsToDownload <= 0 || maxCARequestsToDownload > MAXREQUESTS_MAXVALUE)
+            if (maxCARevocationRequestsToDownload <= 0 || maxCARevocationRequestsToDownload > MAXREQUESTS_MAXVALUE)
             {
-                throw new ArgumentOutOfRangeException($"{nameof(maxCARequestsToDownload)} should be between 1 and {MAXREQUESTS_MAXVALUE}. {nameof(maxCARequestsToDownload)} value Requested: {maxCARequestsToDownload}.");
+                throw new ArgumentOutOfRangeException($"{nameof(maxCARevocationRequestsToDownload)} should be between 1 and {MAXREQUESTS_MAXVALUE}. {nameof(maxCARevocationRequestsToDownload)} value Requested: {maxCARevocationRequestsToDownload}.");
             }
 
             // Create CARevocationDownloadParameters request body to send to Intune
             var downloadParamsObj = new CARevocationDownloadParameters()
             {
-                MaxRequests = maxCARequestsToDownload,
+                MaxRequests = maxCARevocationRequestsToDownload,
                 CertificateProviderName = certificateProviderName, 
                 IssuerName = issuerName,
             };
@@ -180,7 +180,7 @@ namespace Microsoft.Intune
         /// </summary>
         /// <param name="transactionId">The transactionId</param>
         /// <param name="requestResults">List of CARevocationResult to send to Intune</param>
-        public async Task UploadCARequestResults(string transactionId, List<CARevocationResult> requestResults)
+        public async Task UploadRevocationResults(string transactionId, List<CARevocationResult> requestResults)
         {
             // Validate the parameters
             if (string.IsNullOrWhiteSpace(transactionId))
