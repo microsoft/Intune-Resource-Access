@@ -28,10 +28,10 @@ package com.microsoft.intune.carequest;
 */
 public class CARevocationResult 
 {
-	public String RequestContext;
-	public boolean Succeeded;
-	public String ErrorCode;
-	public String ErrorMessage;
+	public String requestContext;
+	public boolean succeeded;
+	public String errorCode;
+	public String errorMessage;
 	
 	/**
 	 * CARevocationResult Constructor
@@ -58,9 +58,9 @@ public class CARevocationResult
 		    throw new IllegalArgumentException("The argument 'errorCode' may not be set to 0 ('None') if succeeded is set to true"); 
 		}
 			
-		this.RequestContext = requestContext;
-		this.Succeeded = succeeded;
-		this.ErrorCode = errorCode.Value;
-		this.ErrorMessage = errorMessage;
+		this.requestContext = requestContext;
+		this.succeeded = succeeded;
+		this.errorCode = errorCode.Value;
+		this.errorMessage = errorMessage;
 	}
 }

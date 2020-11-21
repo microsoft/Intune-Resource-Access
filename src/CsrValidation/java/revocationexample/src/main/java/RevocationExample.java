@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import com.microsoft.intune.scepvalidation.IntuneRevocationClient;
+import com.microsoft.intune.carequest.CARequestErrorCodes;
 import com.microsoft.intune.carequest.CARevocationRequest;
 import com.microsoft.intune.carequest.CARevocationResult;
 import com.microsoft.intune.scepvalidation.IntuneClientException;
@@ -38,7 +39,7 @@ public class RevocationExample
     {        
         // *** IMPORTANT ***: This property file contains a parameter named AAD_APP_KEY.  This parameter is a secret and needs to be secured.
         //                    Please secure this file properly on your file system.
-        InputStream in = Example.class.getResourceAsStream("com.microsoft.intune.props");
+        InputStream in = RevocationExample.class.getResourceAsStream("com.microsoft.intune.props");
         Properties props = new Properties();
         props.load(in);
         in.close();
@@ -49,7 +50,7 @@ public class RevocationExample
         IntuneRevocationClient client = new IntuneRevocationClient(props);
         
         // Set Download Parameters
-        int maxRequests = 100; // Maximum number of Revocation requests to download at a time
+        int maxRequests = 10; // Maximum number of Revocation requests to download at a time
         String certificateProviderName = null; // Optional Parameter: Set this value if you want to filter 
                                                //   the request to only download request matching this CA Name
         String issuerName = null; // Optional Parameter: Set this value if you want to filter 
@@ -58,7 +59,7 @@ public class RevocationExample
         try 
         {
         	// Download CARevocationRequests from Intune
-        	List<CARevocationRequest> revocationRequests = client.DownloadCARevocationRequests(transactionIdtransactionId.toString(), maxRequest, certificateProviderName, issuerName);
+        	List<CARevocationRequest> revocationRequests = client.DownloadCARevocationRequests(transactionId.toString(), maxRequests, certificateProviderName, issuerName);
         	
         	// Process CARevocationRequest List
         	List<CARevocationResult> caRevocationResults = new ArrayList<CARevocationResult>();
@@ -71,19 +72,12 @@ public class RevocationExample
         		caRevocationResults.add(result);
         	}
         	
-        	 if (caRevocationResults.Count > 0)
+        	 if (caRevocationResults.size() > 0)
              {
-                 try
-                 {
-                     Console.WriteLine($"Uploading {caRevocationResuls.Count} Revocation Results to Intune.");
+        		 System.out.println("Uploading" + caRevocationResults.size() + " Revocation Results to Intune.");
 
-                     // Upload Results to Intune
-                     client.UploadRevocationResults(transactionId.toString(), caRevocationResults);
-                 }
-                 catch(AggregateException e)
-                 {
-                     Console.WriteLine($"Upload of results to to Intune Failed. Exception: {e.InnerException}");
-                 }
+                 // Upload Results to Intune
+                 client.UploadRevocationResults(transactionId.toString(), caRevocationResults);
              }
         }
         catch(IntuneClientException e)
@@ -104,6 +98,6 @@ public class RevocationExample
     {
     	// PLACEHOLDER: Add Revoke Certificate Handling
     	
-    	
+    	return new CARevocationResult(revocationRequest.requestContext, true, CARequestErrorCodes.None, null);
     }
  }

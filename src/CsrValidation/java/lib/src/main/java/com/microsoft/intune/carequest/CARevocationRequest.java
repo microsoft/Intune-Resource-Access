@@ -28,10 +28,10 @@ package com.microsoft.intune.carequest;
  */
 public class CARevocationRequest 
 {
-	public String RequestContext;
-	public String SerialNumber;
-	public String IssuerName;
-	public String CaConfiguration;
+	public String requestContext;
+	public String serialNumber;
+	public String issuerName;
+	public String caConfiguration;
 	
 	/**
 	 * Default Constructor
@@ -61,9 +61,9 @@ public class CARevocationRequest
             throw new IllegalArgumentException("The argument 'serialNumber' may not be 'null'"); 
         }
 		
-		RequestContext = requestContext;
-		SerialNumber = serialNumber;
-		IssuerName = issuerName;
-		CaConfiguration = caConfig;
+		this.requestContext = requestContext;
+		this.serialNumber = serialNumber;
+		this.issuerName = issuerName;
+		this.caConfiguration = caConfig;
 	}
 }

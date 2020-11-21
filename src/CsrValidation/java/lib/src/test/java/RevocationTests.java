@@ -92,15 +92,15 @@ public class RevocationTests
         assertNotNull(results);
         assertEquals(2, results.size());
         assertNotNull(results.get(0));
-        assertEquals("requestContext1", results.get(0).RequestContext);
-        assertEquals("serialNumber1", results.get(0).SerialNumber);
-        assertEquals("issuerName1", results.get(0).IssuerName);
-        assertEquals("caConfig1", results.get(0).CaConfiguration);
+        assertEquals("requestContext1", results.get(0).requestContext);
+        assertEquals("serialNumber1", results.get(0).serialNumber);
+        assertEquals("issuerName1", results.get(0).issuerName);
+        assertEquals("caConfig1", results.get(0).caConfiguration);
         assertNotNull(results.get(1));
-        assertEquals("requestContext2", results.get(1).RequestContext);
-        assertEquals("serialNumber2", results.get(1).SerialNumber);
-        assertEquals("issuerName2", results.get(1).IssuerName);
-        assertEquals("caConfig2", results.get(1).CaConfiguration);
+        assertEquals("requestContext2", results.get(1).requestContext);
+        assertEquals("serialNumber2", results.get(1).serialNumber);
+        assertEquals("issuerName2", results.get(1).issuerName);
+        assertEquals("caConfig2", results.get(1).caConfiguration);
     }
     
     @org.junit.Test

@@ -119,9 +119,9 @@ public class IntuneRevocationClient extends IntuneClient
         // Create Request Body 
         JSONObject requestBody = new JSONObject().put(
                 "downloadParameters", (new JSONObject())
-                    .put("maxRequests", transactionId)
-                    .put("certificateProviderName", certificateProviderName)
-                    .put("issuerName", issuerName));
+                    .put("maxRequests", maxCARequestsToDownload)
+                    .put("certificateProviderName", certificateProviderName == null ? JSONObject.NULL : certificateProviderName)
+                    .put("issuerName", issuerName == null ? JSONObject.NULL : issuerName));
         UUID activityId = UUID.randomUUID();
         
         // Send the POST request to Intune
