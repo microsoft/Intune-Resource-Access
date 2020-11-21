@@ -180,7 +180,7 @@ namespace Microsoft.Intune
         /// </summary>
         /// <param name="transactionId">The transactionId</param>
         /// <param name="requestResults">List of CARevocationResult to send to Intune</param>
-        public async Task UploadRevocationResults(string transactionId, List<CARevocationResult> requestResults)
+        public async Task UploadRevocationResultsAsync(string transactionId, List<CARevocationResult> requestResults)
         {
             // Validate the parameters
             if (string.IsNullOrWhiteSpace(transactionId))

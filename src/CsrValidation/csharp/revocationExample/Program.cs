@@ -64,7 +64,7 @@ namespace RevocationExample
             var transactionId = Guid.NewGuid(); // A GUID that will uniquley identify the entire transaction to allow for log correlation accross Validate and Notification calls.
 
             // Create CARevocationRequest Client 
-            var caRevocationClient = new IntuneRevocationClient(
+            var revocationClient = new IntuneRevocationClient(
                 configProperties,
                 trace: trace
             );
@@ -77,11 +77,11 @@ namespace RevocationExample
                                       //   the request to only download request matching this Issuer Name
 
             // Download CARevocationRequests from Intune
-            List<CARevocationRequest> caRevocationRequests = (caRevocationClient.DownloadCARevocationRequestsAsync(transactionId.ToString(), maxRequests, certificateProviderName, issuerName)).Result;
+            List<CARevocationRequest> caRevocationRequests = (revocationClient.DownloadCARevocationRequestsAsync(transactionId.ToString(), maxRequests, certificateProviderName, issuerName)).Result;
             Console.WriteLine($"Downloaded {caRevocationRequests.Count} number of Revocation requests from Intune.");
 
             // Process CARevocationRequest List
-            List<CARevocationResult> caRevocationResuls = new List<CARevocationResult>();
+            List<CARevocationResult> revocationResults = new List<CARevocationResult>();
             foreach (CARevocationRequest request in caRevocationRequests)
             {
                 // Revoke the certificate
@@ -92,17 +92,17 @@ namespace RevocationExample
                     out string errorMessage);
 
                 // Add result to list
-                caRevocationResuls.Add(new CARevocationResult(request.RequestContext, succeeded, errorCode, errorMessage));
+                revocationResults.Add(new CARevocationResult(request.RequestContext, succeeded, errorCode, errorMessage));
             }
 
-            if (caRevocationResuls.Count > 0)
+            if (revocationResults.Count > 0)
             {
                 try
                 {
-                    Console.WriteLine($"Uploading {caRevocationResuls.Count} Revocation Results to Intune.");
+                    Console.WriteLine($"Uploading {revocationResults.Count} Revocation Results to Intune.");
 
                     // Upload Results to Intune
-                    (caRevocationClient.UploadRevocationResults(transactionId.ToString(), caRevocationResuls)).Wait();
+                    (revocationClient.UploadRevocationResultsAsync(transactionId.ToString(), revocationResults)).Wait();
                 }
                 catch(AggregateException e)
                 {
