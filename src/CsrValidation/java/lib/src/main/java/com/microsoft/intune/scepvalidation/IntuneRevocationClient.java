@@ -29,6 +29,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,8 +160,9 @@ public class IntuneRevocationClient extends IntuneClient
         }
         
         // Create Request Body 
+        String revocationResultsJson =  new Gson().toJsonTree(revocationResults).getAsJsonArray().toString();
         JSONObject requestBody = new JSONObject().put(
-                "results", new JSONObject(revocationResults));
+                "results", new JSONArray(revocationResultsJson));
         UUID activityId = UUID.randomUUID();
         
         // Send the POST request to Intune

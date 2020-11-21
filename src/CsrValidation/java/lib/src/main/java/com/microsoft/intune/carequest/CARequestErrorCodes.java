@@ -29,38 +29,38 @@ package com.microsoft.intune.carequest;
 public enum CARequestErrorCodes 
 {
 	// No Errors Occurred
-	None(0),
+	None("0"),
 
     // General Non-Retryable Service error
-    NonRetryableServiceException(4000),
+    NonRetryableServiceException("4000"),
     // Data failed to deserialize correctly (non-retryable).
-    DataSerializationError(4001),
+    DataSerializationError("4001"),
     // Data contained invalid parameters (non-retryable).
-    ParameterDataInvalidError(4002),
+    ParameterDataInvalidError("4002"),
     // Cryptography error attempting to fulfill request (non-retryable).
-    CryptographyError(4003),
+    CryptographyError("4003"),
     // Could not locate the requested Certificate (non-retryable).
-    CertificateNotFoundError(4004),
-    // Conflict processing request), Ex. trying to revoke an already revoked certificate (non-retryable)
-    ConflictError(4005),
+    CertificateNotFoundError("4004"),
+    // Conflict processing request"), Ex. trying to revoke an already revoked certificate (non-retryable)
+    ConflictError("4005"),
     // Request  Not Supported (non-retryable).
-    NotSupportedError(4006),
+    NotSupportedError("4006"),
     // Request is larger than what is allowed by the requesting service (non-retryable).
-    PayloadTooLargeError(4007),
+    PayloadTooLargeError("4007"),
 
     // General Retryable Service error
-    RetryableServiceException(4100),
+    RetryableServiceException("4100"),
     // Service Unavailable Exception (retryable).
-    ServiceUnavailableException(4101),   
+    ServiceUnavailableException("4101"),   
     // Service Too Busy Exception (retryable).
-    ServiceTooBusyException(4102),
+    ServiceTooBusyException("4102"),
     // Authentication Failure Exception (retryable).
-    AuthenticationException(4103);
+    AuthenticationException("4103");
 	
-	public final int Value;
+	public final String Value;
 	
-	private CARequestErrorCodes(int value) 
+	private CARequestErrorCodes(String value) 
 	{
-		this.Value = value;.
+		this.Value = value;
 	}
 }

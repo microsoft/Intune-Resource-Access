@@ -30,9 +30,9 @@ public class CARevocationResult
 {
 	public String RequestContext;
 	public boolean Succeeded;
-	public int ErrorCode;
+	public String ErrorCode;
 	public String ErrorMessage;
-		
+	
 	/**
 	 * CARevocationResult Constructor
 	 * @param requestContext Context for the request
@@ -43,9 +43,9 @@ public class CARevocationResult
 	 */
 	public CARevocationResult(String requestContext, boolean succeeded, CARequestErrorCodes errorCode, String errorMessage)
 	{
-		if (requestContext == null)
+		if (requestContext == null || requestContext.isEmpty())
 		{
-		    throw new IllegalArgumentException("The argument 'requestContext' may not be 'null'"); 
+		    throw new IllegalArgumentException("The argument 'requestContext' may not be null or empty"); 
 		}
 		
 		if (succeeded && errorCode != CARequestErrorCodes.None)
