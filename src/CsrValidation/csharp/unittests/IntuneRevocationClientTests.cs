@@ -72,13 +72,7 @@ namespace UnitTests
             // Initialize a sample valid result list for upload
             validRequestResults = new List<CARevocationResult>()
             {
-                new CARevocationResult()
-                {
-                    RequestContext = "test-context",
-                    Succeeded = true,
-                    ErrorCode = CARequestErrorCode.None,
-                    ErrorMessage = null
-                }
+                new CARevocationResult("test-context", true, CARequestErrorCode.None, null)
             };
         }
 
@@ -148,7 +142,7 @@ namespace UnitTests
             Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("value", true)));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
-            await client.UploadCARequestResults(transactionId, validRequestResults);
+            await client.UploadRevocationResultsAsync(transactionId, validRequestResults);
         }
 
         [TestMethod]
@@ -158,7 +152,7 @@ namespace UnitTests
             Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("value", true)));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
-            await client.UploadCARequestResults(transactionId, new List<CARevocationResult>());
+            await client.UploadRevocationResultsAsync(transactionId, new List<CARevocationResult>());
         }
 
         [TestMethod]
@@ -168,7 +162,7 @@ namespace UnitTests
             Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("value", true)));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
-            await client.UploadCARequestResults(transactionId, null);
+            await client.UploadRevocationResultsAsync(transactionId, null);
         }
 
         [TestMethod]
@@ -178,7 +172,7 @@ namespace UnitTests
             Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("value", true)));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = null;
-            await client.UploadCARequestResults(transactionId, validRequestResults);
+            await client.UploadRevocationResultsAsync(transactionId, validRequestResults);
         }
 
         [TestMethod]
@@ -188,7 +182,7 @@ namespace UnitTests
             Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("value", false)));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
-            await client.UploadCARequestResults(transactionId, validRequestResults);
+            await client.UploadRevocationResultsAsync(transactionId, validRequestResults);
         }
 
         [TestMethod]
@@ -198,7 +192,7 @@ namespace UnitTests
             Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("value", "test")));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
-            await client.UploadCARequestResults(transactionId, validRequestResults);
+            await client.UploadRevocationResultsAsync(transactionId, validRequestResults);
         }
 
         [TestMethod]
@@ -208,7 +202,7 @@ namespace UnitTests
             Mock<IIntuneClient> mock = CreateUploadMock(new JObject(new JProperty("not_value", true)));
             IntuneRevocationClient client = new IntuneRevocationClient(configProperties, intuneClient: mock.Object);
             string transactionId = Guid.NewGuid().ToString();
-            await client.UploadCARequestResults(transactionId, validRequestResults);
+            await client.UploadRevocationResultsAsync(transactionId, validRequestResults);
         }
 
         [TestMethod]

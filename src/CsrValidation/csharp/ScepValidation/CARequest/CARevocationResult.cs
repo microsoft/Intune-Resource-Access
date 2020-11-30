@@ -24,6 +24,8 @@
 namespace Microsoft.Management.Services.Api
 {
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
+    using System;
 
     /// <summary>
     /// Class defining the results of a Certificate Authority Request
@@ -46,6 +48,7 @@ namespace Microsoft.Management.Services.Api
         /// The Error Code for a failed request
         /// </summary>
         [JsonProperty(Required = Required.Default)]
+        [JsonConverter(typeof(StringEnumConverter))]
         public CARequestErrorCode ErrorCode { get; set; }
 
         /// <summary>
@@ -53,5 +56,30 @@ namespace Microsoft.Management.Services.Api
         /// </summary>
         [JsonProperty(Required = Required.Default)]
         public string ErrorMessage { get; set; }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="requestContext"></param>
+        /// <param name="succeeded"></param>
+        /// <param name="errorCode"></param>
+        /// <param name="errorMessage"></param>
+        public CARevocationResult(string requestContext, bool succeeded, CARequestErrorCode errorCode, string errorMessage)
+        {
+            // Validation of params
+            if (string.IsNullOrWhiteSpace(requestContext))
+            {
+                throw new ArgumentNullException(nameof(requestContext));
+            }
+            if (succeeded && (errorCode != CARequestErrorCode.None || !string.IsNullOrWhiteSpace(errorMessage)))
+            {
+                throw new ArgumentException($"CARevocationResult be set to Succeeded=true along with an error code or error message. Error Code: {errorCode}; Error Message: {errorMessage};");
+            }
+
+            this.RequestContext = requestContext;
+            this.Succeeded = succeeded;
+            this.ErrorCode = errorCode;
+            this.ErrorMessage = errorMessage;
+        }
     }
 }

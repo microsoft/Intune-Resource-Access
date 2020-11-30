@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http;
 using Microsoft.Intune;
 using Microsoft.Management.Services.Api;
 
@@ -63,23 +64,25 @@ namespace RevocationExample
             var transactionId = Guid.NewGuid(); // A GUID that will uniquley identify the entire transaction to allow for log correlation accross Validate and Notification calls.
 
             // Create CARevocationRequest Client 
-            var caRequestClient = new IntuneRevocationClient(
+            var revocationClient = new IntuneRevocationClient(
                 configProperties,
                 trace: trace
             );
 
-            // Set Parameters
-            int maxRequests = 10;
-            string certificateProviderName = "TestCA";
-            string issuerName = "test.issuer.com";
+            // Set Download Parameters
+            int maxRequests = 100; // Maximum number of Revocation requests to download at a time
+            string certificateProviderName = null; // Optional Parameter: Set this value if you want to filter 
+                                                   //   the request to only download request matching this CA Name
+            string issuerName = null; // Optional Parameter: Set this value if you want to filter 
+                                      //   the request to only download request matching this Issuer Name
 
-            // Download CARequests from Intune
-            List<CARevocationRequest> caRequests = (caRequestClient.DownloadCARevocationRequestsAsync(transactionId.ToString(), maxRequests, certificateProviderName, issuerName)).Result;
-            Console.WriteLine($"Downloaded {caRequests.Count} number of Revocation requests from Intune.");
+            // Download CARevocationRequests from Intune
+            List<CARevocationRequest> caRevocationRequests = (revocationClient.DownloadCARevocationRequestsAsync(transactionId.ToString(), maxRequests, certificateProviderName, issuerName)).Result;
+            Console.WriteLine($"Downloaded {caRevocationRequests.Count} number of Revocation requests from Intune.");
 
-            // Process CARequest List
-            List<CARevocationResult> caRequestResults = new List<CARevocationResult>();
-            foreach (CARevocationRequest request in caRequests)
+            // Process CARevocationRequest List
+            List<CARevocationResult> revocationResults = new List<CARevocationResult>();
+            foreach (CARevocationRequest request in caRevocationRequests)
             {
                 // Revoke the certificate
                 RevokeCertificate(
@@ -89,20 +92,22 @@ namespace RevocationExample
                     out string errorMessage);
 
                 // Add result to list
-                var newCARequestResult = new CARevocationResult()
-                {
-                    RequestContext = request.RequestContext,
-                    Succeeded = succeeded,
-                    ErrorCode = errorCode,
-                    ErrorMessage = errorMessage
-                };
-                caRequestResults.Add(newCARequestResult);
+                revocationResults.Add(new CARevocationResult(request.RequestContext, succeeded, errorCode, errorMessage));
             }
 
-            if (caRequestResults.Count > 0)
+            if (revocationResults.Count > 0)
             {
-                // Upload Results
-                (caRequestClient.UploadCARequestResults(transactionId.ToString(), caRequestResults)).Wait();
+                try
+                {
+                    Console.WriteLine($"Uploading {revocationResults.Count} Revocation Results to Intune.");
+
+                    // Upload Results to Intune
+                    (revocationClient.UploadRevocationResultsAsync(transactionId.ToString(), revocationResults)).Wait();
+                }
+                catch(AggregateException e)
+                {
+                    Console.WriteLine($"Upload of results to to Intune Failed. Exception: {e.InnerException}");
+                }
             }
         }
 
@@ -112,7 +117,7 @@ namespace RevocationExample
 
             succeeded = true;
             errorCode = CARequestErrorCode.None;
-            errorMessage = null;
+            errorMessage = "";
 
             // throw new NotImplementedException();
         }
