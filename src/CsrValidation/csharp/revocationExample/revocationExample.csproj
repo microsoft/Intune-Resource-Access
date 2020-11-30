@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E098361D-461E-44A1-8D50-AA31B100D0BD}</ProjectGuid>
+    <ProjectGuid>{7B994FCD-025E-4019-8673-71603938D074}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>example</RootNamespace>
-    <AssemblyName>example</AssemblyName>
+    <RootNamespace>revocationExample</RootNamespace>
+    <AssemblyName>revocationExample</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -47,10 +47,6 @@
     <Compile Include="SimpleIniParser.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="App.config" />
     <None Include="com.microsoft.intune.props">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -58,10 +54,20 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\SCEPValidation\ScepValidation.csproj">
       <Project>{0c63c72b-fb44-4546-9860-e1e0095b370c}</Project>
       <Name>ScepValidation</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="com.microsoft.intune.props">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
