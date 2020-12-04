@@ -99,12 +99,11 @@ public class IntuneRevocationClient extends IntuneClient
      * 
      * @param transactionId The transactionId 
      * @param maxCARequestsToDownload Maximum number of requests to download from Intune
-     * @param certificateProviderName Optional filter for the name of the Certificate Authority
      * @param issuerName Optional filter for the issuer name
      * @throws IntuneClientException The service reported a failure in processing the notification examine the exception error code.
      * @throws IllegalArgumentException
      */
-    public List<CARevocationRequest> DownloadCARevocationRequests(String transactionId, int maxCARequestsToDownload, String certificateProviderName, String issuerName) throws IntuneScepServiceException, Exception
+    public List<CARevocationRequest> DownloadCARevocationRequests(String transactionId, int maxCARequestsToDownload, String issuerName) throws IntuneScepServiceException, Exception
     {
     	// Validate Parameters
         if(transactionId == null || transactionId.isEmpty())
@@ -120,7 +119,6 @@ public class IntuneRevocationClient extends IntuneClient
         JSONObject requestBody = new JSONObject().put(
                 "downloadParameters", (new JSONObject())
                     .put("maxRequests", maxCARequestsToDownload)
-                    .put("certificateProviderName", certificateProviderName == null ? JSONObject.NULL : certificateProviderName)
                     .put("issuerName", issuerName == null ? JSONObject.NULL : issuerName));
         UUID activityId = UUID.randomUUID();
         

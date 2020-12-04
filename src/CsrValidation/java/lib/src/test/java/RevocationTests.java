@@ -71,7 +71,7 @@ public class RevocationTests
         
         UUID transactionId = UUID.randomUUID();
 
-        List<CARevocationRequest> results = client.DownloadCARevocationRequests(transactionId.toString(), 10, null, null);
+        List<CARevocationRequest> results = client.DownloadCARevocationRequests(transactionId.toString(), 10, null);
         
         verify(helper.adal, times(2)).getAccessTokenFromCredential(anyString());
         

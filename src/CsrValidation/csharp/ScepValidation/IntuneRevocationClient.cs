@@ -125,10 +125,9 @@ namespace Microsoft.Intune
         /// </summary>
         /// <param name="transactionId">Transaction Id for request</param>
         /// <param name="maxCARevocationRequestsToDownload">The maximum number of requests to download</param>
-        /// <param name="certificateProviderName">Optional filter for the name of the Certificate Authority</param>
         /// <param name="issuerName">Optional filter for the issuer name</param>
         /// <returns>List of CARevocationRequests</returns>
-        public async Task<List<CARevocationRequest>> DownloadCARevocationRequestsAsync(string transactionId, int maxCARevocationRequestsToDownload, string certificateProviderName = null, string issuerName = null)
+        public async Task<List<CARevocationRequest>> DownloadCARevocationRequestsAsync(string transactionId, int maxCARevocationRequestsToDownload, string issuerName = null)
         {
             // Validate the parameters
             if (string.IsNullOrWhiteSpace(transactionId))
@@ -144,7 +143,6 @@ namespace Microsoft.Intune
             var downloadParamsObj = new CARevocationDownloadParameters()
             {
                 MaxRequests = maxCARevocationRequestsToDownload,
-                CertificateProviderName = certificateProviderName, 
                 IssuerName = issuerName,
             };
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()

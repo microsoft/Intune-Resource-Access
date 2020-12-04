@@ -51,15 +51,13 @@ public class RevocationExample
         
         // Set Download Parameters
         int maxRequests = 10; // Maximum number of Revocation requests to download at a time
-        String certificateProviderName = null; // Optional Parameter: Set this value if you want to filter 
-                                               //   the request to only download request matching this CA Name
         String issuerName = null; // Optional Parameter: Set this value if you want to filter 
                                   //   the request to only download request matching this Issuer Name
         
         try 
         {
         	// Download CARevocationRequests from Intune
-        	List<CARevocationRequest> revocationRequests = client.DownloadCARevocationRequests(transactionId.toString(), maxRequests, certificateProviderName, issuerName);
+        	List<CARevocationRequest> revocationRequests = client.DownloadCARevocationRequests(transactionId.toString(), maxRequests, issuerName);
         	
         	// Process CARevocationRequest List
         	List<CARevocationResult> caRevocationResults = new ArrayList<CARevocationResult>();
