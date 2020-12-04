@@ -31,12 +31,6 @@ namespace Microsoft.Management.Services.Api
     public class CARevocationDownloadParameters
     {
         /// <summary>
-        /// Download Request Filter: Certificate Provider Name
-        /// </summary>
-        [JsonProperty(Required = Required.Default)]
-        public string CertificateProviderName { get; set; }
-
-        /// <summary>
         /// Maximum number of requests to download at a time
         /// </summary>
         [JsonProperty(Required = Required.Always)]

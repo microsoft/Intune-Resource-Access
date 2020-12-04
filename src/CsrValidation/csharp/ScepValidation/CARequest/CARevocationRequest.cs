@@ -35,8 +35,7 @@ namespace Microsoft.Management.Services.Api
         /// </summary>
         [JsonProperty(Required = Required.Always)]
         public string RequestContext { get; set; }
-
-
+        
         /// <summary>
         /// Serial number for the certificate to revoke
         /// </summary>

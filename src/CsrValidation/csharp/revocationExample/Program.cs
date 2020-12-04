@@ -71,13 +71,11 @@ namespace RevocationExample
 
             // Set Download Parameters
             int maxRequests = 100; // Maximum number of Revocation requests to download at a time
-            string certificateProviderName = null; // Optional Parameter: Set this value if you want to filter 
-                                                   //   the request to only download request matching this CA Name
             string issuerName = null; // Optional Parameter: Set this value if you want to filter 
                                       //   the request to only download request matching this Issuer Name
 
             // Download CARevocationRequests from Intune
-            List<CARevocationRequest> caRevocationRequests = (revocationClient.DownloadCARevocationRequestsAsync(transactionId.ToString(), maxRequests, certificateProviderName, issuerName)).Result;
+            List<CARevocationRequest> caRevocationRequests = (revocationClient.DownloadCARevocationRequestsAsync(transactionId.ToString(), maxRequests, issuerName)).Result;
             Console.WriteLine($"Downloaded {caRevocationRequests.Count} number of Revocation requests from Intune.");
 
             // Process CARevocationRequest List
