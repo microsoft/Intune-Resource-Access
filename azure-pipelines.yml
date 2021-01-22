@@ -42,14 +42,6 @@ steps:
 
 - task: CodeSignValidationInjected@1
 
-# - task: GitHubRelease@1
-#   inputs:
-#     gitHubConnection: 'github connection 1'
-#     repositoryName: '$(Build.Repository.Name)'
-#     action: 'create'
-#     target: '$(Build.SourceVersion)'
-#     tagSource: 'gitTag'
-#     tagPattern: 'refs/tags/release-v*'
-#     assets: '$(Build.ArtifactStagingDirectory)/**/?(*.exe|*.dll|*.xml|*.psd1|*.pdb)'
-#     changeLogCompareToRelease: 'lastFullRelease'
-#     changeLogType: 'commitBased'
+- task: CredScan@2
+  inputs:
+    toolMajorVersion: 'V2'
