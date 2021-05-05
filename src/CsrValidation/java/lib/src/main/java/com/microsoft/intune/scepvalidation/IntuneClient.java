@@ -119,8 +119,10 @@ class IntuneClient
      * 
      * @param certificate client certificate
      * @param privateKey client private key
-     * @param configProperties configuration that contains the usual fields, but without AAD_APP_KEY, since this instance uses the private key instead
-     * @param authClient previously established wrapper around client credentials.  May be NULL.
+     * @param configProperties configuration that contains the usual fields, 
+     *      but without AAD_APP_KEY, since this instance uses the private key instead
+     * @param authClient previously established wrapper around client credentials.  
+     *      May be NULL.
      * @param httpClientBuilder alternative http client builder.  May be NULL.
      */
     public IntuneClient(X509Certificate certificate, PrivateKey privateKey, Properties configProperties, ADALClientWrapper authClient, HttpClientBuilder httpClientBuilder) {
@@ -143,7 +145,7 @@ class IntuneClient
             throw new IllegalArgumentException("The argument 'TENANT' is missing");
         }
         
-        // Instantiate ADAL Client
+        // Instantiate asymmetric ADAL Client
         this.asymmetricAadCredential = AsymmetricKeyCredential.create(azureAppId, privateKey, certificate);
         this.authClient = authClient == null ? new ADALClientWrapper(this.intuneTenant, this.asymmetricAadCredential, configProperties) : authClient;
 
