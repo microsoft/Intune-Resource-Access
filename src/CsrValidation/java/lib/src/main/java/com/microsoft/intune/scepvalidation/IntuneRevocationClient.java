@@ -23,6 +23,8 @@
 
 package com.microsoft.intune.scepvalidation;
 
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -57,6 +59,16 @@ public class IntuneRevocationClient extends IntuneClient
     
     final Logger log = LoggerFactory.getLogger(IntuneRevocationClient.class);
     
+    
+    public IntuneRevocationClient(X509Certificate certificate, PrivateKey privateKey, Properties configProperties) {
+        this(certificate, privateKey, configProperties, null, null);
+    }
+
+    public IntuneRevocationClient(X509Certificate certificate, PrivateKey privateKey, Properties configProperties, ADALClientWrapper adalClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException {
+        super(certificate, privateKey, configProperties, adalClient, httpClientBuilder);
+        commonInitialization(configProperties);
+    }
+    
     /**
      * IntuneScepService Client constructor
      * @param configProperties Properties object containing client configuration information.
@@ -77,7 +89,10 @@ public class IntuneRevocationClient extends IntuneClient
     public IntuneRevocationClient(Properties configProperties, ADALClientWrapper adalClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException 
     {
         super(configProperties, adalClient, httpClientBuilder);
-        
+        commonInitialization(configProperties);
+    }
+
+    private void commonInitialization(Properties configProperties) {
         if(configProperties == null)
         {
             throw new IllegalArgumentException("The argument 'configProperties' is missing"); 
