@@ -29,6 +29,8 @@ import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.UnknownHostException;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -69,6 +71,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.microsoft.aad.adal4j.AsymmetricKeyCredential;
 import com.microsoft.aad.adal4j.AuthenticationException;
 import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.aad.adal4j.ClientCredential;
@@ -86,6 +89,7 @@ class IntuneClient
     
     protected String intuneTenant;
     protected ClientCredential aadCredential;
+    protected AsymmetricKeyCredential asymmetricAadCredential;
     protected ADALClientWrapper authClient;
     
     protected SSLSocketFactory sslSocketFactory = null;
@@ -108,6 +112,44 @@ class IntuneClient
     public IntuneClient(Properties configProperties) throws IllegalArgumentException
     {
         this(configProperties, null, null);
+    }
+    
+    /**
+     * Construct an Intune client which uses asymmetric key authentication.
+     * 
+     * @param certificate client certificate
+     * @param privateKey client private key
+     * @param configProperties configuration that contains the usual fields, 
+     *      but without AAD_APP_KEY, since this instance uses the private key instead
+     * @param authClient previously established wrapper around client credentials.  
+     *      May be NULL.
+     * @param httpClientBuilder alternative http client builder.  May be NULL.
+     */
+    public IntuneClient(X509Certificate certificate, PrivateKey privateKey, Properties configProperties, ADALClientWrapper authClient, HttpClientBuilder httpClientBuilder) {
+    
+        if(configProperties == null)
+        {
+            throw new IllegalArgumentException("The argument 'configProperties' is missing"); 
+        }
+        
+        // Read required properties
+        String azureAppId = configProperties.getProperty("AAD_APP_ID");
+        if(azureAppId == null || azureAppId.isEmpty())
+        {
+            throw new IllegalArgumentException("The argument 'AAD_APP_ID' is missing");
+        }
+        
+        this.intuneTenant = configProperties.getProperty("TENANT");
+        if(this.intuneTenant == null || this.intuneTenant.isEmpty())
+        {
+            throw new IllegalArgumentException("The argument 'TENANT' is missing");
+        }
+        
+        // Instantiate asymmetric ADAL Client
+        this.asymmetricAadCredential = AsymmetricKeyCredential.create(azureAppId, privateKey, certificate);
+        this.authClient = authClient == null ? new ADALClientWrapper(this.intuneTenant, this.asymmetricAadCredential, configProperties) : authClient;
+
+        commonConfiguration(configProperties, httpClientBuilder);
     }
     
     /**
@@ -142,17 +184,20 @@ class IntuneClient
         {
             throw new IllegalArgumentException("The argument 'TENANT' is missing");
         }
+        // Instantiate ADAL Client
+        this.aadCredential = new ClientCredential(azureAppId, azureAppKey);
+        this.authClient = authClient == null ? new ADALClientWrapper(this.intuneTenant, this.aadCredential, configProperties) : authClient;
         
+        commonConfiguration(configProperties, httpClientBuilder);
+    }
+
+    private void commonConfiguration(Properties configProperties, HttpClientBuilder httpClientBuilder) {
         // Read optional properties
         this.intuneAppId = configProperties.getProperty("INTUNE_APP_ID", this.intuneAppId);
         this.intuneResourceUrl = configProperties.getProperty("INTUNE_RESOURCE_URL", this.intuneResourceUrl);
         this.graphApiVersion = configProperties.getProperty("GRAPH_API_VERSION", this.graphApiVersion);
         this.graphResourceUrl = configProperties.getProperty("GRAPH_RESOURCE_URL", this.graphResourceUrl);
         
-        // Instantiate ADAL Client
-        this.aadCredential = new ClientCredential(azureAppId, azureAppKey);
-        
-        this.authClient = authClient == null ? new ADALClientWrapper(this.intuneTenant, this.aadCredential, configProperties) : authClient;
         this.httpClientBuilder = httpClientBuilder == null ? this.httpClientBuilder : httpClientBuilder;
         
         proxyHost = configProperties.getProperty("PROXY_HOST");
