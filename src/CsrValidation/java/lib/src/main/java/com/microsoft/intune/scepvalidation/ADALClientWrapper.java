@@ -45,7 +45,7 @@ public class ADALClientWrapper {
 
     private String authority = "https://login.microsoftonline.com/";
     private ClientCredential credential = null;
-    public AsymmetricKeyCredential asymmetricCredential = null;
+    private AsymmetricKeyCredential asymmetricCredential = null;
     private ExecutorService service = null;
     private AuthenticationContext context = null;
 
