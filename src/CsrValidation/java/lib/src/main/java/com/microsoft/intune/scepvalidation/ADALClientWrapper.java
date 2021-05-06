@@ -28,7 +28,6 @@ import java.net.Proxy;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.naming.ServiceUnavailableException;
@@ -73,7 +72,7 @@ public class ADALClientWrapper {
         }
 
         this.credential = credential;
-        this.service = Executors.newFixedThreadPool(1);
+        this.service = new CurrentThreadExecutor();
 
         try {
             context = new AuthenticationContext(this.authority + aadTenant, false, service);
@@ -105,7 +104,7 @@ public class ADALClientWrapper {
         }
 
         this.asymmetricCredential = credential;
-        this.service = Executors.newFixedThreadPool(1);
+        this.service = new CurrentThreadExecutor();
 
         try {
             context = new AuthenticationContext(this.authority + aadTenant, false, service);
@@ -169,10 +168,5 @@ public class ADALClientWrapper {
         }
 
         return result;
-    }
-
-    @Override
-    public void finalize() {
-        service.shutdown();
     }
 }
