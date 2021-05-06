@@ -23,6 +23,8 @@
 
 package com.microsoft.intune.scepvalidation;
 
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.UUID;
@@ -61,6 +63,16 @@ public class IntuneScepServiceClient extends IntuneClient
     {
         this(configProperties, null, null);
     }
+
+    /**
+     * IntuneScepService Client constructor for asymmetric key authentcation
+     * @param configProperties Properties object containing client configuration information.
+     * @throws IllegalArgumentException
+     */
+    public IntuneScepServiceClient(X509Certificate certificate, PrivateKey key, Properties configProperties) throws IllegalArgumentException 
+    {
+        this(certificate, key, configProperties, null, null);
+    }
     
     /**
      * IntuneScepService Client constructor meant for dependency injection
@@ -72,7 +84,23 @@ public class IntuneScepServiceClient extends IntuneClient
     public IntuneScepServiceClient(Properties configProperties, ADALClientWrapper adalClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException 
     {
         super(configProperties, adalClient, httpClientBuilder);
-        
+        commonInitialization(configProperties);
+    }
+    
+    /**
+     * IntuneScepService Client constructor meant for dependency injection
+     * @param configProperties
+     * @param adalClient
+     * @param httpClientBuilder
+     * @throws IllegalArgumentException
+     */
+    public IntuneScepServiceClient(X509Certificate certificate, PrivateKey key, Properties configProperties, ADALClientWrapper adalClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException 
+    {
+        super(certificate, key, configProperties, adalClient, httpClientBuilder);
+        commonInitialization(configProperties);
+    }
+
+    private void commonInitialization(Properties configProperties) {
         if(configProperties == null)
         {
             throw new IllegalArgumentException("The argument 'configProperties' is missing"); 
