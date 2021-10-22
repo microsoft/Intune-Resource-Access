@@ -21,7 +21,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -103,7 +102,7 @@ namespace Microsoft.Intune
             serviceVersion = serviceVersion ?? DEFAULT_SERVICE_VERSION;
 
             // Dependencies
-            var adalClient = new AdalClient(
+            var authClient = new MsalClient(
                         // Required
                         configProperties,
                         // Overrides
@@ -116,14 +115,14 @@ namespace Microsoft.Intune
                     // Overrides
                     trace: trace,
                     // Dependencies
-                    adalClient: adalClient,
+                    authClient: authClient,
                     locationProvider: new IntuneServiceLocationProvider(
                         // Required
                         configProperties,
                         // Overrides
                         trace: trace,
                         // Dependencies
-                        authClient: adalClient
+                        authClient: authClient
                         )
                     );
         }

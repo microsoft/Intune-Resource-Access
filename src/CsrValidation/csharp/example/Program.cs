@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Intune;
@@ -36,7 +33,7 @@ namespace Example
             // Populate properties dictionary with properties needed for API.  
             // This example uses a simple Java like properties file to pass in the settings to maintain consistency.
             var configProperties = SimpleIniParser.Parse("com.microsoft.intune.props");
-            
+
             var validator = new IntuneScepValidator(
                 configProperties,
                 trace: new TraceSource("log")
@@ -45,7 +42,7 @@ namespace Example
             var transactionId = Guid.NewGuid(); // A GUID that will uniquley identify the entire transaction to allow for log correlation accross Validate and Notification calls.
 
             // The CSR should be in Base64 encoding format
-            string csr = "";
+            string csr = "test";
 
             // This validates the request
             (validator.ValidateRequestAsync(transactionId.ToString(), csr)).Wait();

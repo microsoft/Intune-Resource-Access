@@ -21,7 +21,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -37,8 +36,8 @@ namespace Microsoft.Intune
     public class IntuneServiceLocationProvider : IIntuneServiceLocationProvider
     {
         public const string DEFAULT_INTUNE_APP_ID = "0000000a-0000-0000-c000-000000000000";
-        public const string DEFAULT_RESOURCE_URL = "https://graph.windows.net/";
-        public const string DEFAULT_GRAPH_VERSION = "1.6";
+        public const string DEFAULT_RESOURCE_URL = "https://graph.microsoft.com/";
+        public const string DEFAULT_GRAPH_VERSION = "1.0";
 
         private TraceSource trace = new TraceSource(nameof(IntuneServiceLocationProvider));
 
@@ -68,7 +67,7 @@ namespace Microsoft.Intune
         private Dictionary<string, string> serviceMap = new Dictionary<string, string>();
 
         // Dependencies
-        private AdalClient authClient;
+        private MsalClient authClient;
         private IHttpClient httpClient;
 
         /// <summary>
@@ -79,7 +78,7 @@ namespace Microsoft.Intune
         /// <param name="httpClient">HttpClient to use for requests.</param>
         /// <param name="trace">Trace</param>
         [SuppressMessage("Microsoft.Usage", "CA2208", Justification = "Using a parameter coming from an object.")]
-        public IntuneServiceLocationProvider(Dictionary<string,string> configProperties, AdalClient authClient, IHttpClient httpClient = null, TraceSource trace = null)
+        public IntuneServiceLocationProvider(Dictionary<string,string> configProperties, MsalClient authClient, IHttpClient httpClient = null, TraceSource trace = null)
         {
             // Required Parameters
             if (configProperties == null)
@@ -167,30 +166,31 @@ namespace Microsoft.Intune
 
         private async Task RefreshServiceMapAsync()
         {
-            AuthenticationResult authResult = await this.authClient.AcquireTokenAsync(this.graphResourceUrl);
+            string token = await this.authClient.AcquireTokenAsync(new string[] { this.graphResourceUrl + ".default" });
 
-            string graphRequest = this.graphResourceUrl + tenant + "/servicePrincipalsByAppId/" + this.intuneAppId + "/serviceEndpoints?api-version=" + this.graphApiVersion;
+            string graphRequest = $"{this.graphResourceUrl}v{this.graphApiVersion}/servicePrincipals/appId={this.intuneAppId}/endpoints";
 
             Guid activityId = Guid.NewGuid();
 
             IHttpClient client = this.httpClient;
             client.DefaultRequestHeaders.Clear();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             client.DefaultRequestHeaders.Add("client-request-id", activityId.ToString());
 
             HttpResponseMessage response = null;
+            string result = null;
             try
             {
                 response = await client.GetAsync(graphRequest);
+                result = await response.Content.ReadAsStringAsync();
                 response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException e)
             {
                 trace.TraceEvent(TraceEventType.Error, 0, $"Failed to contact intune service with URL: {graphRequest};\r\n{e.Message}");
+                trace.TraceEvent(TraceEventType.Error, 0, result);
                 throw;
             }
-
-            string result = await response.Content.ReadAsStringAsync();
 
             JObject jsonResponse;
             try
