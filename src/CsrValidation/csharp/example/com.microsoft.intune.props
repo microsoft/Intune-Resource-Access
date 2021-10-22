@@ -1,6 +1,4 @@
-﻿AAD_APP_ID=6b257e57-6faf-4fc6-a783-86140af416f4
-AAD_APP_KEY=a3A7Q~jej8JKo77jbF~Q2ex3PDjyEQrUYdn38
-TENANT=tynipe.onmicrosoft.com
-PROVIDER_NAME_AND_VERSION=tynipe.onmicrosoft.com
-#INTUNE_RESOURCE_URL=https://api.manage-selfhost.microsoft.com/
-#AUTH_AUTHORITY=https://login.windows.net/
+﻿AAD_APP_ID=
+AAD_APP_KEY=
+TENANT=
+PROVIDER_NAME_AND_VERSION= 
