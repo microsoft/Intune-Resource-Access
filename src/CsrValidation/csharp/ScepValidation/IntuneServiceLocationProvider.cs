@@ -36,20 +36,30 @@ namespace Microsoft.Intune
     public class IntuneServiceLocationProvider : IIntuneServiceLocationProvider
     {
         public const string DEFAULT_INTUNE_APP_ID = "0000000a-0000-0000-c000-000000000000";
-        public const string DEFAULT_RESOURCE_URL = "https://graph.microsoft.com/";
-        public const string DEFAULT_GRAPH_VERSION = "1.0";
+        
+        public const string DEFAULT_MSGRAPH_RESOURCE_URL = "https://graph.microsoft.com/";
+        public const string DEFAULT_AADGRAPH_RESOURCE_URL = "https://graph.windows.net/";
+
+        public const string DEFAULT_AADGRAPH_VERSION = "1.6";
+        public const string DEFAULT_MSGRAPH_VERSION = "1.0";
 
         private TraceSource trace = new TraceSource(nameof(IntuneServiceLocationProvider));
 
         /// <summary>
         /// The specific graph service version that we are choosing to make a request to.
         /// </summary>
-        private string graphApiVersion = null;
+        private string aadGraphApiVersion = null;
+        private string msGraphApiVersion = null;
 
         /// <summary>
         /// The graph resource URL that we are requesting a token to access from ADAL
         /// </summary>
-        private string graphResourceUrl = null;
+        private string aadGraphResourceUrl = null;
+
+        /// <summary>
+        /// The graph resource URL that we are requesting a token to access from MSAL
+        /// </summary>
+        private string msalGraphResourceUrl = null;
 
         /// <summary>
         /// The App Identifier of Intune to be used in call to graph for service discovery
@@ -67,18 +77,19 @@ namespace Microsoft.Intune
         private Dictionary<string, string> serviceMap = new Dictionary<string, string>();
 
         // Dependencies
-        private MsalClient authClient;
+        private MsalClient msalClient;
+        private AdalClient adalClient;
         private IHttpClient httpClient;
 
         /// <summary>
         /// Instantiates a new instance.
         /// </summary>
         /// <param name="configProperties">Configuration properties for this class.</param>
-        /// <param name="authClient">Authorization client.</param>
+        /// <param name="msalClient">Authorization client.</param>
         /// <param name="httpClient">HttpClient to use for requests.</param>
         /// <param name="trace">Trace</param>
         [SuppressMessage("Microsoft.Usage", "CA2208", Justification = "Using a parameter coming from an object.")]
-        public IntuneServiceLocationProvider(Dictionary<string,string> configProperties, MsalClient authClient, IHttpClient httpClient = null, TraceSource trace = null)
+        public IntuneServiceLocationProvider(Dictionary<string,string> configProperties, MsalClient msalClient, AdalClient adalClient, IHttpClient httpClient = null, TraceSource trace = null)
         {
             // Required Parameters
             if (configProperties == null)
@@ -92,11 +103,17 @@ namespace Microsoft.Intune
                 throw new ArgumentNullException(nameof(tenant));
             }
 
-            if(authClient == null)
+            if(msalClient == null)
             {
-                throw new ArgumentNullException(nameof(authClient));
+                throw new ArgumentNullException(nameof(msalClient));
             }
-            this.authClient = authClient;
+            this.msalClient = msalClient;
+
+            if (adalClient == null)
+            {
+                throw new ArgumentNullException(nameof(msalClient));
+            }
+            this.adalClient = adalClient;
 
             // Optional Parameters
             if (trace != null)
@@ -104,17 +121,28 @@ namespace Microsoft.Intune
                 this.trace = trace;
             }
 
-            configProperties.TryGetValue("GRAPH_API_VERSION", out graphApiVersion);
-            if (string.IsNullOrWhiteSpace(graphApiVersion))
+            configProperties.TryGetValue("AAD_GRAPH_API_VERSION", out aadGraphApiVersion);
+            if (string.IsNullOrWhiteSpace(aadGraphApiVersion))
             {
-                graphApiVersion = DEFAULT_GRAPH_VERSION;
+                aadGraphApiVersion = DEFAULT_AADGRAPH_VERSION;
             }
-            
 
-            configProperties.TryGetValue("GRAPH_RESOURCE_URL", out graphResourceUrl);
-            if (string.IsNullOrWhiteSpace(graphResourceUrl))
+            configProperties.TryGetValue("MS_GRAPH_API_VERSION", out msGraphApiVersion);
+            if (string.IsNullOrWhiteSpace(msGraphApiVersion))
             {
-                graphResourceUrl = DEFAULT_RESOURCE_URL;
+                msGraphApiVersion = DEFAULT_MSGRAPH_VERSION;
+            }
+
+            configProperties.TryGetValue("AAD_GRAPH_RESOURCE_URL", out aadGraphResourceUrl);
+            if (string.IsNullOrWhiteSpace(aadGraphResourceUrl))
+            {
+                aadGraphResourceUrl = DEFAULT_AADGRAPH_RESOURCE_URL;
+            }
+
+            configProperties.TryGetValue("MSAL_GRAPH_RESOURCE_URL", out msalGraphResourceUrl);
+            if (string.IsNullOrWhiteSpace(msalGraphResourceUrl))
+            {
+                msalGraphResourceUrl = DEFAULT_MSGRAPH_RESOURCE_URL;
             }
 
             configProperties.TryGetValue("INTUNE_APP_ID", out intuneAppId);
@@ -166,9 +194,21 @@ namespace Microsoft.Intune
 
         private async Task RefreshServiceMapAsync()
         {
-            string token = await this.authClient.AcquireTokenAsync(new string[] { this.graphResourceUrl + ".default" });
+            string token = string.Empty;
+            string graphRequest = $"{this.msalGraphResourceUrl}v{this.msGraphApiVersion}/servicePrincipals/appId={this.intuneAppId}/endpoints";
+            bool msalFailed = false;
+            try
+            {
+                token = await this.msalClient.AcquireTokenAsync(new string[] { this.msalGraphResourceUrl + ".default" });
+            }
+            catch { msalFailed = true; }
 
-            string graphRequest = $"{this.graphResourceUrl}v{this.graphApiVersion}/servicePrincipals/appId={this.intuneAppId}/endpoints";
+            if (msalFailed)
+            {
+                token = await this.adalClient.AcquireTokenAsync(this.aadGraphResourceUrl);
+                graphRequest = this.aadGraphResourceUrl + tenant + "/servicePrincipalsByAppId/" + this.intuneAppId + "/serviceEndpoints?api-version=" + this.aadGraphApiVersion;
+            }
+
 
             Guid activityId = Guid.NewGuid();
 
@@ -209,7 +249,9 @@ namespace Microsoft.Intune
 
                 foreach (var service in serviceEndpoints)
                 {
-                    serviceMap[service["serviceName"].ToString().ToLowerInvariant()] = service["uri"].ToString();
+                    var serviceName = service["providerName"] == null ? service["serviceName"] : service["providerName"];
+
+                    serviceMap[serviceName.ToString().ToLowerInvariant()] = service["uri"].ToString();
                 }
             }
             else

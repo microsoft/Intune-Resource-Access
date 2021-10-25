@@ -48,7 +48,7 @@ namespace Microsoft.Intune
         private string intuneResourceUrl = null;
 
         /// <summary>
-        /// The active directory authentication library client to request tokens from
+        /// The authentication library client to request tokens from
         /// </summary>
         private MsalClient authClient;
 

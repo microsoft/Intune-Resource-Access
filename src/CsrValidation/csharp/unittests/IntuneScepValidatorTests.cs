@@ -199,8 +199,8 @@ namespace UnitTests
                 .Returns(Task.FromResult<string>(@"http://localhost/"));
 
 
-            var adalClient = new MsalClient(configProperties);
-            var intuneClient = new IntuneClient(configProperties, authClient: adalClient, locationProvider: locationProviderMock.Object);
+            var authClient = new MsalClient(configProperties);
+            var intuneClient = new IntuneClient(configProperties, authClient: authClient, locationProvider: locationProviderMock.Object);
             var scepClient = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: intuneClient);
 
             Guid transactionId = Guid.NewGuid();
@@ -225,8 +225,8 @@ namespace UnitTests
             httpClientMock.Setup(foo => foo.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>()))
                 .Throws(new HttpRequestException());
 
-            var adalClient = new MsalClient(configProperties);
-            var intuneClient = new IntuneClient(configProperties, authClient: adalClient, locationProvider: locationProviderMock.Object, httpClient:httpClientMock.Object);
+            var authClient = new MsalClient(configProperties);
+            var intuneClient = new IntuneClient(configProperties, authClient: authClient, locationProvider: locationProviderMock.Object, httpClient:httpClientMock.Object);
             var scepClient = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: intuneClient);
 
             Guid transactionId = Guid.NewGuid();
