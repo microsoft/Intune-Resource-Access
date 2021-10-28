@@ -64,7 +64,7 @@ public class IntuneRevocationClient extends IntuneClient
      */
     public IntuneRevocationClient(Properties configProperties) throws IllegalArgumentException 
     {
-        this(configProperties, null, null, null);
+        this(configProperties, null, null);
     }
     
     /**
@@ -74,9 +74,9 @@ public class IntuneRevocationClient extends IntuneClient
      * @param httpClientBuilder
      * @throws IllegalArgumentException
      */
-    public IntuneRevocationClient(Properties configProperties, MSALClientWrapper msalClient, ADALClientWrapper adalClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException 
+    public IntuneRevocationClient(Properties configProperties, ADALClientWrapper adalClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException 
     {
-        super(configProperties, msalClient, adalClient, httpClientBuilder);
+        super(configProperties, adalClient, httpClientBuilder);
         
         if(configProperties == null)
         {

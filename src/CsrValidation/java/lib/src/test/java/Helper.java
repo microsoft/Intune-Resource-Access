@@ -47,6 +47,7 @@ import org.mockito.ArgumentMatcher;
 import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.intune.scepvalidation.ADALClientWrapper;
+import com.microsoft.intune.scepvalidation.IntuneRevocationClient;
 import com.microsoft.intune.scepvalidation.IntuneScepServiceClient;
 import com.microsoft.intune.scepvalidation.IntuneScepServiceException;
 import com.microsoft.intune.scepvalidation.MSALClientWrapper;
@@ -59,7 +60,11 @@ public class Helper
             + "{"
                 + "serviceName:" + IntuneScepServiceClient.VALIDATION_SERVICE_NAME + ","
                 + "uri:'https://fef.dmsua01.manage-dogfood.microsoft.com/RACerts/ScepRequestValidationFEService/Gateway/StatelessScepRequestValidationService'"
-            + "}"        
+            + "},"
+            + "{"
+            	+ "serviceName:" + IntuneRevocationClient.CONNECTOR_SERVICE_NAME + ","
+            	+ "uri:'https://fef.dmsua01.manage-dogfood.microsoft.com/RACerts/StatelessPkiConnectorService/Gateway/StatelessPkiConnectorService'"
+            + "}"
         + "]}";
     public static final String NO_SERVICE_DISCOVERY_RESPONSE = "{"
             + "value: ["

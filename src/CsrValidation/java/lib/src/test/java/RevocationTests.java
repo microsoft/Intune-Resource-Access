@@ -67,7 +67,7 @@ public class RevocationTests
         when(helper.intuneResponseEntity.getContentLength())
             .thenReturn((long)validJsonResponse.length());
         
-        IntuneRevocationClient client = new IntuneRevocationClient(helper.properties, helper.msal, helper.adal, helper.httpBuilder);
+        IntuneRevocationClient client = new IntuneRevocationClient(helper.properties, helper.adal, helper.httpBuilder);
         
         UUID transactionId = UUID.randomUUID();
 
@@ -120,7 +120,7 @@ public class RevocationTests
         when(helper.intuneResponseEntity.getContentLength())
             .thenReturn((long)response.length());
         
-        IntuneRevocationClient client = new IntuneRevocationClient(helper.properties, helper.msal, helper.adal, helper.httpBuilder);
+        IntuneRevocationClient client = new IntuneRevocationClient(helper.properties, helper.adal, helper.httpBuilder);
         
         UUID transactionId = UUID.randomUUID();
 

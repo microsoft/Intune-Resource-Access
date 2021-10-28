@@ -169,7 +169,7 @@ namespace Microsoft.Intune
                 this.locationProvider.Clear(); // clear contents in case the service location has changed and we cached the value
                 throw;
             }
-            
+
             try
             {
                 return JObject.Parse(result);
