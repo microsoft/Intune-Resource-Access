@@ -59,7 +59,7 @@ public class IntuneScepServiceClient extends IntuneClient
      */
     public IntuneScepServiceClient(Properties configProperties) throws IllegalArgumentException 
     {
-        this(configProperties, null, null);
+        this(configProperties, null, null, null);
     }
     
     /**
@@ -69,9 +69,9 @@ public class IntuneScepServiceClient extends IntuneClient
      * @param httpClientBuilder
      * @throws IllegalArgumentException
      */
-    public IntuneScepServiceClient(Properties configProperties, ADALClientWrapper adalClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException 
+    public IntuneScepServiceClient(Properties configProperties, MSALClientWrapper msalClient, ADALClientWrapper adalClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException 
     {
-        super(configProperties, adalClient, httpClientBuilder);
+        super(configProperties, msalClient, adalClient, httpClientBuilder);
         
         if(configProperties == null)
         {

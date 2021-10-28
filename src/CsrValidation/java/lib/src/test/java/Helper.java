@@ -22,12 +22,14 @@
 // THE SOFTWARE.
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
@@ -43,9 +45,11 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.mockito.ArgumentMatcher;
 
 import com.microsoft.aad.adal4j.AuthenticationResult;
+import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.intune.scepvalidation.ADALClientWrapper;
 import com.microsoft.intune.scepvalidation.IntuneScepServiceClient;
 import com.microsoft.intune.scepvalidation.IntuneScepServiceException;
+import com.microsoft.intune.scepvalidation.MSALClientWrapper;
 
 public class Helper
 {
@@ -78,6 +82,7 @@ public class Helper
     HttpEntity intuneResponseEntity = mock(HttpEntity.class);
     StatusLine intuneStatus = mock(StatusLine.class);
     ADALClientWrapper adal;
+    MSALClientWrapper msal;
     
     public Properties properties;
     
@@ -128,6 +133,7 @@ public class Helper
             .thenReturn((long)VALID_SCEP_RESPONSE.length());
 
         adal = getDefaultAdalMock();
+        msal = getDefaultMsalMock();
         
         properties = new Properties();
         properties.setProperty("AAD_APP_ID", "1234");
@@ -154,6 +160,14 @@ public class Helper
                     "idToken", 
                     null, 
                     true));
+        return adalMock;
+    }
+    
+    private MSALClientWrapper getDefaultMsalMock() throws MalformedURLException, ServiceUnavailableException
+    {
+        MSALClientWrapper adalMock = mock(MSALClientWrapper.class);
+        when(adalMock.getAccessToken(any()))
+            .thenReturn("accessToken");
         return adalMock;
     }
 }
