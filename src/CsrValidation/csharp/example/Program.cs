@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // All rights reserved.
 //
 // This code is licensed under the MIT License.
@@ -64,7 +64,7 @@ namespace Example
             var transactionId = Guid.NewGuid(); // A GUID that will uniquley identify the entire transaction to allow for log correlation accross Validate and Notification calls.
 
             // The CSR should be in Base64 encoding format
-            string csr = "";
+            string csr = "test";
 
             // This validates the request
             (validator.ValidateRequestAsync(transactionId.ToString(), csr)).Wait();

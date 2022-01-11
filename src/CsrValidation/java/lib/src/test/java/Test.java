@@ -45,7 +45,7 @@ public class Test
     {
         Helper helper = new Helper();
         
-        IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.adal, helper.httpBuilder);
+        IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.msal, helper.adal, helper.httpBuilder);
         
         UUID transactionId = UUID.randomUUID();
         String csr = "test";
@@ -79,7 +79,7 @@ public class Test
         when(helper.intuneResponseEntity.getContentLength())
             .thenReturn((long)Helper.ERROR_SCEP_RESPONSE.length());
         
-        IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.adal, helper.httpBuilder);
+        IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.msal, helper.adal, helper.httpBuilder);
         
         UUID transactionId = UUID.randomUUID();
         String csr = "test";
@@ -120,7 +120,7 @@ public class Test
         when(helper.intuneStatus.getStatusCode())
             .thenReturn(401);
         
-        IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.adal, helper.httpBuilder);
+        IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.msal, helper.adal, helper.httpBuilder);
         
         UUID transactionId = UUID.randomUUID();
         String csr = "test";
@@ -159,7 +159,7 @@ public class Test
         when(helper.adal.getAccessTokenFromCredential(anyString()))
             .thenThrow(new ServiceUnavailableException());
         
-        IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.adal, helper.httpBuilder);
+        IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.msal, helper.adal, helper.httpBuilder);
         
         UUID transactionId = UUID.randomUUID();
         String csr = "test";
@@ -200,7 +200,7 @@ public class Test
         when(helper.graphResponseEntity.getContentLength())
             .thenReturn((long)Helper.NO_SERVICE_DISCOVERY_RESPONSE.length());
         
-        IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.adal, helper.httpBuilder);
+        IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.msal, helper.adal, helper.httpBuilder);
         
         UUID transactionId = UUID.randomUUID();
         String csr = "test";
@@ -246,7 +246,7 @@ public class Test
                     }})))
         .thenThrow(new UnknownHostException());
         
-        IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.adal, helper.httpBuilder);
+        IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.msal, helper.adal, helper.httpBuilder);
         
         UUID transactionId = UUID.randomUUID();
         String csr = "test";

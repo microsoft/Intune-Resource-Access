@@ -21,7 +21,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -49,9 +48,9 @@ namespace Microsoft.Intune
         private string intuneResourceUrl = null;
 
         /// <summary>
-        /// The active directory authentication library client to request tokens from
+        /// The authentication library client to request tokens from
         /// </summary>
-        private AdalClient adalClient;
+        private MsalClient authClient;
 
         /// <summary>
         /// HttpClient to utilize when making requests to Intune
@@ -67,11 +66,11 @@ namespace Microsoft.Intune
         /// Constructs an IntuneClient object which can be used to make requests to Intune services.
         /// </summary>
         /// <param name="configProperties">Configuration properties for this class.</param>
-        /// <param name="adalClient">Authorization Client.</param>
+        /// <param name="authClient">Authorization Client.</param>
         /// <param name="locationProvider">Service Location provider to be used for service discovery.</param>
         /// <param name="httpClient">HttpClient to use for all requests.</param>
         /// <param name="trace">Trace</param>
-        public IntuneClient(Dictionary<string, string> configProperties, AdalClient adalClient, IIntuneServiceLocationProvider locationProvider, IHttpClient httpClient = null, TraceSource trace = null)
+        public IntuneClient(Dictionary<string, string> configProperties, MsalClient authClient, IIntuneServiceLocationProvider locationProvider, IHttpClient httpClient = null, TraceSource trace = null)
         {
             // Required Parameters/Dependencies
             if (configProperties == null)
@@ -84,11 +83,11 @@ namespace Microsoft.Intune
                 throw new ArgumentNullException(nameof(locationProvider));
             }
             this.locationProvider = locationProvider;
-            if(adalClient == null)
+            if(authClient == null)
             {
-                throw new ArgumentNullException(nameof(adalClient));
+                throw new ArgumentNullException(nameof(authClient));
             }
-            this.adalClient = adalClient;
+            this.authClient = authClient;
 
             // Optional Prameters/Dependencies
             configProperties.TryGetValue("INTUNE_RESOURCE_URL", out intuneResourceUrl);
@@ -136,13 +135,13 @@ namespace Microsoft.Intune
                 throw exception;
             }
 
-            AuthenticationResult authResult = await adalClient.AcquireTokenAsync(intuneResourceUrl);
+            string token = await authClient.AcquireTokenAsync(new[] { intuneResourceUrl + "/.default" });
 
             string intuneRequestUrl = intuneServiceEndpoint + "/" + urlSuffix;
 
             IHttpClient client = this.httpClient;
             client.DefaultRequestHeaders.Clear();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             client.DefaultRequestHeaders.Add("client-request-id", activityId.ToString());
             client.DefaultRequestHeaders.Add("api-version", apiVersion);
             var httpContent = new StringContent(json.ToString(), Encoding.UTF8, "application/json");
@@ -170,8 +169,6 @@ namespace Microsoft.Intune
                 this.locationProvider.Clear(); // clear contents in case the service location has changed and we cached the value
                 throw;
             }
-
-
 
             try
             {
