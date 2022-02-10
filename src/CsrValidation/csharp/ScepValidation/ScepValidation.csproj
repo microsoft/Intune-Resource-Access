@@ -22,7 +22,6 @@
     <AssemblyName>ScepValidation</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-<<<<<<< HEAD
     <PackageReference Include="Microsoft.Identity.Client" Version="4.37.0" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.9" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
@@ -30,11 +29,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CARequest\" />
-=======
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.1" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01" PrivateAssets="All" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
->>>>>>> develop
   </ItemGroup>
 
 </Project>
