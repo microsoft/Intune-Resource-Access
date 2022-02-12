@@ -29,5 +29,6 @@
   <modules>
      <module>lib</module>
      <module>example</module>
+     <module>revocationexample</module>
    </modules>  
 </project>

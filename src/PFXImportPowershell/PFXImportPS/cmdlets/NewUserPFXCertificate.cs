@@ -62,10 +62,10 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         [Parameter(Position = 3, Mandatory = true)]
         public string UPN { get; set; }
 
-        [Parameter(Position = 4, Mandatory = true)]
+        [Parameter(Position = 4)]
         public string ProviderName { get; set; }
 
-        [Parameter(Position = 5, Mandatory = true)]
+        [Parameter(Position = 5)]
         public string KeyName { get; set; }
 
         [Parameter(Position = 6)]
@@ -83,6 +83,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 
         protected override void ProcessRecord()
         {
+
             byte[] pfxData;
             if (this.ParameterSetName == PFXBase64String)
             {
@@ -141,8 +142,11 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 string hashAlgorithm;
                 int paddingFlags;
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 switch (PaddingScheme)
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     case UserPfxPaddingScheme.Pkcs1:
                     case UserPfxPaddingScheme.OaepSha1:
                         ThrowTerminatingError(
@@ -152,6 +156,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                                 ErrorCategory.InvalidArgument,
                                 null));
                         return;
+#pragma warning restore CS0618 // Type or member is obsolete
                     case UserPfxPaddingScheme.OaepSha256:
                         hashAlgorithm = PaddingHashAlgorithmNames.SHA256;
                         paddingFlags = PaddingFlags.OAEPPadding;
@@ -161,7 +166,9 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                         paddingFlags = PaddingFlags.OAEPPadding;
                         break;
                     case UserPfxPaddingScheme.None:
+#pragma warning disable CS0618 // Type or member is obsolete
                         PaddingScheme = UserPfxPaddingScheme.OaepSha512;
+#pragma warning restore CS0618 // Type or member is obsolete
                         goto default;   // Since C# doesn't allow switch-case fall-through!
                     case UserPfxPaddingScheme.OaepSha512:
                     default:
@@ -197,7 +204,9 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             UserPFXCertificate userPfxCertifiate = new UserPFXCertificate();
             userPfxCertifiate.Thumbprint = pfxCert.Thumbprint.ToLowerInvariant();
             userPfxCertifiate.IntendedPurpose = (UserPfxIntendedPurpose)IntendedPurpose;
+#pragma warning disable CS0618 // Type or member is obsolete
             userPfxCertifiate.PaddingScheme = (UserPfxPaddingScheme)PaddingScheme;
+#pragma warning restore CS0618 // Type or member is obsolete
             userPfxCertifiate.KeyName = KeyName;
             userPfxCertifiate.UserPrincipalName = UPN;
             userPfxCertifiate.ProviderName = ProviderName;
@@ -223,7 +232,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             const string IntendedPurposeVariable = "EncryptPFXFilesIntendedPurpose";
             const string PaddingSchemeVariable = "EncryptPFXFilesPaddingScheme";
 
-            // Get Session Variable for ProviderName if one wasn't supplied. Throw error if never supplied.
+            // Get Session Variable for ProviderName if one wasn't supplied.
             if (!string.IsNullOrEmpty(ProviderName))
             {
                 SessionState.PSVariable.Set(ProviderNameVariable, ProviderName);
@@ -231,13 +240,9 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             else
             {
                 ProviderName = SessionState.PSVariable.GetValue(ProviderNameVariable, string.Empty).ToString();
-                if (string.IsNullOrEmpty(ProviderName))
-                {
-                    ThrowParameterError("ProviderName");
-                }
             }
 
-            // Get Session Variable for KeyName if one wasn't supplied. Throw error if never supplied.
+            // Get Session Variable for KeyName if one wasn't supplied.
             if (!string.IsNullOrEmpty(KeyName))
             {
                 SessionState.PSVariable.Set(KeyNameVariable, KeyName);
@@ -245,10 +250,17 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             else
             {
                 KeyName = SessionState.PSVariable.GetValue(KeyNameVariable, string.Empty).ToString();
-                if (string.IsNullOrEmpty(KeyName))
-                {
-                    ThrowParameterError("KeyName");
-                }
+            }
+
+
+            if (string.IsNullOrEmpty(KeyFilePath) && (string.IsNullOrEmpty(KeyName) || string.IsNullOrEmpty(ProviderName)))
+            {
+                ThrowTerminatingError(
+                    new ErrorRecord(
+                        new ArgumentException("KeyFilePath or ProviderName and KeyName is required."),
+                            Guid.NewGuid().ToString(),
+                            ErrorCategory.InvalidArgument,
+                            null));
             }
 
             // Get Session Variable for IntendedPurpose if one wasn't supplied. Default to Unassigned if never supplied.
@@ -262,7 +274,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             }
 
             // Get Session Variable for Padding Scheme if one wasn't supplied. Default to None if never supplied.
-
+#pragma warning disable CS0618 // Type or member is obsolete
             if (PaddingScheme != null)
             {
                 SessionState.PSVariable.Set(PaddingSchemeVariable, PaddingScheme);
@@ -271,6 +283,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 PaddingScheme = (UserPfxPaddingScheme)SessionState.PSVariable.GetValue(PaddingSchemeVariable, 0);
             }
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private void ThrowParameterError(string parameterName)

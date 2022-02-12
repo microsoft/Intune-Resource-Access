@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // All rights reserved.
 //
 // This code is licensed under the MIT License.
@@ -62,7 +62,7 @@ namespace Microsoft.Intune
         /// <param name="trace">Trace</param>
         /// <param name="authContext">Authorization Context to use to acquire token.</param>
         [SuppressMessage("Microsoft.Usage", "CA2208", Justification = "Using a parameter coming from an object.")]
-        public AdalClient(Dictionary<string,string> configProperties, TraceSource trace = null, IAuthenticationContext authContext = null)
+        public AdalClient(Dictionary<string, string> configProperties, TraceSource trace = null, IAuthenticationContext authContext = null)
         {
             // Required Parameters
             if (configProperties == null)
@@ -94,17 +94,17 @@ namespace Microsoft.Intune
             clientCredential = new ClientCredential(azureAppId, azureAppKey);
 
             // Optional Parameters
-            if(trace != null)
+            if (trace != null)
             {
                 this.trace = trace;
             }
 
             configProperties.TryGetValue("AUTH_AUTHORITY", out authority);
-            if(authority == null)
+            if (authority == null)
             {
                 authority = DEFAULT_AUTHORITY;
             }
-            
+
 
             // Instantiate Dependencies
             context = authContext ?? new AuthenticationContextWrapper(new AuthenticationContext(authority + tenant, false));
@@ -113,10 +113,9 @@ namespace Microsoft.Intune
         /// <summary>
         /// Gets an access token from AAD for the specified resource using the ClientCredential passed in.
         /// </summary>
-        /// <param name="clientCredential">Credential to use for authentication.</param>
         /// <param name="resource">Resource to get token for.</param>
         /// <returns></returns>
-        public async Task<AuthenticationResult> AcquireTokenAsync(string resource)
+        public async Task<string> AcquireTokenAsync(string resource)
         {
             if (string.IsNullOrWhiteSpace(resource))
             {
@@ -130,7 +129,7 @@ namespace Microsoft.Intune
                 throw new IntuneClientException("Authentication result was null");
             }
 
-            return result;
+            return result.AccessToken;
         }
     }
 }

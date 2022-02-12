@@ -1,4 +1,27 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation.
+// All rights reserved.
+//
+// This code is licensed under the MIT License.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files(the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -100,7 +123,7 @@ namespace UnitTests
             Guid transactionId = Guid.NewGuid();
             string csr = "testing";
 
-            await client.SendSuccessNotificationAsync(transactionId.ToString(), csr, "thumpbrint", "serial", "expire", "auth");
+            await client.SendSuccessNotificationAsync(transactionId.ToString(), csr, "thumpbrint", "serial", "expire", "auth", "caCinfig", "certauthroty");
         }
 
         [TestMethod]
@@ -128,7 +151,7 @@ namespace UnitTests
             Guid transactionId = Guid.NewGuid();
             string csr = "testing";
 
-            await client.SendSuccessNotificationAsync(transactionId.ToString(), csr, "thumpbrint", "serial", "expire", "auth");
+            await client.SendSuccessNotificationAsync(transactionId.ToString(), csr, "thumpbrint", "serial", "expire", "auth", "caConfig", "certAuthorty");
         }
 
         [TestMethod]
@@ -194,20 +217,13 @@ namespace UnitTests
             invalidResponse.Add("code", IntuneScepServiceException.ErrorCode.ChallengeDecryptionError.ToString());
             invalidResponse.Add("errorDescription", "");
 
-            var authContextMock = new Mock<IAuthenticationContext>();
-            authContextMock.Setup(foo => foo.AcquireTokenAsync(
-                It.IsAny<string>(), It.IsAny<ClientCredential>())
-            ).Throws(
-                new AdalServiceException("","")
-            );
-
             var locationProviderMock = new Mock<IIntuneServiceLocationProvider>();
             locationProviderMock.Setup(foo => foo.GetServiceEndpointAsync(Microsoft.Intune.IntuneScepValidator.VALIDATION_SERVICE_NAME))
                 .Returns(Task.FromResult<string>(@"http://localhost/"));
 
 
-            var adalClient = new AdalClient(configProperties);
-            var intuneClient = new IntuneClient(configProperties, adalClient: adalClient, locationProvider: locationProviderMock.Object);
+            var authClient = new MsalClient(configProperties);
+            var intuneClient = new IntuneClient(configProperties, authClient: authClient, locationProvider: locationProviderMock.Object);
             var scepClient = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: intuneClient);
 
             Guid transactionId = Guid.NewGuid();
@@ -224,13 +240,6 @@ namespace UnitTests
             invalidResponse.Add("code", IntuneScepServiceException.ErrorCode.ChallengeDecryptionError.ToString());
             invalidResponse.Add("errorDescription", "");
 
-            var authContextMock = new Mock<IAuthenticationContext>();
-            authContextMock.Setup(foo => foo.AcquireTokenAsync(
-                It.IsAny<string>(), It.IsAny<ClientCredential>())
-            ).Throws(
-                new AdalServiceException("", "")
-            );
-
             var locationProviderMock = new Mock<IIntuneServiceLocationProvider>();
             locationProviderMock.Setup(foo => foo.GetServiceEndpointAsync(IntuneScepValidator.VALIDATION_SERVICE_NAME))
                 .Returns(Task.FromResult<string>(@"http://localhost/"));
@@ -239,8 +248,8 @@ namespace UnitTests
             httpClientMock.Setup(foo => foo.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>()))
                 .Throws(new HttpRequestException());
 
-            var adalClient = new AdalClient(configProperties);
-            var intuneClient = new IntuneClient(configProperties, adalClient: adalClient, locationProvider: locationProviderMock.Object, httpClient:httpClientMock.Object);
+            var authClient = new MsalClient(configProperties);
+            var intuneClient = new IntuneClient(configProperties, authClient: authClient, locationProvider: locationProviderMock.Object, httpClient:httpClientMock.Object);
             var scepClient = new Microsoft.Intune.IntuneScepValidator(configProperties, intuneClient: intuneClient);
 
             Guid transactionId = Guid.NewGuid();

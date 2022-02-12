@@ -21,7 +21,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -103,6 +102,12 @@ namespace Microsoft.Intune
             serviceVersion = serviceVersion ?? DEFAULT_SERVICE_VERSION;
 
             // Dependencies
+            var msalClient = new MsalClient(
+                        // Required
+                        configProperties,
+                        // Overrides
+                        trace: trace
+                        );
             var adalClient = new AdalClient(
                         // Required
                         configProperties,
@@ -116,14 +121,15 @@ namespace Microsoft.Intune
                     // Overrides
                     trace: trace,
                     // Dependencies
-                    adalClient: adalClient,
+                    authClient: msalClient,
                     locationProvider: new IntuneServiceLocationProvider(
                         // Required
                         configProperties,
                         // Overrides
                         trace: trace,
                         // Dependencies
-                        authClient: adalClient
+                        adalClient: adalClient,
+                        msalClient: msalClient
                         )
                     );
         }
@@ -169,8 +175,10 @@ namespace Microsoft.Intune
         /// <param name="certSerialNumber">Serial number of the certificate issued.</param>
         /// <param name="certExpirationDate">The date time string should be formated as web UTC time (YYYY-MM-DDThh:mm:ss.sssTZD) ISO 8601. </param>
         /// <param name="certIssuingAuthority">Issuing Authority that issued the certificate.</param>
+        /// <param name="caConfiguration">CA configuration that issued the certificate.</param>
+        /// <param name="certificateAuthority">Certificate Authority that issued the certificate.</param>
         /// <returns></returns>
-        public async Task SendSuccessNotificationAsync(string transactionId, string certificateRequest, string certThumbprint, string certSerialNumber, string certExpirationDate, string certIssuingAuthority)
+        public async Task SendSuccessNotificationAsync(string transactionId, string certificateRequest, string certThumbprint, string certSerialNumber, string certExpirationDate, string certIssuingAuthority, string caConfiguration, string certificateAuthority)
         {
             if (string.IsNullOrWhiteSpace(transactionId))
             {
@@ -210,7 +218,9 @@ namespace Microsoft.Intune
                     new JProperty("certificateSerialNumber", certSerialNumber),
                     new JProperty("certificateExpirationDateUtc", certExpirationDate),
                     new JProperty("issuingCertificateAuthority", certIssuingAuthority),
-                    new JProperty("callerInfo", this.providerNameAndVersion))));
+                    new JProperty("callerInfo", this.providerNameAndVersion),
+                    new JProperty("caConfiguration", caConfiguration),
+                    new JProperty("certificateAuthority", certificateAuthority))));
 
             await PostAsync(requestBody, NOTIFY_SUCCESS_URL, transactionId);
         }

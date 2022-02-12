@@ -30,6 +30,7 @@ using System.Security.Cryptography;
 namespace Microsoft.Intune.Test.EncryptionUtilitiesUnitTests
 {
     [TestClass]
+    [Ignore] //Needs to be run as admin to manage machine certs. 
     public class ManagedRSAEncryptionTests
     {
         public const string TestKeyName = "ThisIsATestKey";

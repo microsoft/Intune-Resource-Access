@@ -32,6 +32,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace Microsoft.Intune.Test.EncryptionUtilitiesUnitTests
 {
     [TestClass]
+    [Ignore] //Needs to be run as admin to manage machine certs.
     public class EncryptionTests
     {
         public const string TestKeyName = "ThisIsATestKey";
