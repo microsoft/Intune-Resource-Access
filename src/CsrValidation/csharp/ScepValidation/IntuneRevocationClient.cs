@@ -95,6 +95,12 @@ namespace Microsoft.Intune
             serviceVersion = serviceVersion ?? DEFAULT_SERVICE_VERSION;
 
             // Dependencies
+            var msalClient = new MsalClient(
+                        // Required
+                        configProperties,
+                        // Overrides
+                        trace: trace
+                        );
             var adalClient = new AdalClient(
                         // Required
                         configProperties,
@@ -108,14 +114,15 @@ namespace Microsoft.Intune
                     // Overrides
                     trace: trace,
                     // Dependencies
-                    adalClient: adalClient,
+                    authClient: msalClient,
                     locationProvider: new IntuneServiceLocationProvider(
                         // Required
                         configProperties,
                         // Overrides
                         trace: trace,
                         // Dependencies
-                        authClient: adalClient
+                        adalClient: adalClient,
+                        msalClient: msalClient
                         )
                     );
         }
