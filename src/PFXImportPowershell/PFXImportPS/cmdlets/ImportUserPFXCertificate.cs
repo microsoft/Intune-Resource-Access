@@ -23,7 +23,13 @@
 
 namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 {
+    using DirectoryServices;
+    using Microsoft.Identity.Client;
+    using Newtonsoft.Json;
+    using Serialization;
+    using Services.Api;
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
@@ -33,12 +39,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     using System.Security.Authentication;
     using System.Text;
     using System.Threading;
-    using IdentityModel.Clients.ActiveDirectory;
-    using Serialization;
-    using Services.Api;
-    using Newtonsoft.Json;
-    using DirectoryServices;
-    using System.Collections;
 
     /// <summary>
     /// Imports PFX certificates for delivery to user devices.
@@ -48,16 +48,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     {
         private int successCnt;
         private int failureCnt;
-
-        /// <summary>
-        ///  AuthenticationResult retrieve from Get-IntuneAuthenticationToken
-        /// </summary>
-        [Parameter(DontShow = true)]//Deprecated
-        public AuthenticationResult AuthenticationResult
-        {
-            get;
-            set;
-        }
 
         /// <summary>
         /// List of PFX certificates to import.
@@ -115,18 +105,16 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         protected override void ProcessRecord()
         {
             Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
-            if (AuthenticationResult == null)
-            {
-                AuthenticationResult = Authenticate.GetAuthToken(modulePrivateData);
-            }
-            if (!Authenticate.AuthTokenIsValid(AuthenticationResult))
+            AuthenticationResult authenticationResult = Authenticate.GetAuthToken(modulePrivateData);
+
+            if (!Authenticate.AuthTokenIsValid(authenticationResult))
             {
                 this.ThrowTerminatingError(
                     new ErrorRecord(
                         new AuthenticationException("Cannot get Authentication Token"),
                         "Authentication Failure",
                         ErrorCategory.AuthenticationError,
-                        AuthenticationResult));
+                        authenticationResult));
             }
 
             successCnt = 0;
@@ -142,7 +130,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                         new ArgumentException("No Certificates specified"),
                         "Date Input Failure",
                         ErrorCategory.InvalidArgument,
-                        AuthenticationResult));
+                        authenticationResult));
             }
 
             foreach (UserPFXCertificate cert in CertificateList)
@@ -150,7 +138,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 string url;
                 if (IsUpdate.IsPresent)
                 {
-                    string userId = GetUserId.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, AuthenticationResult);
+                    string userId = GetUserId.GetUserIdFromUpn(cert.UserPrincipalName, graphURI, schemaVersion, authenticationResult);
                     url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates({2}-{3})", graphURI, schemaVersion, userId, cert.Thumbprint);
                 }
                 else
@@ -158,7 +146,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                     url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/deviceManagement/userPfxCertificates", graphURI, schemaVersion);
                 }
 
-                HttpWebRequest request = CreateWebRequest(url, AuthenticationResult);
+                HttpWebRequest request = CreateWebRequest(url, authenticationResult);
 
                 string certJson = SerializationHelpers.SerializeUserPFXCertificate(cert);
                 byte[] contentBytes = Encoding.UTF8.GetBytes(certJson);
@@ -178,39 +166,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
             {
                 this.WriteWarning(string.Format(LogMessages.ImportCertificatesFailure, failureCnt));
             }
-        }
-
-        /// <summary>
-        /// Uses a graph call to return the UserId for a specified UPN
-        /// </summary>
-        /// <param name="user">The User Principal Name.</param>
-        /// <returns>The Azuer UserId.</returns>
-        public virtual string GetUserIdFromUpn(string user)
-        {
-            string url = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/users?$filter=userPrincipalName eq '{2}'", Authenticate.GraphURI, Authenticate.SchemaVersion, user);
-            HttpWebRequest request;
-            request = CreateWebRequest(url, AuthenticationResult);
-
-            using (var response = (HttpWebResponse)request.GetResponse())
-            {
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    string responseMessage = string.Empty;
-                    using (StreamReader rs = new StreamReader(response.GetResponseStream()))
-                    {
-                        responseMessage = rs.ReadToEnd();
-                    }
-
-                    User userObj = SerializationHelpers.DeserializeUser(responseMessage);
-                    return userObj.Id;
-                }
-                else
-                {
-                    this.WriteError(new ErrorRecord(new InvalidOperationException(response.StatusDescription), response.StatusCode.ToString(), ErrorCategory.InvalidResult, user));
-                }
-            }
-
-            return null;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:DoNotDisposeObjectsMultipleTimes", 

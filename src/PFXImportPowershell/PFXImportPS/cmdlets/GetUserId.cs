@@ -25,11 +25,10 @@
 namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 {
     using Microsoft.DirectoryServices;
-    using Microsoft.IdentityModel.Clients.ActiveDirectory;
+    using Microsoft.Identity.Client;
     using Serialization;
     using System;
     using System.Collections;
-    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
     using System.Management.Automation;
@@ -40,19 +39,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     [OutputType(typeof(Guid))]
     public class GetUserId : PSCmdlet
     {
-
-
-        /// <summary>
-        /// AuthenticationResult retrieved from Get-IntuneAuthenticationToken
-        /// </summary>
-        [Parameter(DontShow = true)]//Deprecated
-        [ValidateNotNullOrEmpty()]
-        public AuthenticationResult AuthenticationResult
-        {
-            get;
-            set;
-        }
-
         /// <summary>
         /// List of users with PFX Certificates to be retrieved.
         /// </summary>
@@ -72,23 +58,21 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         protected override void ProcessRecord()
         {
             Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
-            if (AuthenticationResult == null)
-            {
-                AuthenticationResult = Authenticate.GetAuthToken(modulePrivateData);
-            }
-            if (!Authenticate.AuthTokenIsValid(AuthenticationResult))
+            AuthenticationResult authenticationResult = Authenticate.GetAuthToken(modulePrivateData);
+
+            if (!Authenticate.AuthTokenIsValid(authenticationResult))
             {
                 this.ThrowTerminatingError(
                     new ErrorRecord(
                         new AuthenticationException("Cannot get Authentication Token"),
                         "Authentication Failure",
                         ErrorCategory.AuthenticationError,
-                        AuthenticationResult));
+                        authenticationResult));
             }
 
             string graphURI = Authenticate.GetGraphURI(modulePrivateData);
             string schemaVersion = Authenticate.GetSchemaVersion(modulePrivateData);
-            string userId = GetUserId.GetUserIdFromUpn(UPN, graphURI, schemaVersion, AuthenticationResult);
+            string userId = GetUserId.GetUserIdFromUpn(UPN, graphURI, schemaVersion, authenticationResult);
             this.WriteObject(userId);
         }
 

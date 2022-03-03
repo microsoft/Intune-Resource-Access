@@ -25,7 +25,11 @@
 
 namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 {
+    using Microsoft.Identity.Client;
+    using Serialization;
+    using Services.Api;
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
@@ -34,11 +38,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     using System.Net;
     using System.Security.Authentication;
     using System.Threading;
-    using IdentityModel.Clients.ActiveDirectory;
-    using Services.Api;
-    using Serialization;
-    using DirectoryServices;
-    using System.Collections;
 
     public struct UserThumbprint
     {
@@ -55,19 +54,6 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
     [OutputType(typeof(List<UserPFXCertificate>))]
     public class GetUserPFXCertificate : PSCmdlet
     {
-
-
-        /// <summary>
-        /// AuthenticationResult retrieved from Get-IntuneAuthenticationToken
-        /// </summary>
-        [Parameter(DontShow = true)]//Deprecated
-        [ValidateNotNullOrEmpty()]
-        public AuthenticationResult AuthenticationResult
-        {
-            get;
-            set;
-        }
-
         /// <summary>
         /// List of thumbprints of the PFX Certificates to be retrieved.
         /// </summary>
@@ -114,18 +100,16 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         protected override void ProcessRecord()
         {
             Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
-            if (AuthenticationResult == null)
-            {
-                AuthenticationResult = Authenticate.GetAuthToken(modulePrivateData);
-            }
-            if (!Authenticate.AuthTokenIsValid(AuthenticationResult))
+            AuthenticationResult authenticationResult = Authenticate.GetAuthToken(modulePrivateData);
+
+            if (!Authenticate.AuthTokenIsValid(authenticationResult))
             {
                 this.ThrowTerminatingError(
                     new ErrorRecord(
                         new AuthenticationException("Cannot get Authentication Token"),
                         "Authentication Failure",
                         ErrorCategory.AuthenticationError,
-                        AuthenticationResult));
+                        authenticationResult));
             }
 
             string graphURI = Authenticate.GetGraphURI(modulePrivateData);
@@ -141,7 +125,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                     HttpWebRequest request;
                     try
                     {
-                        request = CreateWebRequest(url, AuthenticationResult);
+                        request = CreateWebRequest(url, authenticationResult);
 
                         // Returns a single record and comes back in a different format than the other requests.
                         ProcessSingleResponse(request, "User:" + userthumbprint.User + " Thumbprint:" + userthumbprint.Thumbprint);
@@ -160,7 +144,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                     HttpWebRequest request;
                     try
                     {
-                        request = CreateWebRequest(url, AuthenticationResult);
+                        request = CreateWebRequest(url, authenticationResult);
                         ProcessCollectionResponse(request, user);
                     }
                     catch (WebException we)
@@ -174,7 +158,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 HttpWebRequest request;
                 try
                 {
-                    request = CreateWebRequest(urlbase, AuthenticationResult);
+                    request = CreateWebRequest(urlbase, authenticationResult);
                     ProcessCollectionResponse(request, null);
                 }
                 catch (WebException we)
