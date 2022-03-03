@@ -6,7 +6,7 @@ These scripts provide a baseline for the actions that can take place to import y
 
 ## What's New?
 
-### Version 1.2
+### Version 2.0
 - Breaking changes:
 	- The global Intune app registration is deprecated and its client ID has been removed from these scripts.  A tenant-specific app registration must be created and its client ID added to your IntunePfxImport.psd1 file.
 	- The previously deprecated Get-IntuneAuthenticationToken command has been removed.  Use Set-IntuneAuthenticationToken instead.  The associated AuthenticationResult parameter has also been removed from the other various commands.
@@ -24,6 +24,8 @@ These scripts provide a baseline for the actions that can take place to import y
 # Configure a Microsoft Azure App Registration
 
 An app registration must be configured for your tenant.  Create the app registration in the Microsoft Azure portal.
+
+[Quickstart: Register an application with the Microsoft identity platform](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)
 
 Set the redirect uri for the Public client/native (mobile & desktop) platform to https://login.microsoftonline.com/common/oauth2/nativeclient
 - The redirect uri used by scripts can optionally be modified by adding the "RedirectURI" setting to the PrivateData section of your IntunePfxImport.psd1 file
