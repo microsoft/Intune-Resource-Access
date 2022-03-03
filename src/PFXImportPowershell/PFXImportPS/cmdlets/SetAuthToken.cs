@@ -23,11 +23,11 @@
 
 namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 {
+    using Microsoft.Identity.Client;
     using System;
     using System.Collections;
     using System.Management.Automation;
     using System.Security;
-    using IdentityModel.Clients.ActiveDirectory;
 
     /// <summary>
     /// Does the initial authentication against AAD and can be used for subsequest cmdlet calls.
@@ -38,7 +38,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
         /// <summary>
         /// Intune Tenant Admin user to be authenticated.
         /// </summary>
-        [Parameter(Mandatory = true)]
+        [Parameter]
         [ValidateNotNullOrEmpty()]
         public string AdminUserName
         {
@@ -58,8 +58,9 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
 
         protected override void ProcessRecord()
         {
-
             Hashtable modulePrivateData = this.MyInvocation.MyCommand.Module.PrivateData as Hashtable;
+
+            Authenticate.ClearTokenCache(modulePrivateData);
             AuthenticationResult authToken = Authenticate.GetAuthToken(AdminUserName, AdminPassword, modulePrivateData);
             if (!Authenticate.AuthTokenIsValid(authToken))
             {
