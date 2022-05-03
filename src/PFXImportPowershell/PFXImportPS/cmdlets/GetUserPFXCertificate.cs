@@ -215,7 +215,7 @@ namespace Microsoft.Management.Powershell.PFXImport.Cmdlets
                 }
                 else
                 {
-                    this.WriteError(new ErrorRecord(we, we.Message + " request-id:" + we.Response.Headers["request-id"], ErrorCategory.InvalidResult, filter));
+                    this.WriteError(new ErrorRecord(we, we.Message + " request-id:" + we.Response?.Headers["request-id"], ErrorCategory.InvalidResult, filter));
                 }
             }
 
