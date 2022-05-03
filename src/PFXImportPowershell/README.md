@@ -32,25 +32,12 @@ Set the redirect uri for the Public client/native (mobile & desktop) platform to
 
 The following Microsoft Graph API permissions are required:
 
-1. DeviceManagementServiceConfig.ReadWrite.All
-2. DeviceManagementServiceConfig.Read.All
-3. DeviceManagementConfiguration.ReadWrite.All
-4. DeviceManagementConfiguration.Read.All
-5. DeviceManagementApps.ReadWrite.All
-6. DeviceManagementApps.Read.All
-7. DeviceManagementRBAC.ReadWrite.All
-8. DeviceManagementRBAC.Read.All
-9. DeviceManagementManagedDevices.PriviligedOperation.All
-10. DeviceManagementManagedDevices.ReadWrite.All
-11. DeviceManagementManagedDevices.Read.All
+- DeviceManagementConfiguration.ReadWrite.All
+- User.Read.All
 
 Additionally required when using user-based authentication:
 
-12. User.Read
-
-Additionally required for Remove-IntuneUserPfxCertificate:
-
-13. User.ReadWrite.All
+- User.Read
 
 Add these permissions as delegated permissions when using user-based authentication or application permissions when using an application client secret.  Grant admin consent for the permissions.
 
@@ -190,7 +177,7 @@ Get-IntuneUserPfxCertificate -UserThumbprintList <UserThumbprintObjs>
 ```
 2. Get-PfxCertificates (Specific users)
 ```
-Get-IntuneUserPfxCertificate -UsertList "<UserUPN>"
+Get-IntuneUserPfxCertificate -UserList "<UserUPN>"
 ```
 3. Get-PfxCertificates (All records)
 ```
@@ -204,7 +191,7 @@ Remove-IntuneUserPfxCertificate -UserThumbprintList <UserThumbprintObjs>
 ```
 2. Remove-PfxCertificates (Specific users)
 ```
-Remove-IntuneUserPfxCertificate -UsertList "<UserUPN>"
+Remove-IntuneUserPfxCertificate -UserList "<UserUPN>"
 ```
 
 ## Remove Authentication Token from session (logout)
