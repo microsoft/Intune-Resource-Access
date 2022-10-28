@@ -5,6 +5,15 @@ This project consists of helper Powershell Commandlets for importing PFX certifi
 These scripts provide a baseline for the actions that can take place to import your PFX Certificates to Intune. They can be modified and adapted to fit your workflow. Most of the cmdlets are wrappers of Intune Graph calls.
 
 ## What's New?
+
+### Version 2.0
+- Breaking changes:
+	- The global Intune app registration is deprecated and its client ID has been removed from these scripts.  A tenant-specific app registration must be created and its client ID added to your IntunePfxImport.psd1 file.
+	- The previously deprecated Get-IntuneAuthenticationToken command has been removed.  Use Set-IntuneAuthenticationToken instead.  The associated AuthenticationResult parameter has also been removed from the other various commands.
+	- Changed the default redirect uri to https://login.microsoftonline.com/common/oauth2/nativeclient as recommended by Microsoft Azure.  
+- Added the ability to authenticate using a client secret instead of user authentication. This is configured in the app registration and IntunePfxImport.psd1 file.  
+- Switched the underlying authentication library from ADAL (which will soon be unsupported) to MSAL.
+
 ### Version 1.1
 - Added functionality to make private keys exportable, a cmdlet to export the key, and a cmdlet to import a key.
 	- Allows migrating connectors when using the Microsoft Software Key Storage Provider.
@@ -12,24 +21,33 @@ These scripts provide a baseline for the actions that can take place to import y
 - Deprecated the Get-IntuneAuthenticationToken cmdlet in favore of the new Set-IntuneAuthenticationToken to store the authentication token so that it isn't required as a parameter on every call that interacts with Intune.
 	- Calling Remove-IntuneAuthenticationToken or closing the session is recommended when calls to Intune are complete.
 
+# Configure a Microsoft Azure App Registration
+
+An app registration must be configured for your tenant.  Create the app registration in the Microsoft Azure portal.
+
+[Quickstart: Register an application with the Microsoft identity platform](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)
+
+Set the redirect uri for the Public client/native (mobile & desktop) platform to https://login.microsoftonline.com/common/oauth2/nativeclient
+- The redirect uri used by scripts can optionally be modified by adding the "RedirectURI" setting to the PrivateData section of your IntunePfxImport.psd1 file
+
+The following Microsoft Graph API permissions are required:
+
+- DeviceManagementConfiguration.ReadWrite.All
+- User.Read.All
+
+Additionally required when using user-based authentication:
+
+- User.Read
+
+Add these permissions as delegated permissions when using user-based authentication or application permissions when using an application client secret.  Grant admin consent for the permissions.
+
+If using user-based authentication in a non-interactive session (by specifying the password on the PowerShell command line), you must enable the “Allow public client flows” setting on the app registration "Authentication" page.
+
+If using an application client secret for authentication, create the secret under "Certificates & secrets".  Save the secret before leaving the page, as you will not be able to view it again later.  The secret value will be provided in the IntunePfxImport.psd1 file (see details below).
+
 # Building the Commandlets
 ## Prerequisite
-Visual Studio 2015 (or above)
-
-[Graph Permissions](https://developer.microsoft.com/en-us/graph/docs/concepts/permissions_reference) required:
-
-1. DeviceManagementServiceConfig.ReadWrite.All
-2. DeviceManagementServiceConfig.Read.All
-3. DeviceManagementConfiguration.ReadWrite.All
-4. DeviceManagementConfiguration.Read.All
-5. DeviceManagementApps.ReadWrite.All
-6. DeviceManagementApps.Read.All
-7. DeviceManagementRBAC.ReadWrite.All
-8. DeviceManagementRBAC.Read.All
-9. DeviceManagementManagedDevices.PriviligedOperation.All
-10. DeviceManagementManagedDevices.ReadWrite.All
-11. DeviceManagementManagedDevices.Read.All
-
+Visual Studio 2019 (or above)
 
 ## Building
 1. Load .\PFXImportPS.sln in Visual Studio
@@ -39,7 +57,15 @@ Visual Studio 2015 (or above)
 # Example Powershell Usage
 
 ## Prerequisite:
-1. Import the built powershell module. This usually is found in the "bin\debug" or "bin\release" directory.
+
+1. Update the IntunePfxImport.psd1 file with details about your app registration. This usually is found in the "bin\debug" or "bin\release" directory.
+
+- Set the ClientId setting to the "application (client) Id" from the app registration "Overview" page.
+- If using an application client secret:
+	- Create the secret in your app registration and specify it in the ClientSecret setting in IntunePfxImport.psd1.  Be sure to keep this file secure.
+	- The TenantId setting is also required when using a client secret.  This value can be found on the app registration "Overview" page.
+
+2. Import the built powershell module. 
 ```
 Import-Module .\IntunePfxImport.psd1
 ```
@@ -69,17 +95,40 @@ Import-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -File
 ```
 
 ## Authenticate to Intune
+
+### User Authentication with interactive login
+
+1. Authenticate as the account administrator (using the admin UPN) to Intune. Specify the AdminUserName on the command line, but not the AdminPassword.  An interactive login dialog will appear.
+```
+Set-IntuneAuthenticationToken -AdminUserName "<Admin-UPN>" 
+```
+2. Make sure the call Remove-IntuneAuthenticationToken to clear the token cache when all interation with Intune is complete.  Close the PowerShell session to remove credentials cached by the interactive browser.
+
+
+### User authentication with non-interactive login
+
+Prerequisite: to use this option, enable “Allow public client flows” setting on the app registration "Authentication" page.
+
 1. Optionally, create a secure string representing the account administrator password.
 ```
 $secureAdminPassword = ConvertTo-SecureString -String "<admin password>" -AsPlainText -Force
 ```
-2. Authenticate as the account administrator (using the admin UPN) to Intune. If the password is not provided a login dialog will appear.
+2. Authenticate as the account administrator (using the admin UPN) to Intune.  Provide both the user name and the password on the command line.
 ```
 Set-IntuneAuthenticationToken -AdminUserName "<Admin-UPN>" [-AdminPassword $secureAdminPassword]
 ```
 3. Make sure the call Remove-IntuneAuthenticationToken to clear the token cache when all interation with Intune is complete.
 
-## Set up userPFXCertifcate object (scenario: encrypting password from a location that has acccess to the private key in the key store) 
+### Application client secret authentication
+
+Prerequisite: create the client secret in the app registration and configure the IntunePfxImport.psd1 file.
+
+1. Set-IntuneAuthenticationToken will use configured client secret settings if it is called with no parameters
+```
+Set-IntuneAuthenticationToken
+```
+
+## Set up userPFXCertificate object (scenario: encrypting password from a location that has acccess to the private key in the key store) 
 1. Setup Secure File Password string.
 ```
 $SecureFilePassword = ConvertTo-SecureString -String "<PFXPassword>" -AsPlainText -Force
@@ -128,7 +177,7 @@ Get-IntuneUserPfxCertificate -UserThumbprintList <UserThumbprintObjs>
 ```
 2. Get-PfxCertificates (Specific users)
 ```
-Get-IntuneUserPfxCertificate -UsertList "<UserUPN>"
+Get-IntuneUserPfxCertificate -UserList "<UserUPN>"
 ```
 3. Get-PfxCertificates (All records)
 ```
@@ -142,13 +191,15 @@ Remove-IntuneUserPfxCertificate -UserThumbprintList <UserThumbprintObjs>
 ```
 2. Remove-PfxCertificates (Specific users)
 ```
-Remove-IntuneUserPfxCertificate -UsertList "<UserUPN>"
+Remove-IntuneUserPfxCertificate -UserList "<UserUPN>"
 ```
 
 ## Remove Authentication Token from session (logout)
+To unselect the authentication token:
 ```
 Remove-IntuneAuthenticationToken
 ```
+Note: To clear all caches used internally by MSAL APIs, also close the PowerShell session.
 
 # Graph Usage
 See [UserPFXCertificate Graph resource type](https://docs.microsoft.com/en-us/graph/api/resources/intune-raimportcerts-userpfxcertificate?view=graph-rest-beta)
