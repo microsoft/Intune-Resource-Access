@@ -8,7 +8,7 @@ These scripts provide a baseline for the actions that can take place to import y
 
 ### Version 2.0
 - Breaking changes:
-	- The global Intune app registration is deprecated and its client ID has been removed from these scripts.  A tenant-specific app registration must be created and its client ID added to your IntunePfxImport.psd1 file.
+	- The global Intune app registration has been deprecated for use with PFXImport. The client ID for the Global Intune application has been removed from these scripts. A tenant-specific app registration _must be created_ and its client ID added to your IntunePfxImport.psd1 file.
 	- The previously deprecated Get-IntuneAuthenticationToken command has been removed.  Use Set-IntuneAuthenticationToken instead.  The associated AuthenticationResult parameter has also been removed from the other various commands.
 	- Changed the default redirect uri to https://login.microsoftonline.com/common/oauth2/nativeclient as recommended by Microsoft Azure.  
 - Added the ability to authenticate using a client secret instead of user authentication. This is configured in the app registration and IntunePfxImport.psd1 file.  
