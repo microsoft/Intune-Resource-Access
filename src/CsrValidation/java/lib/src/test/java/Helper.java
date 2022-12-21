@@ -22,7 +22,6 @@
 // THE SOFTWARE.
 
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -43,9 +42,9 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.mockito.ArgumentMatcher;
+import org.mockito.ArgumentMatchers;
 
 import com.microsoft.aad.adal4j.AuthenticationResult;
-import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.intune.scepvalidation.ADALClientWrapper;
 import com.microsoft.intune.scepvalidation.IntuneRevocationClient;
 import com.microsoft.intune.scepvalidation.IntuneScepServiceClient;
@@ -55,7 +54,8 @@ import com.microsoft.intune.scepvalidation.MSALClientWrapper;
 public class Helper
 {
     public static final String GRAPH_URL = "graph.windows.net";
-    public static final String GOOD_SERVICE_DISCOVERY_RESPONSE = "{"
+    public static final String MSAL_URL = "graph.microsoft.com";
+    public static final String GOOD_GRAPH_SERVICE_DISCOVERY_RESPONSE = "{"
             + "value: ["
             + "{"
                 + "serviceName:" + IntuneScepServiceClient.VALIDATION_SERVICE_NAME + ","
@@ -73,6 +73,17 @@ public class Helper
                 + "uri:'https://fef.dmsua01.manage-dogfood.microsoft.com/RACerts/ScepRequestValidationFEService/Gateway/StatelessScepRequestValidationService'"
             + "}"        
         + "]}";
+    public static final String GOOD_MSAL_SERVICE_DISCOVERY_RESPONSE = "{"
+            + "value: ["
+            + "{"
+                + "providerName:" + IntuneScepServiceClient.VALIDATION_SERVICE_NAME + ","
+                + "uri:'https://fef.dmsua01.manage-dogfood.microsoft.com/RACerts/ScepRequestValidationFEService/Gateway/StatelessScepRequestValidationService'"
+            + "},"
+            + "{"
+                + "providerName:" + IntuneRevocationClient.CONNECTOR_SERVICE_NAME + ","
+                + "uri:'https://fef.dmsua01.manage-dogfood.microsoft.com/RACerts/StatelessPkiConnectorService/Gateway/StatelessPkiConnectorService'"
+            + "}"
+        + "]}";
     public static final String SERVICE_URL = "fef.dmsua01.manage-dogfood.microsoft.com";
     public static final String VALID_SCEP_RESPONSE = "{code:"+IntuneScepServiceException.ErrorCode.Success.name()+",errorDescription:''}";
     public static final String ERROR_SCEP_RESPONSE = "{code:"+IntuneScepServiceException.ErrorCode.ChallengeDecodingError.name()+",errorDescription:''}";
@@ -83,6 +94,10 @@ public class Helper
     CloseableHttpResponse graphResponse = mock(CloseableHttpResponse.class);
     StatusLine graphStatus = mock(StatusLine.class);
     
+    CloseableHttpResponse msalResponse = mock(CloseableHttpResponse.class);
+    HttpEntity msalResponseEntity = mock(HttpEntity.class);
+    StatusLine msalStatus = mock(StatusLine.class);
+
     CloseableHttpResponse intuneResponse = mock(CloseableHttpResponse.class);
     HttpEntity intuneResponseEntity = mock(HttpEntity.class);
     StatusLine intuneStatus = mock(StatusLine.class);
@@ -94,7 +109,28 @@ public class Helper
     public Helper() throws ClientProtocolException, IOException, ServiceUnavailableException, IllegalArgumentException, InterruptedException, ExecutionException
     {
         when(httpBuilder.build()).thenReturn(httpClient);
+
+        when(httpClient.execute(
+            argThat(new ArgumentMatcher<HttpUriRequest>() {
+                @Override
+                public boolean matches(HttpUriRequest resp) {
+                    if(resp == null)
+                        return false;
+                    return resp.getURI().getHost().equals(MSAL_URL);
+                }})))
+        .thenReturn(msalResponse);
         
+        when(msalResponse.getStatusLine())
+            .thenReturn(msalStatus);
+        when(msalStatus.getStatusCode())
+            .thenReturn(200);
+        when(msalResponse.getEntity())
+            .thenReturn(msalResponseEntity);
+        when(msalResponseEntity.getContent())
+            .thenReturn(new ByteArrayInputStream(GOOD_MSAL_SERVICE_DISCOVERY_RESPONSE.getBytes()));
+        when(msalResponseEntity.getContentLength())
+            .thenReturn((long)GOOD_MSAL_SERVICE_DISCOVERY_RESPONSE.length());
+
         when(httpClient.execute(
                 argThat(new ArgumentMatcher<HttpUriRequest>() {
                     @Override
@@ -112,9 +148,9 @@ public class Helper
         when(graphStatus.getStatusCode())
             .thenReturn(200);
         when(graphResponseEntity.getContent())
-            .thenReturn(new ByteArrayInputStream(GOOD_SERVICE_DISCOVERY_RESPONSE.getBytes()));
+            .thenReturn(new ByteArrayInputStream(GOOD_GRAPH_SERVICE_DISCOVERY_RESPONSE.getBytes()));
         when(graphResponseEntity.getContentLength())
-            .thenReturn((long)GOOD_SERVICE_DISCOVERY_RESPONSE.length());
+            .thenReturn((long)GOOD_GRAPH_SERVICE_DISCOVERY_RESPONSE.length());
 
         when(httpClient.execute(
                 argThat(new ArgumentMatcher<HttpUriRequest>() {
@@ -150,7 +186,13 @@ public class Helper
     public void resetGraphRequest() throws UnsupportedOperationException, IOException
     {
         when(graphResponseEntity.getContent())
-            .thenReturn(new ByteArrayInputStream(GOOD_SERVICE_DISCOVERY_RESPONSE.getBytes()));
+            .thenReturn(new ByteArrayInputStream(GOOD_GRAPH_SERVICE_DISCOVERY_RESPONSE.getBytes()));
+    }
+    
+    public void resetMsalRequest() throws UnsupportedOperationException, IOException
+    {
+        when(msalResponseEntity.getContent())
+            .thenReturn(new ByteArrayInputStream(GOOD_MSAL_SERVICE_DISCOVERY_RESPONSE.getBytes()));
     }
     
     private ADALClientWrapper getDefaultAdalMock() throws ServiceUnavailableException, IllegalArgumentException, InterruptedException, ExecutionException
@@ -171,7 +213,7 @@ public class Helper
     private MSALClientWrapper getDefaultMsalMock() throws MalformedURLException, ServiceUnavailableException
     {
         MSALClientWrapper adalMock = mock(MSALClientWrapper.class);
-        when(adalMock.getAccessToken(any()))
+        when(adalMock.getAccessToken(ArgumentMatchers.<String>anySet()))
             .thenReturn("accessToken");
         return adalMock;
     }
