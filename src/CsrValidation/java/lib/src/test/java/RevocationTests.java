@@ -36,6 +36,7 @@ import java.util.ArrayList;
 
 import org.apache.http.client.methods.HttpUriRequest;
 import org.mockito.ArgumentMatcher;
+import org.mockito.ArgumentMatchers;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.google.gson.Gson;
@@ -73,13 +74,14 @@ public class RevocationTests
 
         List<CARevocationRequest> results = client.DownloadCARevocationRequests(transactionId.toString(), 10, null);
         
-        verify(helper.adal, times(2)).getAccessTokenFromCredential(anyString());
+        verify(helper.msal, times(2)).getAccessToken(ArgumentMatchers.<String>anySet());
+        verify(helper.adal, times(0)).getAccessTokenFromCredential(anyString());
         
         verify(helper.httpClient, times(1)).execute(
                 argThat(new ArgumentMatcher<HttpUriRequest>() {
                     @Override
                     public boolean matches(HttpUriRequest resp) {
-                        return resp.getURI().getHost().equals(Helper.GRAPH_URL);
+                        return resp.getURI().getHost().equals(Helper.MSAL_URL);
                     }}));
 
         verify(helper.httpClient, times(1)).execute(
@@ -126,13 +128,14 @@ public class RevocationTests
 
         client.UploadRevocationResults(transactionId.toString(), list);
         
-        verify(helper.adal, times(2)).getAccessTokenFromCredential(anyString());
+        verify(helper.msal, times(2)).getAccessToken(ArgumentMatchers.<String>anySet());
+        verify(helper.adal, times(0)).getAccessTokenFromCredential(anyString());
         
         verify(helper.httpClient, times(1)).execute(
                 argThat(new ArgumentMatcher<HttpUriRequest>() {
                     @Override
                     public boolean matches(HttpUriRequest resp) {
-                        return resp.getURI().getHost().equals(Helper.GRAPH_URL);
+                        return resp.getURI().getHost().equals(Helper.MSAL_URL);
                     }}));
 
         verify(helper.httpClient, times(1)).execute(
