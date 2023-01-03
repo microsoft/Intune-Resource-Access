@@ -37,6 +37,7 @@ import javax.naming.ServiceUnavailableException;
 
 import org.apache.http.client.methods.HttpUriRequest;
 import org.mockito.ArgumentMatcher;
+import org.mockito.ArgumentMatchers;
 
 public class Test 
 {
@@ -52,13 +53,14 @@ public class Test
 
         client.ValidateRequest(transactionId.toString(), csr);
         
-        verify(helper.adal, times(2)).getAccessTokenFromCredential(anyString());
+        verify(helper.adal, times(0)).getAccessTokenFromCredential(anyString());
+        verify(helper.msal, times(2)).getAccessToken(ArgumentMatchers.<String>anySet());
         
         verify(helper.httpClient, times(1)).execute(
                 argThat(new ArgumentMatcher<HttpUriRequest>() {
                     @Override
                     public boolean matches(HttpUriRequest resp) {
-                        return resp.getURI().getHost().equals(Helper.GRAPH_URL);
+                        return resp.getURI().getHost().equals(Helper.MSAL_URL);
                     }}));
 
         verify(helper.httpClient, times(1)).execute(
@@ -89,13 +91,14 @@ public class Test
         }
         catch(IntuneScepServiceException e)
         {
-            verify(helper.adal, times(2)).getAccessTokenFromCredential(anyString());
+            verify(helper.adal, times(0)).getAccessTokenFromCredential(anyString());
+            verify(helper.msal, times(2)).getAccessToken(ArgumentMatchers.<String>anySet());
             
             verify(helper.httpClient, times(1)).execute(
                     argThat(new ArgumentMatcher<HttpUriRequest>() {
                         @Override
                         public boolean matches(HttpUriRequest resp) {
-                            return resp.getURI().getHost().equals(Helper.GRAPH_URL);
+                            return resp.getURI().getHost().equals(Helper.MSAL_URL);
                         }}));
 
             verify(helper.httpClient, times(1)).execute(
@@ -130,13 +133,14 @@ public class Test
         }
         catch(IntuneClientHttpErrorException e)
         {
-            verify(helper.adal, times(2)).getAccessTokenFromCredential(anyString());
+            verify(helper.adal, times(0)).getAccessTokenFromCredential(anyString());
+            verify(helper.msal, times(2)).getAccessToken(ArgumentMatchers.<String>anySet());
             
             verify(helper.httpClient, times(1)).execute(
                     argThat(new ArgumentMatcher<HttpUriRequest>() {
                         @Override
                         public boolean matches(HttpUriRequest resp) {
-                            return resp.getURI().getHost().equals(Helper.GRAPH_URL);
+                            return resp.getURI().getHost().equals(Helper.MSAL_URL);
                         }}));
 
             verify(helper.httpClient, times(1)).execute(
@@ -158,6 +162,8 @@ public class Test
         
         when(helper.adal.getAccessTokenFromCredential(anyString()))
             .thenThrow(new ServiceUnavailableException());
+        when(helper.msal.getAccessToken(ArgumentMatchers.<String>anySet()))
+            .thenThrow(new ServiceUnavailableException());
         
         IntuneScepServiceClient client = new IntuneScepServiceClient(helper.properties, helper.msal, helper.adal, helper.httpBuilder);
         
@@ -169,13 +175,14 @@ public class Test
         }
         catch(ServiceUnavailableException e)
         {
+            verify(helper.msal, times(1)).getAccessToken(ArgumentMatchers.<String>anySet());
             verify(helper.adal, times(1)).getAccessTokenFromCredential(anyString());
             
             verify(helper.httpClient, times(0)).execute(
                     argThat(new ArgumentMatcher<HttpUriRequest>() {
                         @Override
                         public boolean matches(HttpUriRequest resp) {
-                            return resp.getURI().getHost().equals(Helper.GRAPH_URL);
+                            return resp.getURI().getHost().equals(Helper.MSAL_URL);
                         }}));
 
             verify(helper.httpClient, times(0)).execute(
@@ -195,6 +202,9 @@ public class Test
     {
         Helper helper = new Helper();
         
+        when(helper.msal.getAccessToken(ArgumentMatchers.<String>anySet()))
+            .thenThrow(new ServiceUnavailableException());
+            
         when(helper.graphResponseEntity.getContent())
             .thenReturn(new ByteArrayInputStream(Helper.NO_SERVICE_DISCOVERY_RESPONSE.getBytes()));
         when(helper.graphResponseEntity.getContentLength())
@@ -210,6 +220,7 @@ public class Test
         }
         catch(IntuneServiceNotFoundException e)
         {
+            verify(helper.msal, times(1)).getAccessToken(ArgumentMatchers.<String>anySet());
             verify(helper.adal, times(1)).getAccessTokenFromCredential(anyString());
             
             verify(helper.httpClient, times(1)).execute(
@@ -235,7 +246,7 @@ public class Test
     public void TestServiceMapClearMockito() throws IntuneScepServiceException, Exception 
     {
         Helper helper = new Helper();
-        
+
         when(helper.httpClient.execute(
                 argThat(new ArgumentMatcher<HttpUriRequest>() {
                     @Override
@@ -263,13 +274,14 @@ public class Test
         
         assertTrue(caught);
         
-        verify(helper.adal, times(2)).getAccessTokenFromCredential(anyString());
+        verify(helper.msal, times(2)).getAccessToken(ArgumentMatchers.<String>anySet());
+        verify(helper.adal, times(0)).getAccessTokenFromCredential(anyString());
         
         verify(helper.httpClient, times(1)).execute(
                 argThat(new ArgumentMatcher<HttpUriRequest>() {
                     @Override
                     public boolean matches(HttpUriRequest resp) {
-                        return resp.getURI().getHost().equals(Helper.GRAPH_URL);
+                        return resp.getURI().getHost().equals(Helper.MSAL_URL);
                     }}));
 
         verify(helper.httpClient, times(1)).execute(
@@ -280,7 +292,7 @@ public class Test
                     }}));
         
         // do this so the result doesn't get cached
-        helper.resetGraphRequest();
+        helper.resetMsalRequest();
         
         when(helper.httpClient.execute(
                 argThat(new ArgumentMatcher<HttpUriRequest>() {
@@ -295,14 +307,15 @@ public class Test
         // Run test that should trigger a 2nd call to GRAPH for service discovery meaning we refreshed the cache
         client.ValidateRequest(transactionId.toString(), csr);
 
-        verify(helper.adal, times(4)).getAccessTokenFromCredential(anyString());
+        verify(helper.msal, times(4)).getAccessToken(ArgumentMatchers.<String>anySet());
+        verify(helper.adal, times(0)).getAccessTokenFromCredential(anyString());
         
         // Verify we indeed called graph a 2nd time
         verify(helper.httpClient, times(2)).execute(
                 argThat(new ArgumentMatcher<HttpUriRequest>() {
                     @Override
                     public boolean matches(HttpUriRequest resp) {
-                        return resp.getURI().getHost().equals(Helper.GRAPH_URL);
+                        return resp.getURI().getHost().equals(Helper.MSAL_URL);
                     }}));
 
         verify(helper.httpClient, times(2)).execute(
