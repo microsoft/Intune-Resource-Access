@@ -31,7 +31,6 @@ namespace Microsoft.Intune.EncryptionUtilities
     using System.Security.Cryptography.Pkcs;
     using System.Security.Cryptography.X509Certificates;
     using System.Security.Principal;
-    using System.Text;
 
     public class ManagedRSAEncryption : ICNGLocalKeyCrypto
     {
