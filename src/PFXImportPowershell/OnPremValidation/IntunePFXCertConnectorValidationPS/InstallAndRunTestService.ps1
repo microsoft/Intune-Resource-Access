@@ -12,7 +12,7 @@ $credentials = New-Object System.Management.Automation.PSCredential ($serviceUse
 
 
 
-$binaryPath = "$($serviceDirectory)\Microsoft.Management.PFXImport.IIntunePFXCertConnectorTestService.exe"
+$binaryPath = "$($serviceDirectory)\Microsoft.Management.PFXImport.IntunePFXCertConnectorTestService.exe"
 
 # Creating Service
 Write-Host "Installing service: $serviceName"

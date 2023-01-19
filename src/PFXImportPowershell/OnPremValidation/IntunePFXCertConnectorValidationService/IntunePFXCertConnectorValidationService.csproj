@@ -7,10 +7,11 @@
     <ProjectGuid>{031F5622-EF2E-4F79-ABB4-25868F23DD36}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Microsoft.Management.PFXImport.IntunePFXCertConnectorTestService</RootNamespace>
-    <AssemblyName>Microsoft.Management.PFXImport.IIntunePFXCertConnectorTestService</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <AssemblyName>Microsoft.Management.PFXImport.IntunePFXCertConnectorTestService</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
