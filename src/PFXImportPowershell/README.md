@@ -189,6 +189,13 @@ Get-IntuneUserPfxCertificate
 ```
 Remove-IntuneUserPfxCertificate -UserThumbprintList <UserThumbprintObjs>
 ```
+```
+$userThumbprintObj = New-Object -TypeName Microsoft.Management.Powershell.PFXImport.Cmdlets.UserThumbprint
+$userThumbprintObj.User = "<UserUPN>"
+$userThumbprintObj.Thumbprint = "<CertThumbprint>"
+Remove-IntuneUserPfxCertificate -UserThumbprintList $userThumbprintObj
+```
+
 2. Remove-PfxCertificates (Specific users)
 ```
 Remove-IntuneUserPfxCertificate -UserList "<UserUPN>"
