@@ -185,9 +185,11 @@ Get-IntuneUserPfxCertificate
 ```
 
 ## Remove PFX Certificate Example
-1. Remove-PfxCertificates (Specific records)
+1. Remove-PfxCertificate (Specific record)
 ```
-Remove-IntuneUserPfxCertificate -UserThumbprintList <UserThumbprintObjs>
+$Thumbprint_to_delete = "<Certificate_Thumbprint>"  # << Replace it by the desired Certificate Thumbprint
+
+$Certificate_Data = New-Object -TypeName Microsoft.Management.Services.Api.UserPFXCertificate ; $Certificate_Data.Thumbprint = $Thumbprint_to_delete ;$Certificate_Data.UserPrincipalName = (Get-IntuneUserPfxCertificate  | where-object thumbprint -eq $Thumbprint_to_delete).userprincipalname ; Remove-IntuneUserPfxCertificate -CertificateList $Certificate_Data
 ```
 2. Remove-PfxCertificates (Specific users)
 ```
