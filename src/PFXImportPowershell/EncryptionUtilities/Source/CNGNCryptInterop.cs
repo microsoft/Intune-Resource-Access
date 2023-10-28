@@ -23,10 +23,7 @@
 
 namespace Microsoft.Intune.EncryptionUtilities
 {
-    using System;
     using System.Diagnostics.CodeAnalysis;
-    using System.Runtime.InteropServices;
-    using System.Security.Cryptography;
 
     /// <summary>
     /// Provides a wrapper around native NCrypt dll calls.  This handles checking NTSTATUS return values and throwing exceptions accordingly
