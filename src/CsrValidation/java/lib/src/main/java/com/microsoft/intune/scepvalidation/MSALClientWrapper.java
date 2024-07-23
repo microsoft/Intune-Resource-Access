@@ -119,13 +119,11 @@ public class MSALClientWrapper
     
     /**
      * Gets an access token from MSAL for the specified scopes.
-     * @param sopes Scopes to request access for.
+     * @param scopes Scopes to request access for.
      * @return
-     * @throws MalformedURLException 
-     * @throws ServiceUnavailableException 
+     * @throws ServiceUnavailableException
      */    
-    public String getAccessToken(Set<String> scopes) throws MalformedURLException, ServiceUnavailableException {
-
+    public String getAccessToken(Set<String> scopes) throws ServiceUnavailableException {
         IAuthenticationResult result;
 
         ClientCredentialParameters params = ClientCredentialParameters.builder(scopes).build();
@@ -137,7 +135,7 @@ public class MSALClientWrapper
         {
             throw new ServiceUnavailableException("Authentication result was null");
         }
-        
+
         return result.accessToken();
     }
     

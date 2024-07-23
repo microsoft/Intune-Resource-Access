@@ -23,10 +23,12 @@
 
 package com.microsoft.intune.scepvalidation;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONArray;
@@ -38,6 +40,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.microsoft.intune.carequest.CARevocationRequest;
 import com.microsoft.intune.carequest.CARevocationResult;
+
+import javax.naming.ServiceUnavailableException;
 
 /**
  * Client to access the retrieve CA Revocation Requests from Intune
@@ -64,19 +68,19 @@ public class IntuneRevocationClient extends IntuneClient
      */
     public IntuneRevocationClient(Properties configProperties) throws IllegalArgumentException 
     {
-        this(configProperties, null, null, null);
+        this(configProperties, null, null);
     }
     
     /**
      * IntuneScepService Client constructor meant for dependency injection
      * @param configProperties
-     * @param adalClient
+     * @param msalClient
      * @param httpClientBuilder
      * @throws IllegalArgumentException
      */
-    public IntuneRevocationClient(Properties configProperties, MSALClientWrapper msalClient, ADALClientWrapper adalClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException 
+    public IntuneRevocationClient(Properties configProperties, MSALClientWrapper msalClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException
     {
-        super(configProperties, msalClient, adalClient, httpClientBuilder);
+        super(configProperties, msalClient, httpClientBuilder);
         
         if(configProperties == null)
         {
@@ -103,7 +107,7 @@ public class IntuneRevocationClient extends IntuneClient
      * @throws IntuneClientException The service reported a failure in processing the notification examine the exception error code.
      * @throws IllegalArgumentException
      */
-    public List<CARevocationRequest> DownloadCARevocationRequests(String transactionId, int maxCARequestsToDownload, String issuerName) throws IntuneScepServiceException, Exception
+    public List<CARevocationRequest> DownloadCARevocationRequests(String transactionId, int maxCARequestsToDownload, String issuerName) throws ServiceUnavailableException, InterruptedException, ExecutionException, IOException, IllegalArgumentException, IntuneClientException
     {
     	// Validate Parameters
         if(transactionId == null || transactionId.isEmpty())

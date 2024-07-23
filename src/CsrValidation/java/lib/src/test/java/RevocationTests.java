@@ -68,15 +68,14 @@ public class RevocationTests
         when(helper.intuneResponseEntity.getContentLength())
             .thenReturn((long)validJsonResponse.length());
         
-        IntuneRevocationClient client = new IntuneRevocationClient(helper.properties, helper.msal, helper.adal, helper.httpBuilder);
+        IntuneRevocationClient client = new IntuneRevocationClient(helper.properties, helper.msal, helper.httpBuilder);
         
         UUID transactionId = UUID.randomUUID();
 
         List<CARevocationRequest> results = client.DownloadCARevocationRequests(transactionId.toString(), 10, null);
         
         verify(helper.msal, times(2)).getAccessToken(ArgumentMatchers.<String>anySet());
-        verify(helper.adal, times(0)).getAccessTokenFromCredential(anyString());
-        
+
         verify(helper.httpClient, times(1)).execute(
                 argThat(new ArgumentMatcher<HttpUriRequest>() {
                     @Override
@@ -122,15 +121,14 @@ public class RevocationTests
         when(helper.intuneResponseEntity.getContentLength())
             .thenReturn((long)response.length());
         
-        IntuneRevocationClient client = new IntuneRevocationClient(helper.properties, helper.msal, helper.adal, helper.httpBuilder);
+        IntuneRevocationClient client = new IntuneRevocationClient(helper.properties, helper.msal, helper.httpBuilder);
         
         UUID transactionId = UUID.randomUUID();
 
         client.UploadRevocationResults(transactionId.toString(), list);
         
         verify(helper.msal, times(2)).getAccessToken(ArgumentMatchers.<String>anySet());
-        verify(helper.adal, times(0)).getAccessTokenFromCredential(anyString());
-        
+
         verify(helper.httpClient, times(1)).execute(
                 argThat(new ArgumentMatcher<HttpUriRequest>() {
                     @Override

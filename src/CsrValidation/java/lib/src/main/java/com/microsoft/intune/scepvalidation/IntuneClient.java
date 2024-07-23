@@ -26,7 +26,6 @@ package com.microsoft.intune.scepvalidation;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.UnknownHostException;
@@ -72,14 +71,11 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.microsoft.aad.adal4j.AuthenticationException;
-import com.microsoft.aad.adal4j.AuthenticationResult;
-import com.microsoft.aad.adal4j.ClientCredential;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 
 /**
  * IntuneClient - A client which can be used to make requests to Intune services.
- * This object uses ADAL libraries and tokens for authentication with Intune.  
+ * This object uses MSAL libraries and tokens for authentication with Intune.
  */
 class IntuneClient 
 {
@@ -93,10 +89,8 @@ class IntuneClient
     protected String aadGraphResourceUrl = "https://graph.windows.net/";
 
     protected String intuneTenant;
-    protected ClientCredential aadCredential;
     protected MSALClientWrapper msalAuthClient;
-    protected ADALClientWrapper adalAuthClient;
-    
+
     protected SSLSocketFactory sslSocketFactory = null;
     protected HttpClientBuilder httpClientBuilder = null;
     
@@ -116,18 +110,17 @@ class IntuneClient
      */
     public IntuneClient(Properties configProperties) throws IllegalArgumentException
     {
-        this(configProperties, null, null, null);
+        this(configProperties, null, null);
     }
     
     /**
      * Constructs an IntuneClient object.  This is meant to be used for unit tests for dependency injection.
      * @param configProperties
      * @param msalAuthClient
-     * @param adalAuthClient
      * @param httpClientBuilder
      * @throws IllegalArgumentException
      */
-    public IntuneClient(Properties configProperties, MSALClientWrapper msalAuthClient, ADALClientWrapper adalAuthClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException
+    public IntuneClient(Properties configProperties, MSALClientWrapper msalAuthClient, HttpClientBuilder httpClientBuilder) throws IllegalArgumentException
     {        
         if(configProperties == null)
         {
@@ -164,10 +157,7 @@ class IntuneClient
         this.msGraphResourceUrl = configProperties.getProperty("MS_GRAPH_RESOURCE_URL", this.msGraphResourceUrl);
         
         this.msalAuthClient = msalAuthClient == null ? new MSALClientWrapper(this.intuneTenant, configProperties) : msalAuthClient;
-        
-        this.aadCredential = new ClientCredential(azureAppId, azureAppKey);
-        this.adalAuthClient = adalAuthClient == null ? new ADALClientWrapper(this.intuneTenant, this.aadCredential, configProperties) : adalAuthClient;
-        
+
         this.httpClientBuilder = httpClientBuilder == null ? this.httpClientBuilder : httpClientBuilder;
         
         proxyHost = configProperties.getProperty("PROXY_HOST");
@@ -215,8 +205,7 @@ class IntuneClient
         this.log.info("Setting SSL Socket Factory");
         
         this.msalAuthClient.SetSslSocketFactory(factory);
-        this.adalAuthClient.SetSslSocketFactory(factory);
-        
+
         this.sslSocketFactory = factory;
                
         this.httpClientBuilder = HttpClientBuilder.create();
@@ -243,8 +232,7 @@ class IntuneClient
      * @param json The body of the request.
      * @param activityId Client generated ID for correlation of this activity
      * @return JSON response from service
-     * @throws AuthenticationException
-     * @throws ExecutionException 
+     * @throws ExecutionException
      * @throws InterruptedException 
      * @throws ServiceUnavailableException 
      * @throws IOException 
@@ -252,7 +240,7 @@ class IntuneClient
      * @throws IllegalArgumentException 
      * @throws IntuneClientException 
      */
-    public JSONObject PostRequest(String serviceName, String urlSuffix, String apiVersion, JSONObject json, UUID activityId) throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, AuthenticationException, IllegalArgumentException, IntuneClientException
+    public JSONObject PostRequest(String serviceName, String urlSuffix, String apiVersion, JSONObject json, UUID activityId) throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, IllegalArgumentException, IntuneClientException
     {
         return this.PostRequest(serviceName, urlSuffix, apiVersion, json, activityId, null);
     }
@@ -266,8 +254,7 @@ class IntuneClient
      * @param activityId Client generated ID for correlation of this activity
      * @param additionalHeaders key value pairs of additional header values to add to the request
      * @return JSON response from service
-     * @throws AuthenticationException
-     * @throws ExecutionException 
+     * @throws ExecutionException
      * @throws InterruptedException 
      * @throws ServiceUnavailableException 
      * @throws IOException 
@@ -275,7 +262,7 @@ class IntuneClient
      * @throws IllegalArgumentException 
      * @throws IntuneClientException 
      */
-    public JSONObject PostRequest(String serviceName, String urlSuffix, String apiVersion, JSONObject json, UUID activityId, Map<String,String> additionalHeaders) throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, AuthenticationException, IllegalArgumentException, IntuneClientException
+    public JSONObject PostRequest(String serviceName, String urlSuffix, String apiVersion, JSONObject json, UUID activityId, Map<String,String> additionalHeaders) throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, IllegalArgumentException, IntuneClientException
     {
         if(serviceName == null || serviceName.isEmpty())
         {
@@ -352,7 +339,7 @@ class IntuneClient
         return jsonResult;
     }
     
-    private synchronized String GetServiceEndpoint(String serviceName) throws ServiceUnavailableException, ClientProtocolException, AuthenticationException, InterruptedException, ExecutionException, IOException, IntuneClientException
+    private synchronized String GetServiceEndpoint(String serviceName) throws ServiceUnavailableException, ClientProtocolException, InterruptedException, ExecutionException, IOException, IntuneClientException
     {
         if(serviceName == null || serviceName.isEmpty())
         {
@@ -384,29 +371,15 @@ class IntuneClient
         return null;
     }
     
-    private void RefreshServiceMap() throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, AuthenticationException, IntuneClientException
+    private void RefreshServiceMap() throws ServiceUnavailableException, InterruptedException, ExecutionException, ClientProtocolException, IOException, IntuneClientException
     {
         String graphRequest = "";
         String token = "";
-        boolean msalFailed = false;
         Set<String> scopes = new HashSet<String>();
+
         scopes.add(this.msGraphResourceUrl + ".default");
-        try 
-        {
-            token = this.msalAuthClient.getAccessToken(scopes);
-            graphRequest = this.msGraphResourceUrl + "v" + this.msGraphVersion + "/servicePrincipals/appId="+ this.intuneAppId + "/endpoints";
-        }
-        catch(Exception e)
-        {
-            msalFailed = true;
-        }
-        
-        if(msalFailed) 
-        {
-            AuthenticationResult authResult = this.adalAuthClient.getAccessTokenFromCredential(this.aadGraphResourceUrl);
-            token = authResult.getAccessToken();
-            graphRequest = this.aadGraphResourceUrl + intuneTenant + "/servicePrincipalsByAppId/" + this.intuneAppId + "/serviceEndpoints?api-version=" + this.aadGraphVersion;
-        }
+        token = this.msalAuthClient.getAccessToken(scopes);
+        graphRequest = this.msGraphResourceUrl + "v" + this.msGraphVersion + "/servicePrincipals/appId="+ this.intuneAppId + "/endpoints";
 
         UUID activityId = UUID.randomUUID();
         CloseableHttpClient httpclient = this.getCloseableHttpClient();
@@ -424,7 +397,7 @@ class IntuneClient
             {
                 JSONObject jObj = (JSONObject)obj;
                 
-                String name = msalFailed ? jObj.getString("serviceName").toLowerCase() : jObj.getString("providerName").toLowerCase();
+                String name = jObj.getString("providerName").toLowerCase();
                 
                 if(!serviceMap.containsKey(name)) 
                 {
@@ -514,7 +487,6 @@ class IntuneClient
          {
             this.log.info("Setting AuthClient ProxyHost:" + proxyHost + " ProxyPort:" + proxyPort);
             this.msalAuthClient.SetProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort)));
-            this.adalAuthClient.SetProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort)));
 
             if(this.httpClientBuilder == null)
             {
