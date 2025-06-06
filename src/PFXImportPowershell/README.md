@@ -79,19 +79,19 @@ Add-IntuneKspKey "<ProviderName>" "<KeyName>" {-MakeExportable}
 ## Export the public key to a file
 1. Export the public key. Used to encrypt in an independent location from where the private key is accessed. Set "Set up userPFXCertificate object (scenario: encrypting password with the public key that has been exported to a file)" below.
 ```
-Export-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>"
+Export-IntunePrivateKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>"
 ```
 
 ## Export the private key to a file 
 1. Export the private key. For use when migrating connector and moving keys between machines.
 ```
-Export-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>" {-MakeExportable}
+Export-IntunePrivateKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>" {-MakeExportable}
 ```
 
 ## Import the private key from a file
 1. Import the private key. For use when migrating connector and moving keys between machines.
 ```
-Import-IntunePublicKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>"
+Import-IntunePrivateKey -ProviderName "<ProviderName>" -KeyName "<KeyName>" -FilePath "<File path to write to>"
 ```
 
 ## Authenticate to Intune
