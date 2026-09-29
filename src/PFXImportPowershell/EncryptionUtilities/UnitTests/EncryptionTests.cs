@@ -23,7 +23,6 @@
 
 using Microsoft.Intune.EncryptionUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;

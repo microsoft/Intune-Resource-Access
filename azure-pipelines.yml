@@ -10,7 +10,7 @@ pool:
   vmImage: 'windows-2019'
 
 variables:
-  solution: '**/PFXImportPowershell/*.sln'
+  solution: 'src/PFXImportPowershell/OnPremValidation/PFXImportOnPremValidation.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
@@ -20,6 +20,7 @@ steps:
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
+    restoreDirectory: 'src/PFXImportPowershell/packages'
 
 - task: VSBuild@1
   inputs:
@@ -32,12 +33,28 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
+- powershell: |
+    Install-Module Pester -MinimumVersion 5.5.0 -Force -Scope CurrentUser
+    $result = Invoke-Pester -Path 'src\PFXImportPowershell\Tests\IntunePfxImport.Tests.ps1' -PassThru
+    if ($result.FailedCount -ne 0) { throw "$($result.FailedCount) Windows PowerShell Pester tests failed." }
+  displayName: 'Test PFX import module - Windows PowerShell 5.1'
+
+- pwsh: |
+    Install-Module Pester -MinimumVersion 5.5.0 -Force -Scope CurrentUser
+    $result = Invoke-Pester -Path 'src\PFXImportPowershell\Tests\IntunePfxImport.Tests.ps1' -PassThru
+    if ($result.FailedCount -ne 0) { throw "$($result.FailedCount) PowerShell 7 Pester tests failed." }
+  displayName: 'Test PFX import module - PowerShell 7'
+
 #- powershell: gci env:* | sort-object name | Format-Table -AutoSize | Out-File $env:BUILD_ARTIFACTSTAGINGDIRECTORY/environment-variables.txt
 
 - task: CopyFiles@2
   inputs:
     sourceFolder: '$(Build.SourcesDirectory)'
-    contents: '**/?(OnPremValidation|PFXImportPS)/**/bin/**/$(BuildConfiguration)/**/?(*.exe|*.dll|*.xml|*.psd1|*.pdb)'
+    contents: |
+      **/OnPremValidation/**/bin/**/$(BuildConfiguration)/**/?(*.exe|*.dll|*.xml|*.pdb)
+      **/PFXImportPS/*.psd1
+      **/PFXImportPS/*.psm1
+      **/Examples/*.ps1
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: CodeSignValidationInjected@1

@@ -24,6 +24,7 @@
 namespace Microsoft.Intune.EncryptionUtilities
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Security.AccessControl;
@@ -31,11 +32,9 @@ namespace Microsoft.Intune.EncryptionUtilities
     using System.Security.Cryptography.Pkcs;
     using System.Security.Cryptography.X509Certificates;
     using System.Security.Principal;
-    using System.Text;
 
     public class ManagedRSAEncryption : ICNGLocalKeyCrypto
     {
-
         /// <summary>
         /// Defines the format of exported Public Key
         /// CngBlob - RSA PUBLIC BLOB format
@@ -68,7 +67,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         {
             CngProvider provider = new CngProvider(providerName);
             byte[] encryptedData = null;
-            bool keyExists = doesKeyExists(provider, keyName);
+            bool keyExists = this.DoesKeyExist(provider, keyName);
 
             if (!keyExists)
             {
@@ -100,17 +99,17 @@ namespace Microsoft.Intune.EncryptionUtilities
             CngProvider provider = new CngProvider(providerName);
             byte[] decrypted;
             CngKeyOpenOptions cngkeyOpenOpts = CngKeyOpenOptions.MachineKey;
-            bool keyExists = doesKeyExists(provider, keyName, cngkeyOpenOpts);
+            bool keyExists = this.DoesKeyExist(provider, keyName, cngkeyOpenOpts);
 
             if (!keyExists)
             {
-                if (doesKeyExists(provider, keyName, CngKeyOpenOptions.None))
+                if (this.DoesKeyExist(provider, keyName, CngKeyOpenOptions.None))
                 {
                     cngkeyOpenOpts = CngKeyOpenOptions.None;
                 }
                 else
                 {
-                    throw new CryptographicException(string.Format("They key {0} does not exist and cannot be used for decryption", keyName));
+                    throw new CryptographicException(string.Format(CultureInfo.InvariantCulture, "They key {0} does not exist and cannot be used for decryption", keyName));
                 }
             }
 
@@ -131,12 +130,13 @@ namespace Microsoft.Intune.EncryptionUtilities
         /// <param name="providerName">Name of the provider</param>
         /// <param name="keyName">Name of the key</param>
         /// <param name="keyLength">Length of the key to generate</param>
+        /// <param name="makeExportable"></param>
         /// <returns>true if successful, false if that key already exists.</returns>
         public bool TryGenerateLocalRSAKey(string providerName, string keyName, int keyLength = 2048, bool makeExportable = false)
         {
             CngProvider provider = new CngProvider(providerName);
 
-            bool keyExists = doesKeyExists(provider, keyName);
+            bool keyExists = this.DoesKeyExist(provider, keyName);
 
             if (keyExists)
             {
@@ -214,7 +214,7 @@ namespace Microsoft.Intune.EncryptionUtilities
         public void DestroyLocalRSAKey(string providerName, string keyName)
         {
             CngProvider provider = new CngProvider(providerName);
-            bool keyExists = doesKeyExists(provider, keyName);
+            bool keyExists = this.DoesKeyExist(provider, keyName);
 
             if (!keyExists)
             {
@@ -238,15 +238,15 @@ namespace Microsoft.Intune.EncryptionUtilities
         {
             CngProvider provider = new CngProvider(providerName);
 
-            bool keyExists = doesKeyExists(provider, keyName);
+            bool keyExists = this.DoesKeyExist(provider, keyName);
 
             if (!keyExists)
             {
-                throw new CryptographicException(string.Format("They key {0} does not exist so there is no public key to export", keyName));
+                throw new CryptographicException(string.Format(CultureInfo.InvariantCulture, "They key {0} does not exist so there is no public key to export", keyName));
             }
             if (File.Exists(filePath))
             {
-                throw new IOException(string.Format("File {0} already exists.", filePath));
+                throw new IOException(string.Format(CultureInfo.InvariantCulture, "File {0} already exists.", filePath));
             }
             using (CngKey key = CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey))
             {
@@ -266,12 +266,14 @@ namespace Microsoft.Intune.EncryptionUtilities
         /// Import a key from a file for use on the machine.
         /// </summary>
         /// <param name="providerName"></param>
+        /// <param name="keyName"></param>
         /// <param name="filePath"></param>
+        /// <param name="makeExportable"></param>
         public bool ImportKeyToKSP(string providerName, string keyName, string filePath, bool makeExportable = false)
         {
             CngProvider provider = new CngProvider(providerName);
 
-            bool keyExists = doesKeyExists(provider, keyName);
+            bool keyExists = this.DoesKeyExist(provider, keyName);
 
             if (keyExists)
             {
@@ -354,15 +356,15 @@ namespace Microsoft.Intune.EncryptionUtilities
         {
             CngProvider provider = new CngProvider(providerName);
 
-            bool keyExists = doesKeyExists(provider, keyName);
+            bool keyExists = this.DoesKeyExist(provider, keyName);
 
             if (!keyExists)
             {
-                throw new CryptographicException(string.Format("They key {0} does not exist so there is no key to export", keyName));
+                throw new CryptographicException(string.Format(CultureInfo.InvariantCulture, "They key {0} does not exist so there is no key to export", keyName));
             }
             if (File.Exists(filePath))
             {
-                throw new IOException(string.Format("File {0} already exists.", filePath));
+                throw new IOException(string.Format(CultureInfo.InvariantCulture, "File {0} already exists.", filePath));
             }
             using (CngKey key = CngKey.Open(keyName, provider, CngKeyOpenOptions.MachineKey))
             {
@@ -376,7 +378,7 @@ namespace Microsoft.Intune.EncryptionUtilities
 
             if (!File.Exists(filePath))
             {
-                throw new IOException(string.Format("They file {0} does not exist and cannot be used for encryption", filePath));
+                throw new IOException(string.Format(CultureInfo.InvariantCulture, "They file {0} does not exist and cannot be used for encryption", filePath));
             }
 
             byte[] keyBlob = null;
@@ -408,9 +410,9 @@ namespace Microsoft.Intune.EncryptionUtilities
         /// </summary>
         /// <param name="provider">Provider Object</param>
         /// <param name="keyName">Name of the key to destroy</param>
-        /// <param name="cngKeyOpts">MachineKey or None depending on where it found the key.</param>
+        /// <param name="openOpts">MachineKey or None depending on where it found the key.</param>
         /// <returns></returns>
-        private bool doesKeyExists(CngProvider provider, string keyName, CngKeyOpenOptions openOpts = CngKeyOpenOptions.MachineKey)
+        private bool DoesKeyExist(CngProvider provider, string keyName, CngKeyOpenOptions openOpts = CngKeyOpenOptions.MachineKey)
         {
             bool keyExists = false;
             try
@@ -419,8 +421,8 @@ namespace Microsoft.Intune.EncryptionUtilities
             }
             catch (CryptographicException e)
             {
-                throw new CryptographicException(string.Format("There was an error contacting provider {0}. It may not exist or may be configured incorrectly. Error Code:0x{1:X8}  Exception thrown:{2}\nStack Trace:{3}\n",
-                    provider.ToString(), e.HResult, e.Message, e.StackTrace), e);
+                throw new CryptographicException(string.Format(CultureInfo.InvariantCulture, "There was an error contacting provider {0}. It may not exist or may be configured incorrectly. Error Code:0x{1:X8} Exception thrown:{2}\nStack Trace:{3}\n",
+                                                               provider.ToString(), e.HResult, e.Message, e.StackTrace), e);
             }
             return keyExists;
         }
